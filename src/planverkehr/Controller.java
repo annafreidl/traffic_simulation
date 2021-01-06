@@ -1,4 +1,4 @@
-package sample;
+package planverkehr;
 
 public class Controller {
 }
