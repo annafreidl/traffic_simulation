@@ -15,7 +15,7 @@ public class Main extends Application {
 
     public static void main(String[] args) {
 
-//        JSONParser parser = new JSONParser();
+        JSONParser parser = new JSONParser();
 //        System.out.println(parser.getCommoditiesFromJSON());
 //        parser.getMapFromJSON();
 //        parser.getVehiclesFromJSON();
@@ -46,7 +46,7 @@ public class Main extends Application {
 //            System.out.println(buildings.getProductions());
 //            System.out.println("\n");
 //        }
-//        launch(args);
+        launch(args);
     }
 
 }
