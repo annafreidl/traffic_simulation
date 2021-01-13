@@ -1,14 +1,19 @@
 package planverkehr;
 
+import javafx.event.EventHandler;
+import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-
-import javax.swing.*;
-import java.awt.*;
+import javafx.scene.control.Label;
 
 public class VGame {
     MGame gameModel;
@@ -18,14 +23,15 @@ public class VGame {
     Scene scene;
 
     public double mouseX, mouseY;
-    int TILE_WIDTH = 40;
-    int TILE_HEIGHT = 20;
-    int TILE_HEIGHT_HALF = TILE_HEIGHT/2;
-    int TILE_WIDTH_HALF = TILE_WIDTH/2;
-    int Offset = Config.windowSize/2;
+    static double tWidth = 40;
+    static double tHeight = tWidth /2;
+    static double tHeightHalf = tHeight / 2;
+    static double tWidthHalf = tWidth / 2;
+    static double offset = Config.windowSize / 2 - 65;
+    static double worldWidth = 10;
+    static double worldHeigth = 10;
 
-
-    public VGame (MGame gameModel, Stage stage){
+    public VGame(MGame gameModel, Stage stage) {
         this.gameModel = gameModel;
         this.window = stage;
         group = new Group();
@@ -33,25 +39,63 @@ public class VGame {
 
         group.getChildren().add(canvas);
 
+        // Baumenü Beispiel
+        Menu menu = new Menu("Menu 1");
+        MenuItem menuItem1 = new MenuItem();
+
+        // Größe des Items in Abhängigkeit der Seitenverhältnisse (universell für jedes Image benutzbar)
+        Image house1 = new Image("building.png");
+        double scale = 20/house1.getWidth();
+        double height = house1.getHeight()*scale;
+        double width = house1.getWidth()*scale;
+
+        ImageView building = new ImageView(house1);
+        building.setFitWidth(width);
+        building.setFitHeight(height);
+        menuItem1.setGraphic(building);
+
+        menu.getItems().add(menuItem1);
+
+        MenuBar menuBar = new MenuBar();
+        menuBar.getMenus().add(menu);
+        group.getChildren().add(menuBar);
+
         // Canvas wird erzeugt:
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.setFill(Color.BISQUE);
+
+// set background color !! todo: doesn't work while zooming !!
+//        gc.setFill(Color.BISQUE);
+//        gc.fillRect(
+//            0,
+//            0,
+//            canvas.getWidth(),
+//            canvas.getHeight());
 
         // zeichnet isometrische Rauten auf die Karte
-        for (int i = 1; i<Config.windowSize; i++) {
-            for(int j =1; j<Config.windowSize; j++) {
+        for (int i = 0; i < worldWidth; i++) {
+            for (int j = 0; j < worldHeigth; j++) {
 
-                int[] isoCoordinates = toIso(i, j);
-                int xnew = isoCoordinates[0];
-                int ynew = isoCoordinates[1];
+                double[] isoCoordinates = toIso(i, j);
+                double xnew = isoCoordinates[0];
+                double ynew = isoCoordinates[1];
 
                 gc.beginPath();
-                gc.moveTo(xnew-TILE_WIDTH_HALF, ynew);
-                gc.lineTo(xnew, ynew -TILE_HEIGHT_HALF);
-                gc.lineTo(xnew +TILE_WIDTH_HALF, ynew);
-                gc.lineTo(xnew, ynew+TILE_HEIGHT_HALF);
+                gc.moveTo(xnew, ynew);
+                gc.lineTo(xnew+tWidthHalf, ynew - tHeightHalf);
+                gc.lineTo(xnew + tWidth, ynew);
+                gc.lineTo(xnew+tWidthHalf, ynew + tHeightHalf);
+                gc.setFill(Color.LIMEGREEN);
                 gc.closePath();
+                gc.fill();
                 gc.stroke();
+                gc.setFill(Color.BLACK);
+                gc.setTextAlign(TextAlignment.CENTER);
+                gc.setTextBaseline(VPos.CENTER);
+                gc.fillText(
+                    i+","+(j-(int)worldWidth+1),
+                    xnew,
+                    ynew-2
+                );
             }
         }
 
@@ -67,8 +111,8 @@ public class VGame {
                 return;
 
             // Bestehende Skalierung lesen
-            double scaleX = group.getScaleX();
-            double scaleY = group.getScaleY();
+            double scaleX = canvas.getScaleX();
+            double scaleY = canvas.getScaleY();
 
             // Bestehende Skalierung kopieren
             double oldScaleX = scaleX;
@@ -87,10 +131,10 @@ public class VGame {
             double dy = (event.getSceneY() - (group.getBoundsInParent().getHeight() / 2 + group.getBoundsInParent().getMinY()));
 
             // Neue Skalierung setzen
-            group.setScaleX(scaleX);
-            group.setScaleY(scaleY);
-            group.setTranslateX(group.getTranslateX() - fx * dx);
-            group.setTranslateY(group.getTranslateY() - fy * dy);
+            canvas.setScaleX(scaleX);
+            canvas.setScaleY(scaleY);
+            canvas.setTranslateX(canvas.getTranslateX() - fx * dx);
+            canvas.setTranslateY(canvas.getTranslateY() - fy * dy);
 
             event.consume();
         });
@@ -101,33 +145,66 @@ public class VGame {
             event.consume();
             mouseX = event.getX();
             mouseY = event.getY();
-//            VGame.this.toFront();
         });
 
-        // wenn Maustaste losgelassen wird, group verschieben
-        scene.setOnMouseDragged(event -> {
-            event.consume();
-            double mouseNewX = event.getX();
-            double mouseNewY = event.getY();
-            double deltaX = mouseNewX - mouseX;
-            double deltaY = mouseNewY - mouseY;
-            group.setTranslateX(group.getTranslateX() + deltaX);
-            group.setTranslateY(group.getTranslateY() + deltaY);
+        // wenn Maustaste losgelassen wird, canvas verschieben
+        // !! Koordinaten im Label stimmen dann nicht mehr!!
+        scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                event.consume();
+                double mouseNewX = event.getX();
+                double mouseNewY = event.getY();
+                double deltaX = mouseNewX - mouseX;
+                double deltaY = mouseNewY - mouseY;
+                canvas.setTranslateX(canvas.getTranslateX() + deltaX);
+                canvas.setTranslateY(canvas.getTranslateY() + deltaY);
 
-            mouseX = mouseNewX;
-            mouseY = mouseNewY;
+                mouseX = mouseNewX;
+                mouseY = mouseNewY;
+            }
+        });
+
+        // Label zur Anzeige der Koordinaten auf denen man sich befindet (funktioniert noch nicht bei Zoom)
+        Label debugCoord = new Label("empty");
+        debugCoord.setTranslateX(menuBar.getWidth());
+        group.getChildren().add(debugCoord);
+        scene.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
+
+            double coordX = e.getX();
+            double coordY = e.getY();
+
+            double[] isoCoordinates = toGrid( coordX, coordY);
+            double isoX = isoCoordinates[0];
+            double isoY = isoCoordinates[1];
+
+            debugCoord.setText("x: "+ isoX +"   y: "+ isoY);
+
         });
 
     }
 
     // Kartesische Koordinaten werden zu isometrischen Koordinaten umgerechnet
-    public int[] toIso(int x, int y) {
-        int i = (x - y) * TILE_WIDTH_HALF;
-        int j = (x + y) * TILE_HEIGHT_HALF;
+    public static double[] toIso(double x, double y) {
 
-        i += Offset-TILE_WIDTH_HALF;
+        double i = (x - y) * tWidthHalf;
+        double j = (x + y) * tHeightHalf;
 
-        return new int[] { i, j };
+        i += offset;
+        j += offset;
+
+        return new double[]{i, j};
+    }
+
+    // isometrische Koordinaten werden zu kartesischen umgerechnet
+    public double[] toGrid(double x, double y) {
+        x -= offset;
+        y -= offset;
+
+        double i = ((x / tWidthHalf) + (y / tHeightHalf)) / 2;
+        double j = -(((y / tHeightHalf) - (x / tWidthHalf)) / 2 -(int)worldWidth + 1);
+
+        return new double[] { i, j };
     }
 
 }
