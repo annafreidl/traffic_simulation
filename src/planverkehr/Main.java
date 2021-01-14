@@ -7,20 +7,19 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        MGame gameModel = new MGame();
+        GameConfig gameConfig = new GameConfig();
+
+        MGame gameModel = new MGame(gameConfig);
         VGame gameView = new VGame(gameModel, primaryStage);
+        new Controller(gameModel, gameView);
 
     }
 
 
     public static void main(String[] args) {
 
-        JSONParser parser = new JSONParser();
-//        System.out.println(parser.getCommoditiesFromJSON());
-//        parser.getMapFromJSON();
-//        parser.getVehiclesFromJSON();
-//        parser.getBuildingsFromJSON();
-//
+
+
 //        for (Vehicles vehicles : parser.getVehiclesFromJSON()) {
 //            System.out.println(vehicles.getName());
 //            System.out.println(vehicles.getKind());

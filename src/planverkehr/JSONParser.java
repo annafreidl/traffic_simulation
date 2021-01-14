@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public class JSONParser {
+public class JSONParser  {
 
     final String filename = (Config.jsonFile);
     final InputStream is = this.getClass().getClassLoader().getResourceAsStream(filename);
@@ -21,7 +21,7 @@ public class JSONParser {
 
     List<String> commodities;
 
-    public JSONParser() {
+    public JSONParser() throws JSONException{
     }
 
     public List<String> getCommoditiesFromJSON() {
@@ -66,9 +66,9 @@ public class JSONParser {
     }
 
 
-    public List<Vehicles> getVehiclesFromJSON() {
+    public List<MVehicles> getVehiclesFromJSON() {
 
-        List<Vehicles> vehiclesList = new ArrayList<>();
+        List<MVehicles> MVehiclesList = new ArrayList<>();
         String kind;
         String graphic;
         HashMap<String, Integer> cargo;
@@ -206,9 +206,9 @@ public class JSONParser {
 //            System.out.println(cargo);
 //            System.out.println(speed);
 //            System.out.println();
-            vehiclesList.add(new Vehicles(keyValue, kind, graphic, cargo, speed));
+            MVehiclesList.add(new MVehicles(keyValue, kind, graphic, cargo, speed));
         }
-        return vehiclesList;
+        return MVehiclesList;
     }
 
     public List<Buildings> getBuildingsFromJSON() {
