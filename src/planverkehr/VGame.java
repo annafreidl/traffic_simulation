@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
@@ -20,19 +21,20 @@ public class VGame {
     Stage window;
     Group group;
     Canvas canvas;
-    Scene scene;
-    Feld feld;
-    JSONParser parser;
     GraphicsContext gc;
+    Scene scene;
+    JSONParser parser;
+    MenuBar menuBar;
+    Label debugCoord;
 
     public double mouseX, mouseY;
-    static double tWidth = 40;
+    static double tWidth = 80;
     static double tHeight = tWidth /2;
     static double tHeightHalf = tHeight / 2;
     static double tWidthHalf = tWidth / 2;
-    static double offset = Config.windowSize / 2 - 65;
+    static double offset = Config.windowSize / 2 - 40;
     static double worldWidth = 10;
-    static double worldHeigth = 10;
+    static double worldHeight = 10;
 
     public VGame(MGame gameModel, Stage stage) {
         this.gameModel = gameModel;
@@ -42,6 +44,7 @@ public class VGame {
         canvas = new Canvas(Config.windowSize, Config.windowSize);
         gc = canvas.getGraphicsContext2D();
 
+
         group.getChildren().add(canvas);
 
         // Baumenü Beispiel
@@ -49,41 +52,83 @@ public class VGame {
         Menu airport = new Menu("Airport");
         Menu rail = new Menu("Rail");
         Menu roads = new Menu("Road");
+        Menu nature = new Menu("Nature");
 
-        for(Buildings b : parser.getBuildingsFromJSON()){
-            String special = b.getSpecial();
+        for(Buildings b: gameModel.getBuildingsList()){
             String name = b.getBuildingName();
-            if (special.equals("factory")){
-                MenuItem m1 = new MenuItem();
-                m1.setText(name);
-                build.getItems().add(m1);
-            }
-        }
-
-        for (Buildings b : parser.getBuildingsFromJSON()){
-            String name = b.getBuildingName();
-            if (b.getBuildMenu().equals("airport")){
-                MenuItem m1 = new MenuItem();
-                m1.setText(name);
-                airport.getItems().add(m1); }
-        }
-
-        for(Buildings b : parser.getBuildingsFromJSON()){
-            String name = b.getBuildingName();
-            if (b.getBuildMenu().equals("rail")){
             MenuItem m1 = new MenuItem();
-            m1.setText(name);
-            rail.getItems().add(m1); }
-        }
-
-        for(Buildings b : parser.getBuildingsFromJSON()){
-            String name = b.getBuildingName();
-            if (name.contains("road")){
-                MenuItem m1 = new MenuItem();
-                m1.setText(name);
-                roads.getItems().add(m1);
+            switch (b.getBuildMenu()){
+                case "road":
+                    VRoad menuRoadImage = new VRoad();
+                    m1.setGraphic(menuRoadImage);
+                    m1.setText(name);
+                    roads.getItems().add(m1);
+                    break;
+                case "rail":
+                    m1.setText(name);
+                    rail.getItems().add(m1);
+                    break;
+                case "airport":
+                    m1.setText(name);
+                    airport.getItems().add(m1);
+                    break;
+                case "nature":
+                    m1.setText(name);
+                    nature.getItems().add(m1);
+                    break;
+                default:
+                    if(b.getSpecial().equals("factory")){
+                        m1.setText(name);
+                        build.getItems().add(m1);
+                    }
             }
         }
+
+//        for(Buildings b : parser.getBuildingsFromJSON()){
+//            String special = b.getSpecial();
+//            String name = b.getBuildingName();
+//            if (special.equals("factory")){
+//                MenuItem m1 = new MenuItem();
+//                m1.setText(name);
+//                build.getItems().add(m1);
+//            }
+//        }
+//
+//        for (Buildings b : parser.getBuildingsFromJSON()){
+//            String name = b.getBuildingName();
+//            if (b.getBuildMenu().equals("airport")){
+//                MenuItem m1 = new MenuItem();
+//                m1.setText(name);
+//                airport.getItems().add(m1); }
+//        }
+
+        // Größe des Items in Abhängigkeit der Seitenverhältnisse (universell für jedes Image benutzbar)
+        Image house1 = new Image("Images/building.png");
+        double scale = 20/house1.getWidth();
+        double height = house1.getHeight()*scale;
+        double width = house1.getWidth()*scale;
+
+//        for(Buildings b : parser.getBuildingsFromJSON()){
+//            String name = b.getBuildingName();
+//            if (b.getBuildMenu().equals("rail")){
+//            MenuItem m1 = new MenuItem();
+//            m1.setText(name);
+//            rail.getItems().add(m1); }
+//        }
+//
+//        for(Buildings b : parser.getBuildingsFromJSON()){
+//            String name = b.getBuildingName();
+//            if (name.contains("road")){
+//                 menuItemRoad = new MenuItem();
+//
+//                VRoad menuRoadImage = new VRoad();
+//
+//                menuItemRoad.setGraphic(menuRoadImage);
+//
+//                menuItemRoad.setText(name);
+//                roads.getItems().add(menuItemRoad);
+//            }
+//        }
 
 //        // Beispiel zur Item Erstellung um später die Bilder im Menü darzustellen
 //        MenuItem menuItem1 = new MenuItem();
@@ -101,19 +146,48 @@ public class VGame {
 
 //        menu.getItems().add(menuItem1);
 
-        MenuBar menuBar = new MenuBar();
-        menuBar.getMenus().addAll(build, airport, rail, roads);
+        menuBar = new MenuBar();
+        menuBar.getMenus().addAll(build, airport, rail, roads, nature);
         group.getChildren().add(menuBar);
 
-        // zeichnet isometrische Rauten auf die Karte
-        for (int i = 0; i < worldWidth; i++) {
-            for (int j = 0; j < worldHeigth; j++) {
-                Feld field = new Feld(i,j);
-                drawTiles(field);
-                gc.setTextAlign(TextAlignment.CENTER);
-                gc.setTextBaseline(VPos.CENTER);
-            }
-        }
+        drawField();
+       
+
+// set background color !! todo: doesn't work while zooming !!
+//        gc.setFill(Color.BISQUE);
+//        gc.fillRect(
+//            0,
+//            0,
+//            canvas.getWidth(),
+//            canvas.getHeight());
+
+//        // zeichnet isometrische Rauten auf die Karte
+//        for (int i = 0; i < worldWidth; i++) {
+//            for (int j = 0; j < worldHeight; j++) {
+//
+//                double[] isoCoordinates = toIso(i, j);
+//                double xnew = isoCoordinates[0];
+//                double ynew = isoCoordinates[1];
+//
+//                gc.beginPath();
+//                gc.moveTo(xnew, ynew);
+//                gc.lineTo(xnew+tWidthHalf, ynew - tHeightHalf);
+//                gc.lineTo(xnew + tWidth, ynew);
+//                gc.lineTo(xnew+tWidthHalf, ynew + tHeightHalf);
+//                gc.setFill(Color.LIMEGREEN);
+//                gc.closePath();
+//                gc.fill();
+//                gc.stroke();
+//                gc.setFill(Color.BLACK);
+//                gc.setTextAlign(TextAlignment.CENTER);
+//                gc.setTextBaseline(VPos.CENTER);
+//                gc.fillText(
+//                    i+","+(j-(int)worldWidth+1),
+//                    xnew,
+//                    ynew-2
+//                );
+//            }
+//        }
 
         scene = new Scene(group, Config.windowSize, Config.windowSize);
 
@@ -182,44 +256,26 @@ public class VGame {
         });
 
         // Label zur Anzeige der Koordinaten auf denen man sich befindet (funktioniert noch nicht bei Zoom)
-        Label debugCoord = new Label("empty");
+        debugCoord = new Label("empty");
         debugCoord.setTranslateX(menuBar.getWidth());
         group.getChildren().add(debugCoord);
-        scene.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
 
-            double coordX = e.getX();
-            double coordY = e.getY();
-
-            double[] isoCoordinates = toGrid( coordX, coordY);
-            double isoX = isoCoordinates[0];
-            double isoY = isoCoordinates[1];
-
-            debugCoord.setText("x: "+ isoX +"   y: "+ isoY);
-
-        });
 
     }
 
-    // zeichne Felder
-    public void drawTiles(Feld feld){
-
-        double[] isocoordinates = toIso(feld.xnew,feld.ynew);
-        double xcoord = isocoordinates[0];
-        double ycoord = isocoordinates[1];
-        gc.beginPath();
-        gc.moveTo(xcoord, ycoord);
-        gc.lineTo(xcoord+tWidthHalf, ycoord - tHeightHalf);
-        gc.lineTo(xcoord + tWidth, ycoord);
-        gc.lineTo(xcoord+tWidthHalf, ycoord + tHeightHalf);
-        gc.setFill(Color.LIMEGREEN);
-        gc.closePath();
-        gc.fill();
-        gc.setFill(Color.BLACK);
-        gc.stroke();
+    public void drawField(){
+       clearField();
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.fillText(feld.xnew+","+(feld.ynew-(int)worldWidth+1), xcoord, ycoord-2);
+        gameModel.getTileHashMap().forEach((index, tile) -> {
+            new VTile(tile, gc);
+        });
     }
+
+    public void clearField() {
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+    }
+
 
 
     // Kartesische Koordinaten werden zu isometrischen Koordinaten umgerechnet
@@ -245,4 +301,26 @@ public class VGame {
         return new double[] { i, j };
     }
 
+    public MenuBar getMenuBar() {
+        return menuBar;
+    }
+
+    public GraphicsContext getGc() {
+        return gc;
+    }
+
+    public Scene getScene() {
+        return scene;
+    }
+
+    public void showCoordinates(double x, double y) {
+        double coordX = x;
+        double coordY = y;
+
+        double[] isoCoordinates = toGrid( coordX, coordY);
+        double isoX = isoCoordinates[0];
+        double isoY = isoCoordinates[1];
+
+        debugCoord.setText("x: "+ isoX +"   y: "+ isoY);
+    }
 }

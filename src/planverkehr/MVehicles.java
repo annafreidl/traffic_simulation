@@ -2,7 +2,7 @@ package planverkehr;
 
 import java.util.HashMap;
 
-public class Vehicles {
+public class MVehicles {
 
     private String name;
     private String kind;
@@ -11,7 +11,7 @@ public class Vehicles {
     private double speed;
 
 
-    public Vehicles(String name, String kind, String graphic, HashMap cargo, double speed) {
+    public MVehicles(String name, String kind, String graphic, HashMap cargo, double speed) {
         this.name = name;
         this.kind = kind;
         this.graphic = graphic;
