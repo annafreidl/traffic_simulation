@@ -34,8 +34,8 @@ public class MGame {
         double xIso = (x - y) * Config.tWidth / 2;
         double yIso = (x + y) * Config.tWidth / 4;
 
-        xIso += Config.offset;
-        yIso += Config.offset;
+        xIso += Config.Xoffset;
+        yIso += Config.Yoffset;
 
         return new double[]{xIso, yIso};
     }
@@ -45,15 +45,14 @@ public class MGame {
          double tHeight = tWidth /2;
          double tHeightHalf = tHeight / 2;
          double tWidthHalf = tWidth / 2;
-         double offset = Config.windowSize / 2 - 40;
          double worldWidth = 10;
          double worldHeight = 10;
 
-        x -= offset;
-        y -= offset;
+        x -= Config.Xoffset;
+        y -= Config.Yoffset;
 
         double i = ((x / tWidthHalf) + (y / tHeightHalf)) / 2;
-        double j = -(((y / tHeightHalf) - (x / tWidthHalf)) / 2 -(int)worldWidth + 1);
+        double j = (((y / tHeightHalf) - (x / tWidthHalf)) / 2+1);
 
         return new double[] { i, j };
     }
