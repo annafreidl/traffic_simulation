@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public class JSONParser  {
+public class JSONParser {
 
     final String filename = (Config.jsonFile);
     final InputStream is = this.getClass().getClassLoader().getResourceAsStream(filename);
@@ -21,7 +21,7 @@ public class JSONParser  {
 
     List<String> commodities;
 
-    public JSONParser() throws JSONException{
+    public JSONParser() throws JSONException {
     }
 
     public List<String> getCommoditiesFromJSON() {
@@ -211,12 +211,12 @@ public class JSONParser  {
         return MVehiclesList;
     }
 
-    public List<Buildings> getBuildingsFromJSON() {
+    public HashMap<String, Buildings> getBuildingsFromJSON() {
 
         String buildMenu;
         int width;
         int depth;
-        java.util.Map<String, Object> points;
+        java.util.Map<String, MCoordinate> points;
         List<Pair<String, String>> roads;
         List<Pair<String, String>> rails;
         List<Pair<String, String>> planes;
@@ -227,7 +227,7 @@ public class JSONParser  {
         List<Object> productions;
 
 
-        List<Buildings> buildingsList = new ArrayList<>();
+        HashMap<String, Buildings> buildingsList = new HashMap<>();
 
         JSONObject buildingsObject = json.getJSONObject("buildings");
 
@@ -296,8 +296,23 @@ public class JSONParser  {
 
 
             if (singleBuilding.has("points")) {
+                JSONArray singlePoint = null;
                 pointsObject = singleBuilding.getJSONObject("points");
-                points = pointsObject.toMap();
+                Iterator<String> pointKeys = pointsObject.keys();
+                points = new HashMap<>();
+
+                while (pointKeys.hasNext()) {
+                    String pointId = pointKeys.next();
+                    // singlePoint = pointsObject.getJSONObject(pointId);
+
+                    singlePoint = pointsObject.getJSONArray(pointId);
+                    double xCoord = singlePoint.getDouble(0);
+                    double yCoord = singlePoint.getDouble(1);
+                    MCoordinate tempCoordinate = new MCoordinate(xCoord, yCoord);
+                    points.put(pointId, tempCoordinate);
+
+                }
+
             } else {
                 points = new HashMap<>();
             }
@@ -333,7 +348,7 @@ public class JSONParser  {
             }
 
 
-            buildingsList.add(new Buildings(keyValue,buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, productions));
+            buildingsList.put(keyValue, new Buildings(keyValue, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, productions));
 //            System.out.println(keyValue);
 //            System.out.println("buildmenu " + buildMenu);
 //            System.out.println("width " + width);

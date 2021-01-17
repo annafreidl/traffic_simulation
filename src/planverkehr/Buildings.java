@@ -15,15 +15,16 @@ public class Buildings {
     private int maxPlanes;
     private int dz;
     //manche Datentypen sind wahrscheinlich nicht optimal, falls jemand eine bessere idee hat, bitte melden
-    private java.util.Map<String, Object> points;
+    private java.util.Map<String, MCoordinate> points;
     private java.util.Map<String, Object> combines;
     private List<Pair<String, String>> roads;
     private List<Pair<String, String>> rails;
     private List<Pair<String, String>> planes;
     private List<Object> productions;
+    //todo: buildType hinzufügen
 
 
-    public Buildings(String buildingName, String buildMenu, int width, int depth, java.util.Map<String, Object> points,
+    public Buildings(String buildingName, String buildMenu, int width, int depth, java.util.Map<String, MCoordinate> points,
                      List<Pair<String, String>> roads, List<Pair<String, String>> rails,
                      List<Pair<String, String>> planes, int dz, String special, int maxPlanes,
                      java.util.Map<String, Object> combines, List<Object> productions) {
@@ -72,7 +73,7 @@ public class Buildings {
         return dz;
     }
 
-    public Map<String, Object> getPoints() {
+    public Map<String, MCoordinate> getPoints() {
         return points;
     }
 

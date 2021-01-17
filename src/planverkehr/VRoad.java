@@ -1,30 +1,42 @@
 package planverkehr;
 
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class VRoad extends Canvas {
-    GraphicsContext gc = this.getGraphicsContext2D();
 
-    public VRoad() {
-        this.setWidth(50);
-        this.setHeight(50);
-        draw2DShapes(gc);
+public class VRoad {
+    public VRoad(Buildings road, MCoordinate west, GraphicsContext gc, MCoordinate center) {
+        double centerX = center.getX();
+        double centerY = center.getY();
+
+        gc.setFill(Color.DIMGREY);
+        gc.setStroke(Color.DIMGREY);
+        gc.setLineWidth(2);
+        gc.fillOval(center.getX() - 5, center.getY() - 5, 10, 10);
+
+        road.getPoints().forEach((key, coord) -> {
+            MCoordinate temp = new MCoordinate(0, 0);
+            if (!key.equals("c")) {
+              //  MCoordinates temp = center.getAbsoluteCoordinates(coord);
+                switch (key) {
+                    case "ne": //0.5 : 1
+                        temp.setX(centerX + Config.tHeightHalft);
+                        temp.setY(centerY - (Config.tHeightHalft / 2));
+                        break;
+                    case "nw": //0.5 : 0
+                        temp.setX(centerX - Config.tHeightHalft);
+                        temp.setY(centerY - (Config.tHeightHalft / 2));
+                        break;
+                    case "se": //(1: 0.5)
+                        temp.setX(centerX + Config.tHeightHalft);
+                        temp.setY(centerY + (Config.tHeightHalft / 2));
+                        break;
+                    case "sw": // (0 : 0.5)
+                        temp.setX(centerX - Config.tHeightHalft);
+                        temp.setY(centerY + (Config.tHeightHalft / 2));
+                }
+                gc.strokeLine(center.getX(), center.getY(), temp.getX(), temp.getY());
+            }
+        });
     }
-
-    private void draw2DShapes(GraphicsContext gc) {
-        gc.setFill(Color.GRAY);
-        gc.setStroke(Color.WHITE);
-        //v: wie weit von der linken Canvas Grenze entfernt
-        //v1: wie weit von der oberen Canvas Grenze entfernt
-        //v2: bis wohin ab v --> vertikal
-        //v3: bis wohin ab v1 --> horizontal
-        gc.fillRect(0, 15,50, 20);
-        gc.strokeLine(5, 25, 15, 25);
-        gc.strokeLine(20, 25, 30, 25);
-        gc.strokeLine(35, 25, 45, 25);
-
-    }
-
 }

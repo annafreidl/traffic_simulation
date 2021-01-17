@@ -8,10 +8,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
@@ -20,8 +17,8 @@ public class VGame {
     MGame gameModel;
     Stage window;
     Group group;
-    Canvas canvas;
-    GraphicsContext gc;
+    Canvas canvas, canvasFront;
+    GraphicsContext gc, gcFront;
     Scene scene;
     JSONParser parser;
     MenuBar menuBar;
@@ -29,7 +26,7 @@ public class VGame {
 
     public double mouseX, mouseY;
     static double tWidth = Config.tWidth;
-    static double tHeight = tWidth /2;
+    static double tHeight = tWidth / 2;
     static double tHeightHalf = tHeight / 2;
     static double tWidthHalf = tWidth / 2;
     static double worldWidth = Config.worldWidth;
@@ -40,54 +37,66 @@ public class VGame {
         this.window = stage;
         group = new Group();
         parser = new JSONParser();
-        canvas = new Canvas((worldWidth+1)*tWidth, (worldHeight+1)*tHeight);
+        canvas = new Canvas((worldWidth + 1) * tWidth, (worldHeight + 1) * tHeight);
+        canvasFront = new Canvas((worldWidth + 1) * tWidth, (worldHeight + 1) * tHeight);
         gc = canvas.getGraphicsContext2D();
+        gcFront = canvasFront.getGraphicsContext2D();
+        canvasFront.toFront();
 
 
-        group.getChildren().add(canvas);
+        group.getChildren().addAll(canvas, canvasFront);
+
+//        Menu build = new BuildMenu(EBuildType.building, "Buildings");
+//        Menu airport = new BuildMenu(EBuildType.airport, "Airport");
+//        Menu rail = new BuildMenu(EBuildType.rail,"Rail");
+//        Menu roads = new BuildMenu(EBuildType.road, "Road");
+//        Menu nature = new BuildMenu( EBuildType.nature, "Nature");
 
         // Baumenü Beispiel
-        Menu build = new Menu ("Buildings");
+        Menu build = new Menu("Buildings");
+        build.setId(String.valueOf(EBuildType.building));
         Menu airport = new Menu("Airport");
+        airport.setId(String.valueOf(EBuildType.airport));
         Menu rail = new Menu("Rail");
+        rail.setId(String.valueOf(EBuildType.rail));
         Menu roads = new Menu("Road");
+        roads.setId(String.valueOf(EBuildType.road));
         Menu nature = new Menu("Nature");
+        nature.setId(String.valueOf(EBuildType.nature));
 
-        for(Buildings b: gameModel.getBuildingsList()){
+        gameModel.getBuildingsList().forEach((key, b) -> {
             String name = b.getBuildingName();
             MenuItem m1 = new MenuItem();
-            switch (b.getBuildMenu()){
+            m1.setText(name);
+            m1.setId(name);
+            switch (b.getBuildMenu()) {
                 case "road":
-                    VRoad menuRoadImage = new VRoad();
+                    VRoadMenu menuRoadImage = new VRoadMenu();
                     m1.setGraphic(menuRoadImage);
-                    m1.setText(name);
                     roads.getItems().add(m1);
                     break;
                 case "rail":
-                    m1.setText(name);
                     rail.getItems().add(m1);
                     break;
                 case "airport":
-                    m1.setText(name);
                     airport.getItems().add(m1);
                     break;
                 case "nature":
-                    m1.setText(name);
                     nature.getItems().add(m1);
                     break;
                 default:
-                    if(b.getSpecial().equals("factory")){
-                        m1.setText(name);
+                    if (b.getSpecial().equals("factory")) {
                         build.getItems().add(m1);
                     }
             }
-        }
+        });
+
 
         // Größe des Items in Abhängigkeit der Seitenverhältnisse (universell für jedes Image benutzbar)
         Image house1 = new Image("Images/building.png");
-        double scale = 20/house1.getWidth();
-        double height = house1.getHeight()*scale;
-        double width = house1.getWidth()*scale;
+        double scale = 20 / house1.getWidth();
+        double height = house1.getHeight() * scale;
+        double width = house1.getWidth() * scale;
 
         menuBar = new MenuBar();
         menuBar.getMenus().addAll(build, airport, rail, roads, nature);
@@ -95,13 +104,17 @@ public class VGame {
 
         drawField();
 
-        scene = new Scene(group, Config.windowSize, Config.windowSize);
+        scene = new
+
+            Scene(group, Config.windowSize, Config.windowSize);
 
         window.setTitle("Planverkehr");
         window.setScene(scene);
         window.show();
 
-        scene.setOnScroll(event -> {
+        scene.setOnScroll(event ->
+
+        {
 
             if (event.getDeltaY() == 0)
                 return;
@@ -137,7 +150,9 @@ public class VGame {
 
         // Events für drag&drop
         // Position speichern an der die Maustaste gedrückt wurde
-        scene.setOnMousePressed(event -> {
+        scene.setOnMousePressed(event ->
+
+        {
             event.consume();
             mouseX = event.getX();
             mouseY = event.getY();
@@ -164,25 +179,30 @@ public class VGame {
         // Label zur Anzeige der Koordinaten auf denen man sich befindet (funktioniert noch nicht bei Zoom)
         debugCoord = new Label("empty");
         debugCoord.setTranslateX(menuBar.getWidth());
-        group.getChildren().add(debugCoord);
+        group.getChildren().
+
+            add(debugCoord);
 
 
     }
 
-    public void drawField(){
-       clearField();
+    public void drawField() {
+        clearField();
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
         gameModel.getTileHashMap().forEach((index, tile) -> {
-            new VTile(tile, gc);
+            VTile tempTileView = new VTile(tile);
+            tempTileView.drawBackground(gc);
+            tempTileView.drawForeground(gcFront);
+            canvas.toBack();
+
         });
     }
 
     public void clearField() {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        gcFront.clearRect(0, 0, canvasFront.getHeight(), canvasFront.getWidth());
     }
-
-
 
     // Kartesische Koordinaten werden zu isometrischen Koordinaten umgerechnet
     public static double[] toIso(double x, double y) {
@@ -204,7 +224,7 @@ public class VGame {
         double i = ((x / tWidthHalf) + (y / tHeightHalf)) / 2;
         double j = -(((y / tHeightHalf) - (x / tWidthHalf)) / 2 /*-(int)worldWidth + 1*/);
 
-        return new double[] { i, j };
+        return new double[]{i, j};
     }
 
     public MenuBar getMenuBar() {
@@ -223,10 +243,10 @@ public class VGame {
         double coordX = x;
         double coordY = y;
 
-        double[] isoCoordinates = toGrid( coordX, coordY);
-        double isoX = isoCoordinates[0];
-        double isoY = isoCoordinates[1];
+        double[] gridCoordinates = toGrid(coordX, coordY);
+        double gridX = gridCoordinates[0];
+        double gridY = gridCoordinates[1];
 
-        debugCoord.setText("x: "+ isoX +"   y: "+ isoY +"     xGrid: "+coordX+"  yGrid: "+coordY);
+        debugCoord.setText("x: " + (int)gridX + "   y: " + (int)gridY + "     xGrid: " + coordX + "  yGrid: " + coordY);
     }
 }
