@@ -148,6 +148,12 @@ public class VGame {
             canvas.setTranslateX(canvas.getTranslateX() - fx * dx);
             canvas.setTranslateY(canvas.getTranslateY() - fy * dy);
 
+            canvasFront.setScaleX(scaleX);
+            canvasFront.setScaleY(scaleY);
+            canvasFront.setTranslateX(canvas.getTranslateX() - fx * dx);
+            canvasFront.setTranslateY(canvas.getTranslateY() - fy * dy);
+
+
             event.consume();
         });
 
@@ -173,6 +179,9 @@ public class VGame {
                 double deltaY = mouseNewY - mouseY;
                 canvas.setTranslateX(canvas.getTranslateX() + deltaX);
                 canvas.setTranslateY(canvas.getTranslateY() + deltaY);
+
+                canvasFront.setTranslateX(canvas.getTranslateX() + deltaX);
+                canvasFront.setTranslateY(canvas.getTranslateY() + deltaY);
 
                 mouseX = mouseNewX;
                 mouseY = mouseNewY;
