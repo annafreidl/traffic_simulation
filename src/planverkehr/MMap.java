@@ -1,13 +1,13 @@
 package planverkehr;
 //Klassen Name sehr schlecht gewählt, wird noch geändert
-public class Map {
+public class MMap {
     private String mapGen;
     private String gameMode;
     private int width;
     private int depth;
 
 
-    public Map(String mapGen, String gameMode, int width, int depth){
+    public MMap(String mapGen, String gameMode, int width, int depth){
         this.mapGen = mapGen;
         this.gameMode = gameMode;
         this.width = width;

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class GameConfig {
     JSONParser parser;
-    Map map;
+    MMap map;
     List<MVehicles> vehiclesList;
     HashMap<String, Buildings> buildingsList;
 

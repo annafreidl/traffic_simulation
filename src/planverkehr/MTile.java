@@ -1,6 +1,7 @@
 package planverkehr;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MTile {
     String id;
@@ -30,10 +31,10 @@ public class MTile {
         isoNorth = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest - Config.tHeightHalft);
         isoCenter = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest);
 
-
         punkt.add(xNew);
         punkt.add(yNew);
         felder.add(punkt);
+
     }
 
     public void changeIsSelected(boolean isSelected) {
@@ -84,7 +85,7 @@ public class MTile {
         return gridCoordinates;
     }
 
-    public void setConnectedBuilding(Buildings connectedBuilding) {
+    public void addConnectedBuilding(Buildings connectedBuilding) {
         this.connectedBuilding = connectedBuilding;
     }
 

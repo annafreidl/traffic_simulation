@@ -13,6 +13,8 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
 
+import java.util.Map;
+
 public class VGame {
     MGame gameModel;
     Stage window;
@@ -71,7 +73,8 @@ public class VGame {
             m1.setId(name);
             switch (b.getBuildMenu()) {
                 case "road":
-                    VRoadMenu menuRoadImage = new VRoadMenu();
+                    Map<String, MCoordinate> directionsMap = b.getPoints();
+                    VRoadMenu menuRoadImage = new VRoadMenu(directionsMap);
                     m1.setGraphic(menuRoadImage);
                     roads.getItems().add(m1);
                     break;

@@ -108,7 +108,7 @@ public class MGame {
         return selectedTileId;
     }
 
-    public void createKnotenpunkt(MTile feld, Buildings buildingToBeBuilt, EBuildType buildType) {
+    public void createKnotenpunkt(MTile feld, Buildings buildingToBeBuilt, EBuildType buildType, boolean newNode) {
         String idString = feld.getId();     // full file name
         int indexOfSeperator = idString.indexOf("-"); //this finds the first occurrence of "."
 //in string thus giving you the index of where it is in the string
@@ -128,7 +128,8 @@ public class MGame {
 
             switch (buildType) {
                 case road -> {
-                    RoadKnotenpunkt roadNode = new RoadKnotenpunkt(feld.getId());
+                    RoadKnotenpunkt roadNode = newNode ? new RoadKnotenpunkt(feld.getId()) :  roadGraph.get(feld.getId());
+
                     buildingToBeBuilt.getPoints().forEach((key, coord) -> {
                         String neighbourId;
                         switch (key) {
@@ -169,5 +170,6 @@ public class MGame {
             neighbour.addConnectedNode(roadNode);
         }
     }
+
 
 }

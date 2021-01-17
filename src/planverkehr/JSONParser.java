@@ -40,13 +40,13 @@ public class JSONParser {
     }
 
 
-    public Map getMapFromJSON() {
+    public MMap getMapFromJSON() {
 
         String mapGen;
         String gameMode;
         int width;
         int depth;
-        Map map;
+        MMap map;
 
         JSONObject mapObject = json.getJSONObject("map");
 
@@ -55,7 +55,7 @@ public class JSONParser {
         width = mapObject.getInt("width");
         depth = mapObject.getInt("depth");
 
-        map = new Map(mapGen, gameMode, width, depth);
+        map = new MMap(mapGen, gameMode, width, depth);
 
         System.out.println(mapGen);
         System.out.println(gameMode);
