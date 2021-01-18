@@ -1,5 +1,6 @@
 package planverkehr;
 
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
@@ -53,6 +54,41 @@ public class VGame {
 //        Menu rail = new BuildMenu(EBuildType.rail,"Rail");
 //        Menu roads = new BuildMenu(EBuildType.road, "Road");
 //        Menu nature = new BuildMenu( EBuildType.nature, "Nature");
+
+        Button pauseButton = new Button("Pause");
+        group.getChildren().add(pauseButton);
+        pauseButton.setLayoutX(0);
+        pauseButton.setLayoutY(0);
+        pauseButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+               System.out.print("Pause");
+            }
+        });
+
+        Button tickButton = new Button("Tick");
+        group.getChildren().add(tickButton);
+        pauseButton.setLayoutX(0);
+        pauseButton.setLayoutY(0);
+        pauseButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.print("Tick");
+            }
+        });
+
+        Button karteButton = new Button("Karte");
+        group.getChildren().add(karteButton);
+        karteButton.setLayoutX(0);
+        karteButton.setLayoutY(60);
+        karteButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("Karte");
+            }
+        });
+
+
 
         // Baumenü Beispiel
         Menu build = new Menu("Buildings");
