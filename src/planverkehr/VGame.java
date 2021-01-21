@@ -1,5 +1,7 @@
 package planverkehr;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.VPos;
@@ -13,6 +15,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
+import javafx.util.Duration;
 
 import java.util.Map;
 
@@ -34,6 +37,8 @@ public class VGame {
     static double tWidthHalf = tWidth / 2;
     static double worldWidth = Config.worldWidth;
     static double worldHeight = Config.worldHeight;
+    Timeline tl = new Timeline();
+
 
     public VGame(MGame gameModel, Stage stage) {
         this.gameModel = gameModel;
@@ -47,7 +52,11 @@ public class VGame {
         canvasFront.toFront();
 
 
+
         group.getChildren().addAll(canvas, canvasFront);
+
+
+
 
 //        Menu build = new BuildMenu(EBuildType.building, "Buildings");
 //        Menu airport = new BuildMenu(EBuildType.airport, "Airport");
@@ -58,35 +67,31 @@ public class VGame {
         Button pauseButton = new Button("Pause");
         group.getChildren().add(pauseButton);
         pauseButton.setLayoutX(0);
-        pauseButton.setLayoutY(0);
+        pauseButton.setLayoutY(60);
         pauseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
-            public void handle(ActionEvent event) {
-               System.out.print("Pause");
-            }
+            public void handle(ActionEvent event) {tl.pause();}
         });
 
-        Button tickButton = new Button("Tick");
-        group.getChildren().add(tickButton);
-        pauseButton.setLayoutX(0);
-        pauseButton.setLayoutY(0);
-        pauseButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                System.out.print("Tick");
-            }
-        });
 
         Button karteButton = new Button("Karte");
         group.getChildren().add(karteButton);
         karteButton.setLayoutX(0);
-        karteButton.setLayoutY(60);
+        karteButton.setLayoutY(90);
         karteButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
-            public void handle(ActionEvent event) {
-                System.out.println("Karte");
-            }
+            public void handle(ActionEvent event) {System.out.println("Karte");}
         });
+
+        Button tickButton = new Button("Tick");
+        group.getChildren().add(tickButton);
+        tickButton.setLayoutX(0);
+        tickButton.setLayoutY(30);
+        karteButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {runTick(); }
+        });
+
 
 
 
@@ -297,4 +302,23 @@ public class VGame {
 
         debugCoord.setText("x: " + (int)gridX + "   y: " + (int)gridY + "     xGrid: " + coordX + "  yGrid: " + coordY);
     }
+
+    public void runTick() {
+
+    }
+private static final Duration TICK_FREQUENCY = Duration.seconds(1);
+
+    final EventHandler<ActionEvent> handler = event -> runTick();
+
+    private void initTimeline() {
+        KeyFrame keyframe = new KeyFrame(TICK_FREQUENCY, handler);
+        tl.getKeyFrames().addAll(keyframe);
+        tl.setCycleCount(Timeline.INDEFINITE);
+
+
+        tl.play();
+    }
+
+
+
 }
