@@ -1,18 +1,18 @@
 package planverkehr;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class MTile {
     String id;
     boolean isSelected = false;
+    boolean shouldDraw = true;
     double  xNew, yNew, xIsoWest, yIsoWest;
     MCoordinate gridCoordinates;
     MCoordinate isoWest, isoSouth, isoNorth, isoEast, isoCenter;
     EBuildType state;
     Buildings connectedBuilding;
-    ArrayList felder = new ArrayList();
-    ArrayList punkt = new ArrayList();
+    ArrayList<ArrayList<Double>> felder = new ArrayList<>();
+    ArrayList<Double> punkt = new ArrayList<>();
 
     public MTile(MCoordinate gridCoordinates, MCoordinate isoCoordinates, String id) {
         this.id=id;
@@ -85,6 +85,29 @@ public class MTile {
         return gridCoordinates;
     }
 
+    public MCoordinate getIDCoordinates(){
+        int indexOfSeparator = this.id.indexOf("-");
+
+        String xString;
+        String yString;
+        if (indexOfSeparator != -1) {
+            xString = this.id.substring(0, indexOfSeparator);
+            yString = this.id.substring(indexOfSeparator + 2);
+
+            if(yString.length() == 0){
+                yString = this.id.substring(indexOfSeparator + 1);
+            }
+
+            int x = Integer.parseInt(xString);
+            int y = Integer.parseInt(yString);
+            return new MCoordinate(x, y);
+        } else {
+            System.out.println("ID-Fehler");
+            return new MCoordinate(-1, -1);
+        }
+
+    }
+
     public void addConnectedBuilding(Buildings connectedBuilding) {
         this.connectedBuilding = connectedBuilding;
     }
@@ -95,5 +118,13 @@ public class MTile {
 
     public Buildings getConnectedBuilding() {
         return connectedBuilding;
+    }
+
+    public boolean isFree() {
+        return this.state == EBuildType.free;
+    }
+
+    public void setShouldDraw(boolean shouldDraw) {
+        this.shouldDraw = shouldDraw;
     }
 }

@@ -1,8 +1,6 @@
 package planverkehr;
 
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 public class MKnotenpunkt {
@@ -11,11 +9,13 @@ public class MKnotenpunkt {
     String tileId;
     Set possibleConnections; //EnumSet
     HashMap<String, MKnotenpunkt> connectedKnotenpunkte; //HashMap
+    HashMap<String, MKnotenpunkt> groupedKnotenpunkte; //HashMap
     EBuildType type;
 
     public MKnotenpunkt(String tileId){
         this.tileId = tileId;
         this.connectedKnotenpunkte = new HashMap<>();
+        this.groupedKnotenpunkte = new HashMap<>();
        // this.possibleConnections = new EnumSet<>();
     }
 
@@ -38,6 +38,12 @@ public class MKnotenpunkt {
     public void addConnectedNode (MKnotenpunkt node) {
         connectedKnotenpunkte.put(node.getTileId(), node);
     }
+
+    public void addGroupedNode (MKnotenpunkt node) {
+        groupedKnotenpunkte.put(node.getTileId(), node);
+    }
+
+
 
     public String getTileId() {
         return tileId;

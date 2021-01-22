@@ -16,7 +16,9 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
+import java.util.List;
 import java.util.Map;
 
 public class VGame {
@@ -68,29 +70,20 @@ public class VGame {
         group.getChildren().add(pauseButton);
         pauseButton.setLayoutX(0);
         pauseButton.setLayoutY(60);
-        pauseButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {tl.pause();}
-        });
+        pauseButton.setOnAction(event -> tl.pause());
 
 
         Button karteButton = new Button("Karte");
         group.getChildren().add(karteButton);
         karteButton.setLayoutX(0);
         karteButton.setLayoutY(90);
-        karteButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {System.out.println("Karte");}
-        });
+        karteButton.setOnAction(event -> System.out.println("Karte"));
 
         Button tickButton = new Button("Tick");
         group.getChildren().add(tickButton);
         tickButton.setLayoutX(0);
         tickButton.setLayoutY(30);
-        karteButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {runTick(); }
-        });
+        karteButton.setOnAction(event -> runTick());
 
 
 
@@ -112,14 +105,19 @@ public class VGame {
             MenuItem m1 = new MenuItem();
             m1.setText(name);
             m1.setId(name);
+            Map<String, MCoordinate> directionsMap;
             switch (b.getBuildMenu()) {
                 case "road":
-                    Map<String, MCoordinate> directionsMap = b.getPoints();
+                    directionsMap = b.getPoints();
                     VRoadMenu menuRoadImage = new VRoadMenu(directionsMap);
                     m1.setGraphic(menuRoadImage);
                     roads.getItems().add(m1);
                     break;
                 case "rail":
+                    directionsMap = b.getPoints();
+                    List<Pair<String, String>> l = b.getRails();
+                    VRailMenu menuRailImage = new VRailMenu(directionsMap, l);
+                    m1.setGraphic(menuRailImage);
                     rail.getItems().add(m1);
                     break;
                 case "airport":
@@ -148,18 +146,13 @@ public class VGame {
 
         drawField();
 
-        scene = new
-
-            Scene(group, Config.windowSize, Config.windowSize);
+        scene = new Scene(group, Config.windowSize, Config.windowSize);
 
         window.setTitle("Planverkehr");
         window.setScene(scene);
         window.show();
 
-        scene.setOnScroll(event ->
-
-        {
-
+        scene.setOnScroll(event -> {
             if (event.getDeltaY() == 0)
                 return;
 
@@ -201,7 +194,6 @@ public class VGame {
         // Events für drag&drop
         // Position speichern an der die Maustaste gedrückt wurde
         scene.setOnMousePressed(event ->
-
         {
             event.consume();
             mouseX = event.getX();
@@ -210,23 +202,20 @@ public class VGame {
 
         // wenn Maustaste losgelassen wird, canvas verschieben
         // !! Koordinaten im Label stimmen dann nicht mehr!!
-        scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                event.consume();
-                double mouseNewX = event.getX();
-                double mouseNewY = event.getY();
-                double deltaX = mouseNewX - mouseX;
-                double deltaY = mouseNewY - mouseY;
-                canvas.setTranslateX(canvas.getTranslateX() + deltaX);
-                canvas.setTranslateY(canvas.getTranslateY() + deltaY);
+        scene.setOnMouseDragged(event -> {
+            event.consume();
+            double mouseNewX = event.getX();
+            double mouseNewY = event.getY();
+            double deltaX = mouseNewX - mouseX;
+            double deltaY = mouseNewY - mouseY;
+            canvas.setTranslateX(canvas.getTranslateX() + deltaX);
+            canvas.setTranslateY(canvas.getTranslateY() + deltaY);
 
-                canvasFront.setTranslateX(canvas.getTranslateX() + deltaX);
-                canvasFront.setTranslateY(canvas.getTranslateY() + deltaY);
+            canvasFront.setTranslateX(canvas.getTranslateX() + deltaX);
+            canvasFront.setTranslateY(canvas.getTranslateY() + deltaY);
 
-                mouseX = mouseNewX;
-                mouseY = mouseNewY;
-            }
+            mouseX = mouseNewX;
+            mouseY = mouseNewY;
         });
 
         // Label zur Anzeige der Koordinaten auf denen man sich befindet (funktioniert noch nicht bei Zoom)
@@ -246,7 +235,9 @@ public class VGame {
         gameModel.getTileHashMap().forEach((index, tile) -> {
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);
-            tempTileView.drawForeground(gcFront);
+            if(tile.shouldDraw) {
+                tempTileView.drawForeground(gcFront);
+            }
             canvas.toBack();
 
         });
@@ -263,8 +254,8 @@ public class VGame {
         double i = (x - y) * tWidthHalf;
         double j = (x + y) * tHeightHalf;
 
-        i += Config.Xoffset;
-        j += Config.Yoffset;
+        i += Config.XOffset;
+        j += Config.YOffset;
 
         return new double[]{i, j};
     }
@@ -292,9 +283,7 @@ public class VGame {
         return scene;
     }
 
-    public void showCoordinates(double x, double y) {
-        double coordX = x;
-        double coordY = y;
+    public void showCoordinates(double coordX, double coordY) {
 
         double[] gridCoordinates = toGrid(coordX, coordY);
         double gridX = gridCoordinates[0];

@@ -5,6 +5,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
+import planverkehr.transportation.VRail;
+import planverkehr.transportation.VRoad;
 
 
 public class VTile {
@@ -69,7 +71,10 @@ public class VTile {
 
             }
             case road -> {
-                new VRoad(tileModel.getConnectedBuilding(), tileModel.getIsoWest(), gc, tileModel.getIsoCenter());
+                new VRoad(tileModel.getConnectedBuilding(), gc, tileModel.getIsoWest());
+            }
+            case rail -> {
+                new VRail(tileModel.getConnectedBuilding(), gc, tileModel.getIsoWest());
             }
         }
     }

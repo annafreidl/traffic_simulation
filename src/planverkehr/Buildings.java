@@ -1,7 +1,9 @@
 package planverkehr;
 
 import javafx.util.Pair;
+import planverkehr.transportation.EDirections;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +23,14 @@ public class Buildings {
     private List<Pair<String, String>> rails;
     private List<Pair<String, String>> planes;
     private List<Object> productions;
+
+    private EnumSet<EDirections> possibleConnections;
+    private EnumSet<EDirections> directions;
+
+    //Verbindungen des Zweiten Gebäudeteils
+    private EnumSet<EDirections> possibleConnectionsSecondTile;
+    private EnumSet<EDirections> directionsSecondTile;
+    private EBuildType buildType;
     //todo: buildType hinzufügen
 
 
@@ -42,8 +52,70 @@ public class Buildings {
         this.special = special;
         this.maxPlanes = maxPlanes;
         this.productions = productions;
+        setBuildType();
+        setDirections();
+        setPossibleConnection();
     }
 
+    private void setBuildType() {
+
+    }
+
+    private void setDirections() {
+        this.directions = EnumSet.noneOf(EDirections.class);
+        this.directionsSecondTile = EnumSet.noneOf(EDirections.class);
+        if (this.getPoints().size() > 0) {
+            this.getPoints().forEach((key, coord) -> {
+                if (coord.isEdge()) {
+                    MCoordinate temp = new MCoordinate(coord.getX(), coord.getY());
+
+                    if (temp.isSecondTile()) {
+
+                        this.directionsSecondTile.add(temp.getRoadDirection());
+                    } else {
+                        this.directions.add(coord.getRoadDirection());
+                    }
+
+                }
+            });
+        }
+    }
+
+    //Optimiert für Rails und Roads, Airport und Stations müssen noch geprüft werden
+    private void setPossibleConnection() {
+        this.possibleConnections = EnumSet.noneOf(EDirections.class);
+        this.possibleConnectionsSecondTile = EnumSet.noneOf(EDirections.class);
+        if (this.getDirections().size() > 0) {
+            addConnection(false);
+        }
+        if (this.getDirectionsSecondTile().size() > 0) {
+            addConnection(true);
+        }
+    }
+
+
+    private void addConnection(boolean isSecondTile) {
+        EnumSet<EDirections> relevantConnectionSet = isSecondTile ? getPossibleConnectionsSecondTile() : getPossibleConnections();
+        EnumSet<EDirections> relevantDirectionSet = isSecondTile ? getDirectionsSecondTile() : getDirections();
+
+        relevantDirectionSet.forEach((coord) -> {
+            switch (coord) {
+                case nw -> relevantConnectionSet.add(EDirections.se);
+                case ne -> relevantConnectionSet.add(EDirections.sw);
+                case se -> relevantConnectionSet.add(EDirections.nw);
+                case sw -> relevantConnectionSet.add(EDirections.ne);
+            }
+        });
+    }
+
+
+    public EnumSet<EDirections> getPossibleConnections() {
+        return possibleConnections;
+    }
+
+    public EnumSet<EDirections> getPossibleConnectionsSecondTile() {
+        return possibleConnectionsSecondTile;
+    }
 
     public String getBuildingName() {
         return buildingName;
@@ -95,5 +167,13 @@ public class Buildings {
 
     public List<Object> getProductions() {
         return productions;
+    }
+
+    public EnumSet<EDirections> getDirections() {
+        return directions;
+    }
+
+    public EnumSet<EDirections> getDirectionsSecondTile() {
+        return directionsSecondTile;
     }
 }

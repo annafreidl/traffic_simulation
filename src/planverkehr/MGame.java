@@ -1,5 +1,9 @@
 package planverkehr;
 
+import planverkehr.transportation.EDirections;
+
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -16,6 +20,7 @@ public class MGame {
         this.gameConfig = config;
         createTileMap();
         roadGraph = new Graph();
+        railGraph = new Graph();
 
     }
 
@@ -42,8 +47,8 @@ public class MGame {
         double worldWidth = 10;
         double worldHeight = 10;
 
-        x -= Config.Xoffset;
-        y -= Config.Yoffset;
+        x -= Config.XOffset;
+        y -= Config.YOffset;
 
         double i = ((x / tWidthHalf) + (y / tHeightHalf)) / 2;
         double j = (((y / tHeightHalf) - (x / tWidthHalf)) / 2 + 1);
@@ -68,18 +73,18 @@ public class MGame {
         return gameConfig.getBuildingsList();
     }
 
-    public void setTileState(double x, double y) {
-        double gridCoordinates[] = toGrid(x, y);
+    public void selectTileByCoordinates(double x, double y) {
+        double[] gridCoordinates = toGrid(x, y);
         int gridX = (int) gridCoordinates[0];
         int gridY = (int) gridCoordinates[1] - Config.worldWidth + 1;
         String searchId = gridX + "-" + gridY;
-        System.out.println(searchId);
         Optional<MTile> tileOpt = findOptionalTileById(searchId);
-//        if(tileOpt.isEmpty()){
-//            System.out.println("is empty");
-//            resetSelectedTile();
-//        } else {
+
         tileOpt.ifPresent(tile -> {
+            System.out.println("id: " + tile.getId());
+            System.out.println("free? " + tile.isFree());
+            System.out.println("state? " + tile.state);
+            System.out.println();
             if (selectedTileId.equals(searchId)) {
                 resetSelectedTile();
             } else if (!selectedTileId.equals("null")) {
@@ -108,68 +113,139 @@ public class MGame {
         return selectedTileId;
     }
 
-    public void createKnotenpunkt(MTile feld, Buildings buildingToBeBuilt, EBuildType buildType, boolean newNode) {
-        String idString = feld.getId();     // full file name
-        int indexOfSeperator = idString.indexOf("-"); //this finds the first occurrence of "."
-//in string thus giving you the index of where it is in the string
+    public void createKnotenpunkt(MTile feld, Buildings buildingToBeBuilt, EBuildType buildType, boolean newNode, boolean isSecondTile) {
+        MCoordinate feldIDCoordinates = feld.getIDCoordinates();     // full file name
 
-// Now iend can be -1, if lets say the string had no "." at all in it i.e. no "." is found.
-//So check and account for it.
+        int x = (int) feldIDCoordinates.getX();
+        int y = (int) feldIDCoordinates.getY();
 
-        String xString;
-        String yString;
-        if (indexOfSeperator != -1) {
-            xString = idString.substring(0, indexOfSeperator);
-            yString = idString.substring(indexOfSeperator + 2, idString.length());
-
-            int x = Integer.parseInt(xString);
-            int y = Integer.parseInt(yString);
-
-
+        if (y > 0) {
+            //Fügt Knotenpunkt je nach BuildType hinzu
             switch (buildType) {
                 case road -> {
-                    RoadKnotenpunkt roadNode = newNode ? new RoadKnotenpunkt(feld.getId()) :  roadGraph.get(feld.getId());
-
-                    buildingToBeBuilt.getPoints().forEach((key, coord) -> {
-                        String neighbourId;
-                        switch (key) {
-                            case "nw":
-                                roadNode.addPossibleConnection(ERoadDircetion.se);
-                                neighbourId = (x - 1) + "--" + y;
-                                checkForRoadNeighboursAndConnect(neighbourId, roadNode, ERoadDircetion.nw);
-                                break;
-                            case "ne":
-                                roadNode.addPossibleConnection(ERoadDircetion.sw);
-                                neighbourId = (x) + "--" + (y + 1);
-                                checkForRoadNeighboursAndConnect(neighbourId, roadNode, ERoadDircetion.ne);
-                                break;
-                            case "se":
-                                roadNode.addPossibleConnection(ERoadDircetion.nw);
-                                neighbourId = (x + 1) + "--" + y;
-                                checkForRoadNeighboursAndConnect(neighbourId, roadNode, ERoadDircetion.se);
-                                break;
-                            case "sw":
-                                roadNode.addPossibleConnection(ERoadDircetion.ne);
-                                neighbourId = (x) + "--" + (-1);
-                                checkForRoadNeighboursAndConnect(neighbourId, roadNode, ERoadDircetion.sw);
-                                break;
-                            case "c":
-                                break;
-                        }
-                    });
+                    RoadKnotenpunkt roadNode = newNode ? new RoadKnotenpunkt(feld.getId()) : roadGraph.get(feld.getId());
+                    buildSingleTileTransportation(roadNode, buildingToBeBuilt, x, y, EBuildType.road, isSecondTile);
                     roadGraph.put(feld.getId(), roadNode);
                 }
+                case rail -> {
+                    RoadKnotenpunkt railNode = newNode ? new RoadKnotenpunkt(feld.getId()) : railGraph.get(feld.getId());
+                    buildSingleTileTransportation(railNode, buildingToBeBuilt, x, y, EBuildType.rail, isSecondTile);
+                    railGraph.put(feld.getId(), railNode);
+                }
             }
+        } else {
+            System.out.println("keine Koordinate erstellt");
         }
     }
 
-    private void checkForRoadNeighboursAndConnect(String neighbourId, RoadKnotenpunkt roadNode, ERoadDircetion dircetion) {
-        RoadKnotenpunkt neighbour = roadGraph.get(neighbourId);
-        if (neighbour != null && roadGraph.canConnectToNeighbour(neighbour, dircetion)) {
+    //bereitet vor, um nachbarKnotenpunkte zu suchen
+    private void buildSingleTileTransportation(RoadKnotenpunkt roadNode, Buildings buildingToBeBuilt, int x, int y, EBuildType transportationType, boolean isSecondTile) {
+        Graph relevantGraph = null;
+        switch (transportationType) {
+            case rail -> relevantGraph = railGraph;
+            case road -> relevantGraph = roadGraph;
+            default -> System.out.println("Unknown Transportation Kind");
+        }
+
+        Graph finalRelevantGraph = relevantGraph;
+
+        EnumSet<EDirections> relevantConnections = isSecondTile ? buildingToBeBuilt.getPossibleConnectionsSecondTile() :  buildingToBeBuilt.getPossibleConnections();
+        EnumSet<EDirections> relevantDirections = isSecondTile ? buildingToBeBuilt.getDirectionsSecondTile() :  buildingToBeBuilt.getDirections();
+
+
+        relevantConnections.forEach(roadNode::addPossibleConnection);
+
+
+        //prüft in welche Richtungen Verbindungen abzweigen und prüft gezielt Nachbarn
+        relevantDirections.forEach((value) -> {
+            String neighbourId = "";
+            switch (value) {
+                case ne -> neighbourId = (x) + "--" + (y + 1);
+                case nw -> neighbourId = (x - 1) + "--" + y;
+                case se -> neighbourId = (x + 1) + "--" + y;
+                case sw -> neighbourId = (x) + "--" + (-1);
+            }
+
+            if (neighbourId.length() > 1 && finalRelevantGraph != null) {
+                checkForRoadNeighboursAndConnect(neighbourId, roadNode, value, finalRelevantGraph);
+            }
+
+        });
+
+    }
+
+    private void checkForRoadNeighboursAndConnect(String neighbourId, RoadKnotenpunkt roadNode, EDirections direction, Graph relevantGraph) {
+        RoadKnotenpunkt neighbour = relevantGraph.get(neighbourId);
+        if (neighbour != null && relevantGraph.canConnectToNeighbour(neighbour, direction)) {
             roadNode.addConnectedNode(neighbour);
             neighbour.addConnectedNode(roadNode);
         }
     }
 
+    //Depth = Y
+    public boolean hasSpaceForBuilding(int newBuildingWidth, int newBuildingDepth) {
+        MTile selectedTile = getSelectedTile();
+        MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
+        int xCoord = (int) selectedCoordinates.getX();
+        int yCoord = (int) selectedCoordinates.getY();
+        boolean hasSpace = true;
+
+        //geht durch alle relevanten Tiles. selected Tile ist link unten vom Gebäude
+        for (int x = 0; x < newBuildingWidth && hasSpace; x++) {
+            for (int y = 0; y < newBuildingDepth && hasSpace; y++) {
+                if (x + y > 0) {
+                    int tileToCheckX = xCoord + x;
+                    int tileToCheckY = yCoord + y;
+                    String checkId = tileToCheckX + "--" + tileToCheckY;
+                    hasSpace = getTileById(checkId).isFree();
+                }
+            }
+        }
+        return hasSpace;
+    }
+
+    private MTile getSelectedTile() {
+        return getTileById(selectedTileId);
+    }
+
+    public Optional<ArrayList<MTile>> getTilesToBeGrouped(int newBuildingWidth, int newBuildingDepth) {
+        MTile selectedTile = getSelectedTile();
+        MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
+        int xCoord = (int) selectedCoordinates.getX();
+        int yCoord = (int) selectedCoordinates.getY();
+        ArrayList<MTile> tilesToBeGrouped = new ArrayList<>();
+
+        boolean hasSpace = true;
+
+        //geht durch alle relevanten Tiles. selected Tile ist link unten vom Gebäude
+        for (int x = 0; x < newBuildingWidth && hasSpace; x++) {
+            for (int y = 0; y < newBuildingDepth && hasSpace; y++) {
+                if (x + y > 0) {
+                    int tileToCheckX = xCoord + x;
+                    int tileToCheckY = yCoord + y;
+                    String checkId = tileToCheckX + "--" + tileToCheckY;
+                    MTile tileToCheck = getTileById(checkId);
+                    if (tileToCheck != null) {
+                        hasSpace = tileToCheck.isFree();
+                        tilesToBeGrouped.add(tileToCheck);
+                    }
+                }
+            }
+        }
+
+        if (!hasSpace) {
+            tilesToBeGrouped = null;
+        }
+
+        return Optional.ofNullable(tilesToBeGrouped);
+    }
+
+    public void connectTiles(MTile tile1, MTile tile2) {
+       RoadKnotenpunkt roadNode1 = railGraph.get(tile1.getId());
+       RoadKnotenpunkt roadNode2 = railGraph.get(tile2.getId());
+
+       roadNode1.addConnectedNode(roadNode2);
+       roadNode2.addConnectedNode(roadNode1);
+    }
 
 }

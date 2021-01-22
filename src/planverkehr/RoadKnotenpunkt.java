@@ -1,18 +1,19 @@
 package planverkehr;
 
+import planverkehr.transportation.EDirections;
+
 import java.util.EnumSet;
 
 public class RoadKnotenpunkt extends MKnotenpunkt {
-  // Set<EDircetion> possibleConnections; //EnumSet
-//    Set<RoadKnotenpunkt> //HashSet
+
 
     public RoadKnotenpunkt(String tileId) {
         super(tileId);
-        this.possibleConnections = EnumSet.noneOf(ERoadDircetion.class);
+        this.possibleConnections = EnumSet.noneOf(EDirections.class);
 
     }
 
-    public void addPossibleConnection(ERoadDircetion connection) {
+    public void addPossibleConnection(EDirections connection) {
        possibleConnections.add(connection);
     }
 }

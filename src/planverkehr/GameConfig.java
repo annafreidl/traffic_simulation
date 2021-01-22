@@ -19,6 +19,7 @@ public class GameConfig {
         map = parser.getMapFromJSON();
         vehiclesList= parser.getVehiclesFromJSON();
         buildingsList = parser.getBuildingsFromJSON();
+
     }
 
     public HashMap<String, Buildings> getBuildingsList() {

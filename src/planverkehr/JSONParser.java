@@ -303,8 +303,6 @@ public class JSONParser {
 
                 while (pointKeys.hasNext()) {
                     String pointId = pointKeys.next();
-                    // singlePoint = pointsObject.getJSONObject(pointId);
-
                     singlePoint = pointsObject.getJSONArray(pointId);
                     double xCoord = singlePoint.getDouble(0);
                     double yCoord = singlePoint.getDouble(1);
