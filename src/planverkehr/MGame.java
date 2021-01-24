@@ -1,11 +1,9 @@
 package planverkehr;
 
+import javafx.util.Pair;
 import planverkehr.transportation.EDirections;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 
 public class MGame {
     HashMap<String, MTile> tileHashMap;
@@ -14,6 +12,8 @@ public class MGame {
     Graph roadGraph;
     Graph railGraph;
     String selectedTileId = "null";
+    HashMap<String, Buildings> possibleBuildings;
+    ArrayList <Buildings> constructedBuildings;
 
 
     public MGame(GameConfig config) {
@@ -21,6 +21,9 @@ public class MGame {
         createTileMap();
         roadGraph = new Graph();
         railGraph = new Graph();
+
+        possibleBuildings = gameConfig.getBuildingsList();
+        constructedBuildings = new ArrayList<>(); //factories von Anfang an muessen rein
 
     }
 
@@ -247,5 +250,25 @@ public class MGame {
        roadNode1.addConnectedNode(roadNode2);
        roadNode2.addConnectedNode(roadNode1);
     }
+
+    public Buildings copyBuilding (Buildings building){
+
+        String buildingName = building.getBuildingName();
+        String buildMenu = building.getBuildMenu();
+        int width = building.getWidth();
+        int depth = building.getDepth();
+        java.util.Map<String, MCoordinate> points = building.getPoints();
+        java.util.List<Pair<String, String>> roads = building.getRoads();
+        List<Pair<String, String>> rails = building.getRails();
+        List<Pair<String, String>> planes = building.getPlanes();
+        int dz = building.getDz();
+        String special = building.getSpecial();
+        int maxPlanes = building.getMaxPlanes();
+        java.util.Map<String, Object> combines = building.getCombines();
+        List<Object> productions = building.getProductions();
+
+        return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, productions);
+    }
+
 
 }

@@ -12,12 +12,21 @@ import planverkehr.transportation.VRoad;
 public class VTile {
     MTile tileModel;
 
+    Image image;
+    double imageScale;
+    double imageHeight;
+    double imageWidth;
+
 
     public VTile(MTile tileModel) {
         this.tileModel = tileModel;
+        this.image = null;
+        imageScale = 0;
+        imageHeight = 0;
+        imageWidth = 0;
     }
 
-    public void drawBackground(GraphicsContext gc){
+    public void drawBackground(GraphicsContext gc) {
         gc.beginPath();
 
         //West Point x, y
@@ -47,20 +56,71 @@ public class VTile {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
         gc.fillText(
-            (int)tileModel.getGridCoordinates().getX() + "-" + ((int)tileModel.getGridCoordinates().getY() - Config.worldWidth + 1),
+            (int) tileModel.getGridCoordinates().getX() + "-" + ((int) tileModel.getGridCoordinates().getY() - Config.worldWidth + 1),
             tileModel.getXIsoWest(),
             tileModel.getYIsoWest() - 2
         );
     }
 
-    public void drawForeground(GraphicsContext gc){
+    public void drawForeground(GraphicsContext gc) {
 
         double xIso = tileModel.getXIsoWest();
         double yIso = tileModel.getYIsoWest();
         double widthHalf = Config.tWidth / 2;
         double heightHalf = Config.tWidth / 4;
 
+        String building = tileModel.getBuilding();
+
+        //pics must have same scale!
+        //alle gleiche kann in default bleiben
+        //wenn Buildings NICHT gleiche Scales haben, dann verschiedene cases und anpassen
+
         switch (tileModel.getState()) {
+
+            case building -> {
+                image = new Image("Images/" + building + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
+
+                imageScale = widthHalf / image.getWidth();
+                imageHeight = image.getHeight() * imageScale;
+                imageWidth = image.getWidth() * imageScale;
+
+                gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
+            }
+
+            case road -> {
+                new VRoad(tileModel.getConnectedBuilding(), gc, tileModel.getIsoWest());
+            }
+
+            case rail -> {
+                new VRail(tileModel.getConnectedBuilding(), gc, tileModel.getIsoWest());
+            }
+
+            case airport -> {
+                image = new Image("Images/" + building + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
+
+                imageScale = widthHalf / image.getWidth();
+                imageHeight = image.getHeight() * imageScale;
+                imageWidth = image.getWidth() * imageScale;
+
+                gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
+            }
+
+            case nature -> {
+                image = new Image("Images/" + building + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
+
+                imageScale = widthHalf / image.getWidth();
+                imageHeight = image.getHeight() * imageScale;
+                imageWidth = image.getWidth() * imageScale;
+
+                gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
+            }
+
+           /* default -> {
+                gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
+            }*/
+
+
+       /* switch (tileModel.getState()) {
             case building -> {
                 Image image = new Image("Images/building.png");
 
@@ -76,6 +136,7 @@ public class VTile {
             case rail -> {
                 new VRail(tileModel.getConnectedBuilding(), gc, tileModel.getIsoWest());
             }
+        }*/
         }
     }
 }

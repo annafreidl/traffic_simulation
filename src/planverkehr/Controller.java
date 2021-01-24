@@ -46,6 +46,12 @@ public class Controller {
                                 //Setzte den Status des Feldes auf den des neuen Gebäudes
                                 //todo: prüfen, ob Gebäude überhaupt gebaut werden darf
                                 feld.setState(buildingToBeBuiltType);
+                                feld.setBuilding(i.getText()); //damit wissen wir welches Menu Ding genau wir angeklickt haben, e.g. chemical plant
+
+                                Buildings newBuilding = gameModel.copyBuilding(buildingToBeBuilt); //new Building thats copied
+                                feld.setBuildingOnTile(newBuilding);
+
+                                gameModel.constructedBuildings.add(newBuilding);
 
                                 //verbinde Feld mit Gebäude
                                 feld.addConnectedBuilding(buildingToBeBuilt);

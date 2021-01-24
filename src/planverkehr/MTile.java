@@ -10,7 +10,9 @@ public class MTile {
     MCoordinate gridCoordinates;
     MCoordinate isoWest, isoSouth, isoNorth, isoEast, isoCenter;
     EBuildType state;
+    String building;
     Buildings connectedBuilding;
+    Buildings buildingOnTile;
     ArrayList<ArrayList<Double>> felder = new ArrayList<>();
     ArrayList<Double> punkt = new ArrayList<>();
 
@@ -25,6 +27,8 @@ public class MTile {
         yNew = gridCoordinates.getY();
 
         state = EBuildType.free;
+        building = "";
+        buildingOnTile = null;
 
         isoSouth = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest + Config.tHeightHalft);
         isoEast = new MCoordinate(xIsoWest + Config.tWidth, yIsoWest);
@@ -119,6 +123,19 @@ public class MTile {
     public Buildings getConnectedBuilding() {
         return connectedBuilding;
     }
+
+
+    public String getBuilding(){
+        return building;
+    }
+
+    public void setBuilding(String building){
+        this.building = building;
+    }
+
+    public void setBuildingOnTile(Buildings buildingOnTile){ this.buildingOnTile = buildingOnTile; }
+
+    public Buildings getBuildingOnTile(){return buildingOnTile;}
 
     public boolean isFree() {
         return this.state == EBuildType.free;
