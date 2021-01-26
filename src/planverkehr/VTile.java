@@ -78,7 +78,8 @@ public class VTile {
         switch (tileModel.getState()) {
 
             case building -> {
-                image = new Image("Images/" + building + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
+                String buildingName = building.replace(" ","-");
+                image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
                 imageScale = widthHalf / image.getWidth();
                 imageHeight = image.getHeight() * imageScale;
@@ -96,7 +97,9 @@ public class VTile {
             }
 
             case airport -> {
-                image = new Image("Images/" + building + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
+                String buildingName = building.replace(" ","-");
+                System.out.println(buildingName);
+                image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
                 imageScale = widthHalf / image.getWidth();
                 imageHeight = image.getHeight() * imageScale;
@@ -106,7 +109,8 @@ public class VTile {
             }
 
             case nature -> {
-                image = new Image("Images/" + building + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
+                String buildingName = building.replace(" ","-");
+                image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
                 imageScale = widthHalf / image.getWidth();
                 imageHeight = image.getHeight() * imageScale;

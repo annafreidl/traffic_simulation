@@ -4,5 +4,6 @@ public enum EDirections {
     ne,
     se,
     sw,
-    nw
+    nw,
+    empty
 }

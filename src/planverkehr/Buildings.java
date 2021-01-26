@@ -4,6 +4,7 @@ import javafx.util.Pair;
 import planverkehr.transportation.EDirections;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,8 @@ public class Buildings {
     private int dz;
     //manche Datentypen sind wahrscheinlich nicht optimal, falls jemand eine bessere idee hat, bitte melden
     private java.util.Map<String, MCoordinate> points;
-    private java.util.Map<String, Object> combines;
+    private java.util.Map<String, String> combinesStrings;
+    private java.util.Map<String, Buildings> combinesBuildings;
     private List<Pair<String, String>> roads;
     private List<Pair<String, String>> rails;
     private List<Pair<String, String>> planes;
@@ -37,13 +39,13 @@ public class Buildings {
     public Buildings(String buildingName, String buildMenu, int width, int depth, java.util.Map<String, MCoordinate> points,
                      List<Pair<String, String>> roads, List<Pair<String, String>> rails,
                      List<Pair<String, String>> planes, int dz, String special, int maxPlanes,
-                     java.util.Map<String, Object> combines, List<Object> productions) {
+                     java.util.Map<String, String> combines, List<Object> productions) {
 
         this.buildingName = buildingName;
         this.buildMenu = buildMenu;
         this.width = width;
         this.depth = depth;
-        this.combines = combines;
+        this.combinesStrings = combines;
         this.points = points;
         this.roads = roads;
         this.rails = rails;
@@ -52,6 +54,7 @@ public class Buildings {
         this.special = special;
         this.maxPlanes = maxPlanes;
         this.productions = productions;
+        combinesBuildings = new HashMap<>();
         setBuildType();
         setDirections();
         setPossibleConnection();
@@ -67,15 +70,10 @@ public class Buildings {
         if (this.getPoints().size() > 0) {
             this.getPoints().forEach((key, coord) -> {
                 if (coord.isEdge()) {
-                    MCoordinate temp = new MCoordinate(coord.getX(), coord.getY());
-
-                    if (temp.isSecondTile()) {
-
-                        this.directionsSecondTile.add(temp.getRoadDirection());
-                    } else {
-                        this.directions.add(coord.getRoadDirection());
+                    if(coord.isSecondTile()){
+                        directionsSecondTile.add(coord.getRoadDirection());
                     }
-
+                    this.directions.add(coord.getRoadDirection());
                 }
             });
         }
@@ -92,7 +90,6 @@ public class Buildings {
             addConnection(true);
         }
     }
-
 
     private void addConnection(boolean isSecondTile) {
         EnumSet<EDirections> relevantConnectionSet = isSecondTile ? getPossibleConnectionsSecondTile() : getPossibleConnections();
@@ -149,8 +146,8 @@ public class Buildings {
         return points;
     }
 
-    public Map<String, Object> getCombines() {
-        return combines;
+    public Map<String, String> getCombinesStrings() {
+        return combinesStrings;
     }
 
     public List<Pair<String, String>> getRoads() {
@@ -176,4 +173,14 @@ public class Buildings {
     public EnumSet<EDirections> getDirectionsSecondTile() {
         return directionsSecondTile;
     }
+
+    public void addCombinedBuilding(String b1, Buildings b2){
+        combinesBuildings.put(b1, b2);
+    }
+
+    public Map<String, Buildings> getCombinesBuildings() {
+        return combinesBuildings;
+    }
+
+
 }

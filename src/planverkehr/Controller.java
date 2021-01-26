@@ -1,10 +1,14 @@
 package planverkehr;
 
-import javafx.scene.control.Alert;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
+import planverkehr.graph.Graph;
+import planverkehr.transportation.MTransportConnection;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 public class Controller {
     MGame gameModel;
@@ -14,11 +18,23 @@ public class Controller {
         this.gameView = gameView;
         this.gameModel = gameModel;
 
+        //  initTimeline();
+
         //select tiles
         gameView.getScene().addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
             gameModel.selectTileByCoordinates(e.getX(), e.getY());
             gameView.drawField();
         });
+
+        gameView.getVehicleButton().setOnAction(e -> {
+            gameModel.createVehicle();
+        });
+
+        gameView.getTickButton().setOnAction(e -> {
+            gameModel.moveVehicles();
+            gameView.drawField();
+        });
+
 
         //show coordinates
         gameView.getScene().addEventFilter(MouseEvent.MOUSE_MOVED, e -> gameView.showCoordinates(e.getX(), e.getY()));
@@ -32,96 +48,56 @@ public class Controller {
                     //Wenn ein Feld ausgewählt ist, dann setzte dann füge den ausgewählten Gebäudetyp zum Feld hinzu
                     if (!selectedTileId.equals("null")) {
                         MTile feld = gameModel.getTileById(selectedTileId);
-                        EBuildType feldBuildingType = feld.getState();
                         EBuildType buildingToBeBuiltType = EBuildType.valueOf(m.getId());
                         String newBuildingId = i.getId();
                         Buildings buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                        int newBuildingDepth = buildingToBeBuilt.getDepth();
-                        int newBuildingWidth = buildingToBeBuilt.getWidth();
-
-                        if (newBuildingDepth == newBuildingWidth && newBuildingWidth == 1) {
-
-                            if (feldBuildingType == EBuildType.free) {
-
-                                //Setzte den Status des Feldes auf den des neuen Gebäudes
-                                //todo: prüfen, ob Gebäude überhaupt gebaut werden darf
-                                feld.setState(buildingToBeBuiltType);
-                                feld.setBuilding(i.getText()); //damit wissen wir welches Menu Ding genau wir angeklickt haben, e.g. chemical plant
-
-                                Buildings newBuilding = gameModel.copyBuilding(buildingToBeBuilt); //new Building thats copied
-                                feld.setBuildingOnTile(newBuilding);
-
-                                gameModel.constructedBuildings.add(newBuilding);
-
-                                //verbinde Feld mit Gebäude
-                                feld.addConnectedBuilding(buildingToBeBuilt);
-
-                                //füge Knotenpunkt zum Graf hinzu
-                                gameModel.createKnotenpunkt(feld, buildingToBeBuilt, buildingToBeBuiltType, true, false);
-                                gameModel.roadGraph.print();
-                                gameView.drawField();
+                        boolean hasSpaceForBuilding = gameModel.hasSpaceForBuilding(buildingToBeBuilt.getWidth(),  buildingToBeBuilt.getDepth());
+                        ArrayList<MTile> relevantTiles = gameModel.getTilesToBeGrouped(buildingToBeBuilt.getWidth(),  buildingToBeBuilt.getDepth());
 
 
+
+                        if (buildingToBeBuiltType.equals(EBuildType.rail) || buildingToBeBuiltType.equals(EBuildType.road)) {
+
+                            Graph relevantGraph;
+
+                            switch (buildingToBeBuiltType) {
+                                case rail -> relevantGraph = gameModel.railGraph;
+                                case road -> relevantGraph = gameModel.roadGraph;
+                                default -> relevantGraph = gameModel.gameGraph;
                             }
-                            //prüft ob Gebäude erweitert werden kann (z.B. Straße durch weitere Straße)
-                            else if (buildingToBeBuilt.getCombines().containsKey(feld.getConnectedBuilding().getBuildingName())) {
-                                String currentBuildingId = feld.getConnectedBuilding().getBuildingName();
-                                String expandedBuildingId = buildingToBeBuilt.getCombines().get(currentBuildingId).toString();
-                                buildingToBeBuilt = gameModel.getBuildingById(expandedBuildingId);
-                                feld.addConnectedBuilding(buildingToBeBuilt);
-                                gameModel.createKnotenpunkt(feld, buildingToBeBuilt, buildingToBeBuiltType, false, false);
-                                gameModel.roadGraph.print();
-                                gameView.drawField();
-                            } else {
-                                Alert alert = new Alert(Alert.AlertType.ERROR);
-                                alert.setTitle("Bau-Error");
-                                alert.setHeaderText("Bau-Error");
-                                alert.setContentText("Das Gebäude kann auf dem ausgewähltem Feld nicht gebaut werden");
+                            new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph);
 
-                                alert.showAndWait();
-                            }
-                        } else if (newBuildingDepth < 3 && newBuildingWidth < 3) {
-                            //tiefe = Y
-                            Buildings finalBuildingToBeBuilt = buildingToBeBuilt;
-                            Optional<ArrayList<MTile>> tileOptional = gameModel.getTilesToBeGrouped(newBuildingWidth, newBuildingDepth);
-                            tileOptional.ifPresentOrElse(tilesArray -> {
-                                feld.setState(buildingToBeBuiltType);
-                                feld.addConnectedBuilding(finalBuildingToBeBuilt);
-                                gameModel.createKnotenpunkt(feld, finalBuildingToBeBuilt, buildingToBeBuiltType, true, false);
-                                for (MTile tile : tilesArray) {
-                                    tile.setState(buildingToBeBuiltType);
-                                    tile.setShouldDraw(false);
-                                    tile.addConnectedBuilding(finalBuildingToBeBuilt);
-                                    gameModel.createKnotenpunkt(tile, finalBuildingToBeBuilt, buildingToBeBuiltType, true, true);
-                                    gameModel.connectTiles(tile, feld);
-                                }
 
-                                //füge Knotenpunkt zum Graf hinzu
-                                // gameModel.createKnotenpunkt(feld, finalBuildingToBeBuilt, buildingToBeBuiltType, true);
-                                gameModel.railGraph.print();
-                                gameView.drawField();
-                            }, () -> {
-                                Alert alert = new Alert(Alert.AlertType.ERROR);
-                                alert.setTitle("Bau-Error");
-                                alert.setHeaderText("Bau-Error");
-                                alert.setContentText("Für das ausgewählte Gebäude ist hier kein Platz");
+                        } else if(buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals( EBuildType.airport) || buildingToBeBuiltType.equals( EBuildType.nature)){
+                            feld.setState(buildingToBeBuiltType);
+                            feld.setBuilding(i.getText()); //damit wissen wir welches Menu Ding genau wir angeklickt haben, e.g. chemical plant
 
-                                alert.showAndWait();
-                            });
+                            Buildings newBuilding = gameModel.copyBuilding(buildingToBeBuilt); //new Building that's copied
+                            feld.setBuildingOnTile(newBuilding);
+                            feld.addConnectedBuilding(newBuilding);
 
-                        } else {
-                            Alert alert = new Alert(Alert.AlertType.ERROR);
-                            alert.setTitle("Bau-Error");
-                            alert.setHeaderText("Bau-Error");
-                            alert.setContentText("Es können zur Zeit keine Gebäude gebaut werden, die größer sind als ein Feld");
-
-                            alert.showAndWait();
                         }
+                        gameView.drawField();
                     }
                 });
             });
         });
+
     }
+
+    private void initTimeline() {
+        KeyFrame keyframe = new KeyFrame(Config.tickFrequency, handler);
+        gameView.getTl().getKeyFrames().addAll(keyframe);
+        gameView.getTl().setCycleCount(Timeline.INDEFINITE);
+
+
+        gameView.getTl().play();
+    }
+
+    final EventHandler<ActionEvent> handler = event -> {
+        gameModel.moveVehicles();
+        gameView.drawField();
+    };
 
 
 }

@@ -2,13 +2,13 @@ package planverkehr;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class GameConfig {
     JSONParser parser;
     MMap map;
-    List<MVehicles> vehiclesList;
+    ArrayList<MVehicles> vehiclesList;
     HashMap<String, Buildings> buildingsList;
 
 
@@ -20,9 +20,15 @@ public class GameConfig {
         vehiclesList= parser.getVehiclesFromJSON();
         buildingsList = parser.getBuildingsFromJSON();
 
+
     }
+
 
     public HashMap<String, Buildings> getBuildingsList() {
         return buildingsList;
+    }
+
+    public ArrayList<MVehicles> getVehiclesList() {
+        return vehiclesList;
     }
 }

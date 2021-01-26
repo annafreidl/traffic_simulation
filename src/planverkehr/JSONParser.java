@@ -7,10 +7,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class JSONParser {
 
@@ -66,9 +63,9 @@ public class JSONParser {
     }
 
 
-    public List<MVehicles> getVehiclesFromJSON() {
+    public ArrayList<MVehicles> getVehiclesFromJSON() {
 
-        List<MVehicles> MVehiclesList = new ArrayList<>();
+        ArrayList<MVehicles> MVehiclesList = new ArrayList<>();
         String kind;
         String graphic;
         HashMap<String, Integer> cargo;
@@ -223,7 +220,7 @@ public class JSONParser {
         int dz;
         String special;
         int maxPlanes;
-        java.util.Map<String, Object> combines;
+        java.util.Map<String, String> combines;
         List<Object> productions;
 
 
@@ -315,12 +312,16 @@ public class JSONParser {
                 points = new HashMap<>();
             }
 
-
+            combines = new HashMap<>();
             if (singleBuilding.has("combines")) {
                 combinesObject = singleBuilding.getJSONObject("combines");
-                combines = combinesObject.toMap();
-            } else {
-                combines = new HashMap<>();
+                Set<String> combinesKeys = combinesObject.keySet();
+                JSONObject finalCombinesObject = combinesObject;
+                Map<String, String> finalCombines = combines;
+                combinesKeys.forEach(key -> {
+                    finalCombines.put(key, finalCombinesObject.get(key).toString());
+                });
+
             }
 
 
@@ -346,7 +347,7 @@ public class JSONParser {
             }
 
 
-            buildingsList.put(keyValue, new Buildings(keyValue, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, productions));
+            buildingsList.put(keyValue, new Buildings(keyValue.toString(), buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, productions));
 //            System.out.println(keyValue);
 //            System.out.println("buildmenu " + buildMenu);
 //            System.out.println("width " + width);

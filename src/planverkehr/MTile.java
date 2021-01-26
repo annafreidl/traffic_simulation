@@ -1,12 +1,19 @@
 package planverkehr;
 
+import planverkehr.graph.MKnotenpunkt;
+import planverkehr.transportation.EDirections;
+
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Optional;
 
 public class MTile {
     String id;
     boolean isSelected = false;
     boolean shouldDraw = true;
-    double  xNew, yNew, xIsoWest, yIsoWest;
+    double xNew, yNew, xIsoWest, yIsoWest;
+    ArrayList<MKnotenpunkt> knotenpunkteArray;
+    EnumSet<EDirections> possibleConnections = EnumSet.noneOf(EDirections.class);
     MCoordinate gridCoordinates;
     MCoordinate isoWest, isoSouth, isoNorth, isoEast, isoCenter;
     EBuildType state;
@@ -17,7 +24,7 @@ public class MTile {
     ArrayList<Double> punkt = new ArrayList<>();
 
     public MTile(MCoordinate gridCoordinates, MCoordinate isoCoordinates, String id) {
-        this.id=id;
+        this.id = id;
         isoWest = isoCoordinates;
         xIsoWest = isoWest.getX();
         yIsoWest = isoWest.getY();
@@ -34,6 +41,8 @@ public class MTile {
         isoEast = new MCoordinate(xIsoWest + Config.tWidth, yIsoWest);
         isoNorth = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest - Config.tHeightHalft);
         isoCenter = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest);
+
+        knotenpunkteArray = new ArrayList<>();
 
         punkt.add(xNew);
         punkt.add(yNew);
@@ -89,7 +98,7 @@ public class MTile {
         return gridCoordinates;
     }
 
-    public MCoordinate getIDCoordinates(){
+    public MCoordinate getIDCoordinates() {
         int indexOfSeparator = this.id.indexOf("-");
 
         String xString;
@@ -98,7 +107,7 @@ public class MTile {
             xString = this.id.substring(0, indexOfSeparator);
             yString = this.id.substring(indexOfSeparator + 2);
 
-            if(yString.length() == 0){
+            if (yString.length() == 0) {
                 yString = this.id.substring(indexOfSeparator + 1);
             }
 
@@ -143,5 +152,75 @@ public class MTile {
 
     public void setShouldDraw(boolean shouldDraw) {
         this.shouldDraw = shouldDraw;
+    }
+
+    public void addKnotenpunkt(MKnotenpunkt mKnotenpunkt) {
+        knotenpunkteArray.add(mKnotenpunkt);
+        if (mKnotenpunkt.isEdge()) {
+            possibleConnections.add(getOppositeDirection(mKnotenpunkt.getDirection()));
+        }
+    }
+
+    public EnumSet<EDirections> getPossibleConnections() {
+        return possibleConnections;
+    }
+
+    public ArrayList<MKnotenpunkt> getKnotenpunkteArray() {
+        return knotenpunkteArray;
+    }
+
+    private EDirections getOppositeDirection(EDirections directions) {
+        EDirections oppositeDirection;
+        switch (directions) {
+            case nw -> oppositeDirection = EDirections.se;
+            case ne -> oppositeDirection = EDirections.sw;
+            case se -> oppositeDirection = EDirections.nw;
+            default -> oppositeDirection = EDirections.ne;
+        }
+        return oppositeDirection;
+
+    }
+
+//    public Optional<MKnotenpunkt> getConnectableNode(EDirections directions) {
+//        MKnotenpunkt knotenpunkt = null;
+//        boolean searching = true;
+//        if (possibleConnections.contains(directions)) {
+//            System.out.println("directions available");
+//            for (int i = 0; i < knotenpunkteArray.size() && searching; i++) {
+//                if (knotenpunkteArray.get(i).getDirection().equals(getOppositeDirection(directions))) {
+//                    knotenpunkt = knotenpunkteArray.get(i);
+//                    System.out.println("tiles connecteable");
+//                    searching = false;
+//                }
+//            }
+//        }
+//
+//        return Optional.ofNullable(knotenpunkt);
+//
+//    }
+
+    public Optional<MKnotenpunkt> getNodeByCoordinatesString(String coordsString) {
+        MKnotenpunkt knotenpunkt = null;
+       boolean searching = true;
+        for (int i = 0; i < knotenpunkteArray.size() && searching; i++) {
+            if (knotenpunkteArray.get(i).getGridCoordinate().toStringCoordinates().equals(coordsString)) {
+                knotenpunkt = knotenpunkteArray.get(i);
+                searching = false;
+            }
+        }
+        return Optional.ofNullable(knotenpunkt);
+    }
+
+
+    public Optional<MKnotenpunkt> getNodeByName(String name) {
+        MKnotenpunkt knotenpunkt = null;
+        boolean searching = true;
+        for (int i = 0; i < knotenpunkteArray.size() && searching; i++) {
+            if (knotenpunkteArray.get(i).getName().equals(name)) {
+                knotenpunkt = knotenpunkteArray.get(i);
+                searching = false;
+            }
+        }
+        return Optional.ofNullable(knotenpunkt);
     }
 }

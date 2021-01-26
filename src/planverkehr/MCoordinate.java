@@ -21,17 +21,14 @@ public class MCoordinate {
     }
 
     public boolean isEdge() {
-        System.out.println("nachkommastellen: " + this.getX() % 1);
         return (this.getX() % 1 == 0 || this.getY() % 1 == 0);
     }
 
-    public boolean isSecondTile(){
+    public boolean isSecondTile() {
         boolean isSecondTile = false;
-        if(this.getX() > 1){
-            this.setX(this.getX() - 1);
+        if (this.getX() > 1) {
             isSecondTile = true;
-        } else if (this.getY() > 1){
-            this.setY(this.getY() - 1);
+        } else if (this.getY() > 1) {
             isSecondTile = true;
         }
         return isSecondTile;
@@ -54,22 +51,6 @@ public class MCoordinate {
         return new MCoordinate(xGrid, yGrid);
     }
 
-    //Berechnet die Koordinaten auf Basis der Building Daten. Muss auf Basis des Centers durchgeführt werden
-    // todo: Berechnung noch fehlerhaft
-    public MCoordinate getAbsoluteCoordinates(MCoordinate relativeCoordinates) {
-
-        System.out.println((relativeCoordinates.getY() - 0.5));
-        System.out.println((relativeCoordinates.getY() - 0.5) * Config.tWidthHalft);
-
-        System.out.println((relativeCoordinates.getX() - 0.5));
-        System.out.println((relativeCoordinates.getX() - 0.5) * Config.tHeightHalft);
-
-        double xAbs = this.x + ((relativeCoordinates.getY() - 0.5) * Config.tWidthHalft);
-        double yAbs = this.y + ((relativeCoordinates.getX() - 0.5) * Config.tHeightHalft);
-
-        return new MCoordinate(xAbs, yAbs);
-    }
-
     public double getX() {
         return x;
     }
@@ -86,6 +67,10 @@ public class MCoordinate {
         this.y = y;
     }
 
+    public String toStringCoordinates(){
+        return x + "-" + y;
+    }
+
     @Override
     public String toString() {
         return "MCoordinates{" +
@@ -95,16 +80,37 @@ public class MCoordinate {
     }
 
 
-    public EDirections getRoadDirection(){
+    public EDirections getRoadDirection() {
+
         EDirections directions;
-        if(this.getX() == 0 && this.getY() == 0.5){
-            directions = EDirections.nw;
-        } else if (this.getX() == 1 && this.getY() == 0.5){
-            directions = EDirections.se;
-        } else if (this.getX() == 0.5 && this.getY() == 0){
-            directions = EDirections.sw;
+
+        if (this.isEdge()) {
+            MCoordinate coord = new MCoordinate(0, 0);
+            if (x > 1) {
+                coord.setX(x - 1);
+            } else {
+                coord.setX(x);
+            }
+            if (y > 1) {
+                coord.setY(y - 1);
+            } else {
+                coord.setY(y);
+            }
+
+            if (coord.getX() == 0 && coord.getY() == 0.5) {
+                directions = EDirections.nw;
+            } else if (coord.getX() == 1 && coord.getY() == 0.5) {
+                directions = EDirections.se;
+            } else if (coord.getX() == 0.5 && coord.getY() == 0) {
+                directions = EDirections.sw;
+            } else if (coord.getX() == 0.5 && coord.getY() == 1) {
+                directions = EDirections.ne;
+            } else {
+                directions = EDirections.empty;
+            }
         } else {
-            directions = EDirections.ne;
+
+            directions = EDirections.empty;
         }
         return directions;
     }

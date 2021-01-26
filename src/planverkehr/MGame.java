@@ -1,7 +1,8 @@
 package planverkehr;
 
 import javafx.util.Pair;
-import planverkehr.transportation.EDirections;
+import planverkehr.graph.Graph;
+import planverkehr.graph.MKnotenpunkt;
 
 import java.util.*;
 
@@ -13,7 +14,10 @@ public class MGame {
     Graph railGraph;
     String selectedTileId = "null";
     HashMap<String, Buildings> possibleBuildings;
-    ArrayList <Buildings> constructedBuildings;
+    ArrayList<Buildings> constructedBuildings;
+    ArrayList<MVehicles> visibleVehiclesArrayList;
+    ArrayList<MVehicles> vehicleTypeList;
+    int vehicleId = 0;
 
 
     public MGame(GameConfig config) {
@@ -21,10 +25,24 @@ public class MGame {
         createTileMap();
         roadGraph = new Graph();
         railGraph = new Graph();
+        visibleVehiclesArrayList = new ArrayList<>();
+        vehicleTypeList = gameConfig.getVehiclesList();
 
         possibleBuildings = gameConfig.getBuildingsList();
+        linkBuildings();
         constructedBuildings = new ArrayList<>(); //factories von Anfang an muessen rein
 
+    }
+
+    private void linkBuildings() {
+        possibleBuildings.forEach((s, building) -> {
+
+            Map<String, String> combinesMap = building.getCombinesStrings();
+            combinesMap.forEach((s1, s2) -> {
+                Buildings buildingAfterCombination = possibleBuildings.get(s2);
+                building.addCombinedBuilding(s1, buildingAfterCombination);
+            });
+        });
     }
 
     public void createTileMap() {
@@ -47,8 +65,6 @@ public class MGame {
         double tHeight = tWidth / 2;
         double tHeightHalf = tHeight / 2;
         double tWidthHalf = tWidth / 2;
-        double worldWidth = 10;
-        double worldHeight = 10;
 
         x -= Config.XOffset;
         y -= Config.YOffset;
@@ -86,7 +102,8 @@ public class MGame {
         tileOpt.ifPresent(tile -> {
             System.out.println("id: " + tile.getId());
             System.out.println("free? " + tile.isFree());
-            System.out.println("state? " + tile.state);
+            System.out.println("state: " + tile.state);
+            System.out.println("connections: " + tile.possibleConnections);
             System.out.println();
             if (selectedTileId.equals(searchId)) {
                 resetSelectedTile();
@@ -116,102 +133,16 @@ public class MGame {
         return selectedTileId;
     }
 
-    public void createKnotenpunkt(MTile feld, Buildings buildingToBeBuilt, EBuildType buildType, boolean newNode, boolean isSecondTile) {
-        MCoordinate feldIDCoordinates = feld.getIDCoordinates();     // full file name
-
-        int x = (int) feldIDCoordinates.getX();
-        int y = (int) feldIDCoordinates.getY();
-
-        if (y > 0) {
-            //Fügt Knotenpunkt je nach BuildType hinzu
-            switch (buildType) {
-                case road -> {
-                    RoadKnotenpunkt roadNode = newNode ? new RoadKnotenpunkt(feld.getId()) : roadGraph.get(feld.getId());
-                    buildSingleTileTransportation(roadNode, buildingToBeBuilt, x, y, EBuildType.road, isSecondTile);
-                    roadGraph.put(feld.getId(), roadNode);
-                }
-                case rail -> {
-                    RoadKnotenpunkt railNode = newNode ? new RoadKnotenpunkt(feld.getId()) : railGraph.get(feld.getId());
-                    buildSingleTileTransportation(railNode, buildingToBeBuilt, x, y, EBuildType.rail, isSecondTile);
-                    railGraph.put(feld.getId(), railNode);
-                }
-            }
-        } else {
-            System.out.println("keine Koordinate erstellt");
-        }
-    }
-
-    //bereitet vor, um nachbarKnotenpunkte zu suchen
-    private void buildSingleTileTransportation(RoadKnotenpunkt roadNode, Buildings buildingToBeBuilt, int x, int y, EBuildType transportationType, boolean isSecondTile) {
-        Graph relevantGraph = null;
-        switch (transportationType) {
-            case rail -> relevantGraph = railGraph;
-            case road -> relevantGraph = roadGraph;
-            default -> System.out.println("Unknown Transportation Kind");
-        }
-
-        Graph finalRelevantGraph = relevantGraph;
-
-        EnumSet<EDirections> relevantConnections = isSecondTile ? buildingToBeBuilt.getPossibleConnectionsSecondTile() :  buildingToBeBuilt.getPossibleConnections();
-        EnumSet<EDirections> relevantDirections = isSecondTile ? buildingToBeBuilt.getDirectionsSecondTile() :  buildingToBeBuilt.getDirections();
-
-
-        relevantConnections.forEach(roadNode::addPossibleConnection);
-
-
-        //prüft in welche Richtungen Verbindungen abzweigen und prüft gezielt Nachbarn
-        relevantDirections.forEach((value) -> {
-            String neighbourId = "";
-            switch (value) {
-                case ne -> neighbourId = (x) + "--" + (y + 1);
-                case nw -> neighbourId = (x - 1) + "--" + y;
-                case se -> neighbourId = (x + 1) + "--" + y;
-                case sw -> neighbourId = (x) + "--" + (-1);
-            }
-
-            if (neighbourId.length() > 1 && finalRelevantGraph != null) {
-                checkForRoadNeighboursAndConnect(neighbourId, roadNode, value, finalRelevantGraph);
-            }
-
-        });
-
-    }
-
-    private void checkForRoadNeighboursAndConnect(String neighbourId, RoadKnotenpunkt roadNode, EDirections direction, Graph relevantGraph) {
-        RoadKnotenpunkt neighbour = relevantGraph.get(neighbourId);
-        if (neighbour != null && relevantGraph.canConnectToNeighbour(neighbour, direction)) {
-            roadNode.addConnectedNode(neighbour);
-            neighbour.addConnectedNode(roadNode);
-        }
-    }
-
     //Depth = Y
     public boolean hasSpaceForBuilding(int newBuildingWidth, int newBuildingDepth) {
-        MTile selectedTile = getSelectedTile();
-        MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
-        int xCoord = (int) selectedCoordinates.getX();
-        int yCoord = (int) selectedCoordinates.getY();
-        boolean hasSpace = true;
-
-        //geht durch alle relevanten Tiles. selected Tile ist link unten vom Gebäude
-        for (int x = 0; x < newBuildingWidth && hasSpace; x++) {
-            for (int y = 0; y < newBuildingDepth && hasSpace; y++) {
-                if (x + y > 0) {
-                    int tileToCheckX = xCoord + x;
-                    int tileToCheckY = yCoord + y;
-                    String checkId = tileToCheckX + "--" + tileToCheckY;
-                    hasSpace = getTileById(checkId).isFree();
-                }
-            }
-        }
-        return hasSpace;
+        return getTilesToBeGrouped(newBuildingWidth, newBuildingDepth) != null;
     }
 
     private MTile getSelectedTile() {
         return getTileById(selectedTileId);
     }
 
-    public Optional<ArrayList<MTile>> getTilesToBeGrouped(int newBuildingWidth, int newBuildingDepth) {
+    public ArrayList<MTile> getTilesToBeGrouped(int newBuildingWidth, int newBuildingDepth) {
         MTile selectedTile = getSelectedTile();
         MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
         int xCoord = (int) selectedCoordinates.getX();
@@ -232,6 +163,10 @@ public class MGame {
                         hasSpace = tileToCheck.isFree();
                         tilesToBeGrouped.add(tileToCheck);
                     }
+                } else if (selectedTile.isFree()) {
+                    tilesToBeGrouped.add(selectedTile);
+                } else {
+                    hasSpace = false;
                 }
             }
         }
@@ -240,18 +175,41 @@ public class MGame {
             tilesToBeGrouped = null;
         }
 
-        return Optional.ofNullable(tilesToBeGrouped);
+        return tilesToBeGrouped;
     }
 
-    public void connectTiles(MTile tile1, MTile tile2) {
-       RoadKnotenpunkt roadNode1 = railGraph.get(tile1.getId());
-       RoadKnotenpunkt roadNode2 = railGraph.get(tile2.getId());
+    public void createVehicle() {
+        MTile selectedTile = getSelectedTile();
+        if (selectedTile.state == EBuildType.road) {
+            MVehicles temp = vehicleTypeList.get(0);
 
-       roadNode1.addConnectedNode(roadNode2);
-       roadNode2.addConnectedNode(roadNode1);
+            //todo: vehicle clone Methode
+            MVehicles truck = new MVehicles(temp.getName(), temp.getKind(), temp.getGraphic(), temp.getCargo(), temp.getSpeed());
+
+            Optional<MKnotenpunkt> knotenpunktOptional = getSelectedTile().getNodeByName("c");
+
+            knotenpunktOptional.ifPresentOrElse((truck::setCurrentKnotenpunkt), (() -> {
+                truck.setCurrentKnotenpunkt(getSelectedTile().getKnotenpunkteArray().get(0));
+                System.out.println("center not found");
+            }));
+            truck.setId(vehicleId);
+            vehicleId++;
+            visibleVehiclesArrayList.add(truck);
+
+        }
     }
 
-    public Buildings copyBuilding (Buildings building){
+    public void moveVehicles() {
+        System.out.println(visibleVehiclesArrayList);
+        visibleVehiclesArrayList.forEach((vehicle) -> {
+            MKnotenpunkt nextKnotenpunkt = vehicle.getNextKnotenpunkt();
+
+            vehicle.setCurrentKnotenpunkt(nextKnotenpunkt);
+        });
+    }
+
+    //todo: dynamisch klonen, damit es auch noch funktioniert wenn Attribute hinzugefügt werden (bsp combinesBuildings)
+    public Buildings copyBuilding(Buildings building) {
 
         String buildingName = building.getBuildingName();
         String buildMenu = building.getBuildMenu();
@@ -264,11 +222,10 @@ public class MGame {
         int dz = building.getDz();
         String special = building.getSpecial();
         int maxPlanes = building.getMaxPlanes();
-        java.util.Map<String, Object> combines = building.getCombines();
+        java.util.Map<String, String> combinesStrings = building.getCombinesStrings();
+
         List<Object> productions = building.getProductions();
 
-        return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, productions);
+        return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combinesStrings, productions);
     }
-
-
 }

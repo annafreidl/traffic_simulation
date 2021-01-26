@@ -31,6 +31,7 @@ public class VGame {
     JSONParser parser;
     MenuBar menuBar;
     Label debugCoord;
+    Button vehicleButton, tickButton;
 
     public double mouseX, mouseY;
     static double tWidth = Config.tWidth;
@@ -52,19 +53,7 @@ public class VGame {
         gc = canvas.getGraphicsContext2D();
         gcFront = canvasFront.getGraphicsContext2D();
         canvasFront.toFront();
-
-
-
         group.getChildren().addAll(canvas, canvasFront);
-
-
-
-
-//        Menu build = new BuildMenu(EBuildType.building, "Buildings");
-//        Menu airport = new BuildMenu(EBuildType.airport, "Airport");
-//        Menu rail = new BuildMenu(EBuildType.rail,"Rail");
-//        Menu roads = new BuildMenu(EBuildType.road, "Road");
-//        Menu nature = new BuildMenu( EBuildType.nature, "Nature");
 
         Button pauseButton = new Button("Pause");
         group.getChildren().add(pauseButton);
@@ -79,13 +68,16 @@ public class VGame {
         karteButton.setLayoutY(90);
         karteButton.setOnAction(event -> System.out.println("Karte"));
 
-        Button tickButton = new Button("Tick");
+        tickButton = new Button("Tick");
         group.getChildren().add(tickButton);
         tickButton.setLayoutX(0);
         tickButton.setLayoutY(30);
-        karteButton.setOnAction(event -> runTick());
 
 
+        vehicleButton = new Button("Road Vehicle");
+        group.getChildren().add(vehicleButton);
+        vehicleButton.setLayoutX(0);
+        vehicleButton.setLayoutY(120);
 
 
         // Baumenü Beispiel
@@ -241,6 +233,10 @@ public class VGame {
             canvas.toBack();
 
         });
+
+        gameModel.visibleVehiclesArrayList.forEach((vehicle) -> {
+            new VVehicle(vehicle, gcFront);
+        });
     }
 
     public void clearField() {
@@ -295,19 +291,16 @@ public class VGame {
     public void runTick() {
 
     }
-private static final Duration TICK_FREQUENCY = Duration.seconds(1);
 
-    final EventHandler<ActionEvent> handler = event -> runTick();
-
-    private void initTimeline() {
-        KeyFrame keyframe = new KeyFrame(TICK_FREQUENCY, handler);
-        tl.getKeyFrames().addAll(keyframe);
-        tl.setCycleCount(Timeline.INDEFINITE);
-
-
-        tl.play();
+    public Button getVehicleButton() {
+        return vehicleButton;
     }
 
+    public Button getTickButton() {
+        return tickButton;
+    }
 
-
+    public Timeline getTl() {
+        return tl;
+    }
 }
