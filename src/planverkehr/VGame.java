@@ -2,6 +2,8 @@ package planverkehr;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.VPos;
@@ -18,6 +20,7 @@ import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -78,6 +81,30 @@ public class VGame {
         group.getChildren().add(vehicleButton);
         vehicleButton.setLayoutX(0);
         vehicleButton.setLayoutY(120);
+
+        Slider slider = new Slider();
+        group.getChildren().add(slider);
+        slider.setMin(0.1);
+        slider.setMax(2);
+        slider.setValue(1);
+        slider.setLayoutX(0);
+        slider.setLayoutY(650);
+
+        Label output = new Label("Ausgabe");
+        group.getChildren().add(output);
+
+
+        output.textProperty().bind(slider.valueProperty().asString());
+        output.setLayoutX(0);
+        output.setLayoutY(670);
+
+        slider.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+
+                Duration tickFrequency = Duration.seconds((double) t1);
+            }
+        });
 
 
         // Baumenü Beispiel
@@ -303,4 +330,6 @@ public class VGame {
     public Timeline getTl() {
         return tl;
     }
+
+
 }
