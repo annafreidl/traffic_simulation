@@ -21,8 +21,12 @@ import javafx.util.Duration;
 import javafx.util.Pair;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static planverkehr.Controller.*;
 
 public class VGame {
     MGame gameModel;
@@ -36,14 +40,26 @@ public class VGame {
     Label debugCoord;
     Button vehicleButton, tickButton;
 
+    MouseMode mouseMode;
+
+    public void setMouseMode(MouseMode mouseMode) {
+        this.mouseMode = mouseMode;
+    }
+
+    public MouseMode getMouseMode() {
+        return mouseMode;
+    }
+
     public double mouseX, mouseY;
     static double tWidth = Config.tWidth;
-    static double tHeight = tWidth / 2;
-    static double tHeightHalf = tHeight / 2;
-    static double tWidthHalf = tWidth / 2;
+    static double tHeight = Config.tHeight;
+    static double tHeightHalf = Config.tHeightHalft;
+    static double tWidthHalf = Config.tWidthHalft;
     static double worldWidth = Config.worldWidth;
     static double worldHeight = Config.worldHeight;
     Timeline tl = new Timeline();
+
+    static double increase = Config.increase;
 
 
     public VGame(MGame gameModel, Stage stage) {
@@ -64,23 +80,27 @@ public class VGame {
         pauseButton.setLayoutY(60);
         pauseButton.setOnAction(event -> tl.pause());
 
+        Button upButton = new Button("up");
+        group.getChildren().add(upButton);
+        upButton.setLayoutX(0);
+        upButton.setLayoutY(90);
+        upButton.setOnAction(event -> runUp());
 
-        Button karteButton = new Button("Karte");
-        group.getChildren().add(karteButton);
-        karteButton.setLayoutX(0);
-        karteButton.setLayoutY(90);
-        karteButton.setOnAction(event -> System.out.println("Karte"));
+        Button downButton = new Button("down");
+        group.getChildren().add(downButton);
+        downButton.setLayoutX(0);
+        downButton.setLayoutY(120);
+        downButton.setOnAction(event -> runDown());
 
         tickButton = new Button("Tick");
         group.getChildren().add(tickButton);
         tickButton.setLayoutX(0);
         tickButton.setLayoutY(30);
 
-
         vehicleButton = new Button("Road Vehicle");
         group.getChildren().add(vehicleButton);
         vehicleButton.setLayoutX(0);
-        vehicleButton.setLayoutY(120);
+        vehicleButton.setLayoutY(150);
 
         Slider slider = new Slider();
         group.getChildren().add(slider);
@@ -105,7 +125,6 @@ public class VGame {
                 Duration tickFrequency = Duration.seconds((double) t1);
             }
         });
-
 
         // Baumenü Beispiel
         Menu build = new Menu("Buildings");
@@ -247,11 +266,102 @@ public class VGame {
 
     }
 
+    //verändert die Höhe der Tiles und setzt den y-Wert nach oben
+    public void setHigh(MTile t, boolean richtung) {
+
+        double factor = 1.0;
+        if(!richtung){
+            factor *= -1;
+        }
+
+        if (t.differenz == 0 && t.höhen.toString().equals("[0, 0, 0, 0]")) {
+
+            System.out.println("Diff geklicktes" + t.differenz);
+
+            for (MTile g : gameModel.getTileArray()) {
+
+                ArrayList<MCoordinate> gemeinsamepunkte = intersection(t.getPunkte(), g.getPunkte());
+                // ArrayList<MCoordinate> restlichepunkte = entferne(g.getPunkte(), gemeinsamepunkte);
+
+                MTile feld = gameModel.getTileById(g.getId());
+
+                if (!gemeinsamepunkte.isEmpty() && g != t) {
+
+                    for (MCoordinate gemeinsamerpunkt : gemeinsamepunkte) {
+                        for (MCoordinate currentpoint : feld.getPunkte()) {
+                            if (currentpoint.istGleich(gemeinsamerpunkt)) {
+                                int indexi = feld.getPunkte().indexOf(currentpoint);
+
+                                feld.punkte.get(indexi).y = feld.punkte.get(indexi).y - factor *increase;
+                                if (indexi == 3) {
+                                    feld.yIsoWest = feld.yIsoWest - factor * increase;
+                                }
+
+                                feld.höhen.set(indexi, 1);
+
+//                                if(feld.höhen.toString().equals("[1, 1, 1, 1]")){
+//                                    for(int ind = 0; ind<4; ind++){
+//                                        feld.höhen.set(ind, 0);
+//                                    }
+//                                    feld.level += 1;
+//                                }
+                            }
+                        }
+                    }
+                    feld.differenz = (Integer) Collections.max(feld.höhen) - (Integer) Collections.min(feld.höhen);
+                    System.out.println(feld.getId().toString() + feld.höhen.toString() + " Differenz: " + feld.differenz
+                        + ", Level: " + feld.level );
+                }
+            }
+            t.yIsoWest = t.yIsoWest - factor* increase;
+            for (MCoordinate c : t.punkte) {
+                c.y = c.y - factor* increase;
+            }
+            for(int ind = 0; ind<4; ind++){
+                t.höhen.set(ind, 1);
+            }
+            t.differenz = (Integer) Collections.max(t.höhen) - (Integer) Collections.min(t.höhen);
+
+        }
+        else System.out.println("Feld ist zu schief");
+    }
+
+
+    //Differenz
+    public ArrayList<MCoordinate> entferne(ArrayList<MCoordinate> list1, ArrayList<MCoordinate> list2){
+        ArrayList<MCoordinate> übrige = new ArrayList<>();
+
+        for(MCoordinate t: list1){
+            for(MCoordinate p: list2){
+                if(!(t.istGleich(p))){
+                    übrige.add(t);
+                }
+            }
+        }
+        return übrige;
+    }
+
+    //Schnittmenge zweier ArrayLists
+    public ArrayList<MCoordinate> intersection(ArrayList<MCoordinate> list1, ArrayList<MCoordinate> list2) {
+        ArrayList<MCoordinate> list = new ArrayList<>();
+
+        for (MCoordinate t : list1) {
+            for(MCoordinate p : list2){
+                if(t.istGleich(p)){
+                    list.add(t);
+                }
+            }
+        }
+        return list;
+    }
+
+
+
     public void drawField() {
         clearField();
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gameModel.getTileHashMap().forEach((index, tile) -> {
+        gameModel.getTileArray().forEach((tile) -> {
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);
             if(tile.shouldDraw) {
@@ -330,6 +440,28 @@ public class VGame {
     public Timeline getTl() {
         return tl;
     }
+
+
+    public void runUp(){
+        setMouseMode(MouseMode.MOVE_UP);
+    }
+
+    public void runDown(){
+        setMouseMode(MouseMode.MOVE_DOWN);
+    }
+
+    private static final Duration TICK_FREQUENCY = Duration.seconds(1);
+
+    final EventHandler<ActionEvent> handler = event -> runTick();
+
+    private void initTimeline() {
+        KeyFrame keyframe = new KeyFrame(TICK_FREQUENCY, handler);
+        tl.getKeyFrames().addAll(keyframe);
+        tl.setCycleCount(Timeline.INDEFINITE);
+
+        tl.play();
+    }
+
 
 
 }

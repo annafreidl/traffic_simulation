@@ -1,13 +1,16 @@
 package planverkehr;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
 import javafx.util.Pair;
 import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
-
 import java.util.*;
 
 public class MGame {
     HashMap<String, MTile> tileHashMap;
+    ArrayList<MTile> tileArray;
     GameConfig gameConfig;
     Graph gameGraph;
     Graph roadGraph;
@@ -47,6 +50,7 @@ public class MGame {
 
     public void createTileMap() {
         tileHashMap = new HashMap<>();
+        tileArray = new ArrayList<MTile>();
         for (int x = 0; x < Config.worldWidth; x++) {
             for (int y = 0; y < Config.worldHeight; y++) {
                 MCoordinate gridCoordinates = new MCoordinate(x, y);
@@ -54,6 +58,7 @@ public class MGame {
                 String id = x + "-" + (y - Config.worldWidth + 1);
                 MTile tempTileModel = new MTile(gridCoordinates, isoCoordinates, id);
 
+                tileArray.add(tempTileModel);
                 tileHashMap.put(id, tempTileModel);
 
             }
@@ -65,6 +70,8 @@ public class MGame {
         double tHeight = tWidth / 2;
         double tHeightHalf = tHeight / 2;
         double tWidthHalf = tWidth / 2;
+        double worldWidth = 10;
+        double worldHeight = 10;
 
         x -= Config.XOffset;
         y -= Config.YOffset;
@@ -73,6 +80,10 @@ public class MGame {
         double j = (((y / tHeightHalf) - (x / tWidthHalf)) / 2 + 1);
 
         return new double[]{i, j};
+    }
+
+    public ArrayList<MTile> getTileArray() {
+        return tileArray;
     }
 
     public HashMap<String, MTile> getTileHashMap() {

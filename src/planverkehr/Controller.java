@@ -1,14 +1,24 @@
 package planverkehr;
 
+import javafx.scene.control.Alert;
+import javafx.scene.input.MouseButton;
+import javafx.geometry.Point2D;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import planverkehr.graph.Graph;
 import planverkehr.transportation.MTransportConnection;
 
 import java.util.ArrayList;
+import java.util.Optional;
+
+
+enum MouseMode {
+    MOVE_UP, MOVE_DOWN
+}
 
 public class Controller {
     MGame gameModel;
@@ -22,9 +32,59 @@ public class Controller {
 
         //select tiles
         gameView.getScene().addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
-            gameModel.selectTileByCoordinates(e.getX(), e.getY());
-            gameView.drawField();
+                double x = e.getX();
+                double y = e.getY();
+
+                // Umwandlung von Canvas-Panel-Koordinate
+                // auf Canvas-Bild-Koordinate
+                // (Beachten von Scaling, Translation)
+                Point2D canvasPoint = this.gameView.canvas.sceneToLocal(x, y);
+                x = canvasPoint.getX();
+                y = canvasPoint.getY();
+
+                if (e.getButton() == MouseButton.SECONDARY) {
+
+                    switch(gameView.getMouseMode()){
+
+                        case MOVE_UP: {
+                            double gridCoordinates[] = gameModel.toGrid(x, y);
+                            int gridX = (int) gridCoordinates[0];
+                            int gridY = (int) gridCoordinates[1] - Config.worldWidth + 1;
+
+                            String searchId = gridX + "-" + gridY;
+                            System.out.println(searchId);
+                            MTile feld = gameModel.getTileById(searchId);
+                            feld.yNew = feld.yNew - Config.tHeightHalft;
+                            gameView.setHigh(feld, true);
+                            gameModel.selectTileByCoordinates(x, y);
+
+                            System.out.println(feld.höhen.toString());
+                    }
+
+                        case MOVE_DOWN: {
+                            double gridCoordinates[] = gameModel.toGrid(x, y);
+                            int gridX = (int) gridCoordinates[0];
+                            int gridY = (int) gridCoordinates[1] - Config.worldWidth + 1;
+
+                            String searchId = gridX + "-" + gridY;
+                            System.out.println(searchId);
+                            MTile feld = gameModel.getTileById(searchId);
+                            feld.yNew = feld.yNew - Config.tHeightHalft;
+                            gameView.setHigh(feld, false);
+                            gameModel.selectTileByCoordinates(x, y);
+
+                            System.out.println(feld.höhen.toString());
+                        }
+                    }
+                    gameView.drawField();
+                }
+                if(e.getButton() == MouseButton.PRIMARY){
+                    //select tiles
+                    gameModel.selectTileByCoordinates(x, y);
+                    gameView.drawField();
+                }
         });
+
 
         gameView.getVehicleButton().setOnAction(e -> {
             gameModel.createVehicle();

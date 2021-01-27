@@ -4,6 +4,9 @@ import planverkehr.graph.MKnotenpunkt;
 import planverkehr.transportation.EDirections;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -11,7 +14,8 @@ public class MTile {
     String id;
     boolean isSelected = false;
     boolean shouldDraw = true;
-    double xNew, yNew, xIsoWest, yIsoWest;
+    double  xNew, yNew, xIsoWest, yIsoWest, differenz;
+    int höhenorth, höheeast, höhesouth, höhewest, level;
     ArrayList<MKnotenpunkt> knotenpunkteArray;
     EnumSet<EDirections> possibleConnections = EnumSet.noneOf(EDirections.class);
     MCoordinate gridCoordinates;
@@ -19,12 +23,16 @@ public class MTile {
     EBuildType state;
     String building;
     Buildings connectedBuilding;
+    ArrayList höhen = new ArrayList(4);
     Buildings buildingOnTile;
-    ArrayList<ArrayList<Double>> felder = new ArrayList<>();
-    ArrayList<Double> punkt = new ArrayList<>();
+    ArrayList<MCoordinate> punkte = new ArrayList();
 
     public MTile(MCoordinate gridCoordinates, MCoordinate isoCoordinates, String id) {
         this.id = id;
+        this.id = id;
+        höhen.addAll(Arrays.asList(höhenorth, höheeast, höhesouth, höhewest));
+        differenz = (Integer) Collections.max(höhen) - (Integer) Collections.min(höhen);
+        level = 0;
         isoWest = isoCoordinates;
         xIsoWest = isoWest.getX();
         yIsoWest = isoWest.getY();
@@ -37,22 +45,22 @@ public class MTile {
         building = "";
         buildingOnTile = null;
 
-        isoSouth = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest + Config.tHeightHalft);
-        isoEast = new MCoordinate(xIsoWest + Config.tWidth, yIsoWest);
         isoNorth = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest - Config.tHeightHalft);
+        isoEast = new MCoordinate(xIsoWest + Config.tWidth, yIsoWest);
+        isoSouth = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest + Config.tHeightHalft);
         isoCenter = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest);
 
         knotenpunkteArray = new ArrayList<>();
 
-        punkt.add(xNew);
-        punkt.add(yNew);
-        felder.add(punkt);
+        punkte.addAll(Arrays.asList(isoNorth, isoEast, isoSouth, isoWest));
 
     }
 
     public void changeIsSelected(boolean isSelected) {
         this.isSelected = isSelected;
     }
+
+    public ArrayList<MCoordinate> getPunkte(){ return punkte;};
 
     public boolean getIsSelected() {
         return isSelected;

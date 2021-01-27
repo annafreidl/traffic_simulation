@@ -27,31 +27,318 @@ public class VTile {
     }
 
     public void drawBackground(GraphicsContext gc) {
-        gc.beginPath();
-
-        //West Point x, y
-        gc.moveTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-
-        //North
-        gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-
-        //West
-        gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-
-        //South
-        gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
 
         if (tileModel.getIsSelected()) {
             gc.setFill(Color.LIME);
+            gc.beginPath();
+            //West Point x, y
+            gc.moveTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+            //North
+            gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+            //West
+            gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+            //South
+            gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+            gc.setLineWidth(1);
+            gc.setStroke(Color.BLACK);
+            gc.closePath();
+            gc.fill();
+            gc.stroke();
         } else {
-            gc.setFill(Color.LIMEGREEN);
+            switch (tileModel.höhen.toString()) {
+                case "[0, 0, 0, 0]", "[1, 1, 1, 1]":
+                    //flat
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 153, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[0, 0, 0, 1]":
+                    //north
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 51, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //south
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.setFill(Color.rgb(0, 102, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[0, 0, 1, 0]":
+                    //east
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 51, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //west
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 204, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[0, 1, 0, 0]":
+                    //north
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 204, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //south
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.setFill(Color.rgb(0, 255, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[1, 0, 0, 0]":
+                    //east
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 102, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //west
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 255, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[1, 1, 0, 0]":
+                    //inclined
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 255, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[1, 0, 0, 1]":
+                    //flat
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 102, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[0, 0, 1, 1]":
+                    //inclined
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 51, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[0, 1, 1, 0]":
+                    //inclined
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 204, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[1, 1, 1, 0]":
+                    //north
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 255, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //south
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.setFill(Color.rgb(0, 204, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[1, 0, 1, 1]":
+                    //north
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 102, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //south
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.setFill(Color.rgb(0, 51, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[1, 1, 0, 1]":
+                    //east
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 255, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //west
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 102, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[0, 1, 1, 1]":
+                    //east
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 204, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //west
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 51, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[0, 1, 0, 1]":
+                    //east
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 255, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //west
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 102, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                case "[1, 0, 1, 0]":
+                    //north
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.YELLOW);
+                    //gc.setFill(Color.rgb(0, 102, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    //south
+                    gc.beginPath();
+                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
+                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    gc.setFill(Color.BLUE);
+                    //gc.setFill(Color.rgb(0, 51, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + tileModel.höhen.toString());
+            }
         }
-        gc.setLineWidth(1);
-        gc.setStroke(Color.BLACK);
-        gc.closePath();
 
-        gc.fill();
-        gc.stroke();
+        //Hilfestellung: Koordinaten an den Westnodes der Tiles
         gc.setFill(Color.BLACK);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);

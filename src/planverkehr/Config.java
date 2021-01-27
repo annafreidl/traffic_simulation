@@ -11,6 +11,7 @@ public class Config {
     public static final int tWidthHalft = tWidth / 2;
     public static final int tHeight = tWidth / 2;
     public static final int tHeightHalft = tWidth / 4;
+    public static final int increase = tHeightHalft;
     public static final double XOffset = (double)(worldWidth*(tWidth+1))/2;
     public static final double YOffset = (double)tWidth/4;
     public static final String jsonFile = "planverkehr.json";

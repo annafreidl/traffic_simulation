@@ -41,7 +41,7 @@ public class MCoordinate {
         return new MCoordinate(xIso, yIso);
     }
 
-    public MCoordinate toGird() {
+    public MCoordinate toGrid(){
         x -= Config.XOffset;
         y -= Config.YOffset;
 
@@ -69,6 +69,13 @@ public class MCoordinate {
 
     public String toStringCoordinates(){
         return x + "-" + y;
+    }
+
+    public boolean istGleich(MCoordinate b){
+        boolean p;
+            if(x == b.x && y == b.y) {p = true; }
+            else p = false;
+            return p;
     }
 
     @Override
