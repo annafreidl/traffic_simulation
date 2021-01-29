@@ -26,11 +26,12 @@ public class MTransportConnection {
     HashMap<String, MKnotenpunkt> mKnotenpunktHashMap; //rename to newKnotenpunktMap
     HashMap<String, MKnotenpunkt> mKnotenpunktHashMapSecondNode; //rename to newKnotenpunktMap
     Map<String, MCoordinate> newPoints;
-    boolean isTwoTileTransport, isConnection, relevantTilesFree;
+    boolean isTwoTileTransport, isConnection, relevantTilesFree, shouldAlwaysDraw;
+
     ArrayList<MTile> relevantTiles;
     Graph relevantGraph;
 
-    public MTransportConnection(MTile feld, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, boolean relevantTilesFree, ArrayList<MTile> relevantTiles, Graph relevantGraph) {
+    public MTransportConnection(MTile feld, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, boolean relevantTilesFree, ArrayList<MTile> relevantTiles, Graph relevantGraph, boolean shouldAlwaysDraw) {
         this.feld = feld;
         feldBuildingType = feld.getState();
         this.buildingToBeBuiltType = buildingToBeBuiltType;
@@ -40,6 +41,7 @@ public class MTransportConnection {
         newBuildingWidth = buildingToBeBuilt.getWidth();
         this.relevantTiles = relevantTiles;
         this.relevantGraph = relevantGraph;
+        this.shouldAlwaysDraw = shouldAlwaysDraw;
 
         groupId = feld.getId() + "-" + buildingToBeBuiltID;
         mKnotenpunktHashMap = new HashMap<>();
@@ -63,7 +65,10 @@ public class MTransportConnection {
             //4. Koordinaten zum Feld hinzufügen
             addKnotenpunktToFeldAndMergeMaps();
 
-            //5. Knotenpunkte verbinden
+            //5. check for TargetTypes
+            checkForTargetTypes();
+
+            //6. Knotenpunkte verbinden
             connectKnotenpunkte();
 
         }
@@ -72,6 +77,15 @@ public class MTransportConnection {
         }
 
 
+    }
+
+    private void checkForTargetTypes() {
+
+        switch (buildingToBeBuilt.getSpecial()){
+            case "railsstation" -> mKnotenpunktHashMap.forEach((id, knoten) -> knoten.setTargetType(ESpecial.RAILSTATION));
+            case "bussstation" -> mKnotenpunktHashMap.forEach((id, knoten) -> knoten.setTargetType(ESpecial.BUSSTOP));
+            case "signal" -> mKnotenpunktHashMap.forEach((id, knoten) -> knoten.setTargetType(ESpecial.SIGNAL));
+        }
     }
 
     private void showAlert() {
@@ -95,7 +109,7 @@ public class MTransportConnection {
         }
 
         if (connectionList != null) {
-            buildingToBeBuilt.getRoads().forEach((pair) -> {
+            connectionList.forEach((pair) -> {
                 String firstNodeName = pair.getKey();
                 String secondNodeName = pair.getValue();
                 final MKnotenpunkt[] firstNode = new MKnotenpunkt[1];
@@ -132,7 +146,7 @@ public class MTransportConnection {
         mKnotenpunktHashMap.forEach(((s, mKnotenpunkt) -> feld.addKnotenpunkt(mKnotenpunkt)));
         if (relevantTiles != null) {
             for (MTile relevantTile : relevantTiles) {
-                if (!relevantTile.getIsSelected()) {
+                if (!relevantTile.getIsSelected() && !shouldAlwaysDraw) {
                     mKnotenpunktHashMapSecondNode.forEach(((s, mKnotenpunkt) -> relevantTile.addKnotenpunkt(mKnotenpunkt)));
                 }
             }
@@ -157,8 +171,8 @@ public class MTransportConnection {
                 relevantTile.setState(buildingToBeBuiltType);
 
                 //Koordinaten sollen nicht gezeichnet werden, wird vom Hauptfeld übernommen
-                if (!relevantTile.getIsSelected()) {
-                    relevantTile.setShouldDraw(false);
+                if (!relevantTile.getIsSelected() && !shouldAlwaysDraw) {
+                    relevantTile.setFirstTile(false);
                     relevantTile.addConnectedBuilding(buildingToBeBuilt);
                 }
             }
@@ -190,8 +204,7 @@ public class MTransportConnection {
     private MKnotenpunkt createKnotenpunkt(MCoordinate coords, String name) {
         String nodeId = "" + buildingToBeBuiltType + relevantGraph.getIncreasedId();
         MCoordinate feldGridCoordinates = feld.getGridCoordinates();
-        System.out.println("Feldkoordinaren: " + feldGridCoordinates);
-        System.out.println("RelKoordinaten: " + coords);
+
 
 
         MCoordinate nodeCoordinate = new MCoordinate(feldGridCoordinates.getX() + coords.getX(), feldGridCoordinates.getY() - coords.getY());
@@ -199,7 +212,6 @@ public class MTransportConnection {
         MKnotenpunkt knotenpunkt;
 
         if (relevantGraph.containsKey(nodeCoordinate.toStringCoordinates())) {
-            System.out.println("key doppelt");
             knotenpunkt = relevantGraph.get(nodeCoordinate.toStringCoordinates());
             knotenpunkt.addGroupId(groupId);
         } else {

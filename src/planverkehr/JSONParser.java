@@ -249,6 +249,14 @@ public class JSONParser {
             dz = singleBuilding.optInt("dz", 1337);
             maxPlanes = singleBuilding.optInt("maxplanes", 0);
             special = singleBuilding.optString("special", "noSpecial");
+            if(singleBuilding.has("signals")){
+                if(special.equals("noSpecial")){
+                    special = "signal";
+                } else {
+                    System.out.println("!!! Signal wurde nicht als Special gesetzt !!!");
+                }
+
+            }
             buildMenu = singleBuilding.optString("buildmenu", "noBuildMenu");
 
             if (singleBuilding.has("roads")) {

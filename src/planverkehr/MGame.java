@@ -3,9 +3,11 @@ package planverkehr;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+
 import javafx.util.Pair;
 import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
+
 import java.util.*;
 
 public class MGame {
@@ -50,7 +52,7 @@ public class MGame {
 
     public void createTileMap() {
         tileHashMap = new HashMap<>();
-        tileArray = new ArrayList<MTile>();
+        tileArray = new ArrayList<>();
         for (int x = 0; x < Config.worldWidth; x++) {
             for (int y = 0; y < Config.worldHeight; y++) {
                 MCoordinate gridCoordinates = new MCoordinate(x, y);
@@ -103,18 +105,19 @@ public class MGame {
         return gameConfig.getBuildingsList();
     }
 
-    public void selectTileByCoordinates(double x, double y) {
+    public boolean selectTileByCoordinates(double x, double y) {
         double[] gridCoordinates = toGrid(x, y);
         int gridX = (int) gridCoordinates[0];
         int gridY = (int) gridCoordinates[1] - Config.worldWidth + 1;
         String searchId = gridX + "-" + gridY;
         Optional<MTile> tileOpt = findOptionalTileById(searchId);
-
+        boolean[] selectedTile = new boolean[1];
+        selectedTile[0] = false;
         tileOpt.ifPresent(tile -> {
             System.out.println("id: " + tile.getId());
             System.out.println("free? " + tile.isFree());
             System.out.println("state: " + tile.state);
-            System.out.println("connections: " + tile.possibleConnections);
+            System.out.println("KnotenpunkteArray: " + tile.knotenpunkteArray);
             System.out.println();
             if (selectedTileId.equals(searchId)) {
                 resetSelectedTile();
@@ -126,9 +129,10 @@ public class MGame {
                 tile.changeIsSelected(true);
                 selectedTileId = searchId;
             }
+            selectedTile[0] = true;
 
         });
-
+        return selectedTile[0];
     }
 
     public Buildings getBuildingById(String id) {
@@ -151,6 +155,34 @@ public class MGame {
 
     private MTile getSelectedTile() {
         return getTileById(selectedTileId);
+    }
+
+    public ArrayList<MTile> getGroupedTiles(int newBuildingWidth, int newBuildingDepth, boolean isFirst) {
+        MTile selectedTile = getSelectedTile();
+        MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
+        int xCoord = (int) selectedCoordinates.getX();
+        int yCoord = (int) selectedCoordinates.getY();
+        ArrayList<MTile> tilesToBeGrouped = new ArrayList<>();
+
+
+        //geht durch alle relevanten Tiles. selected Tile ist link unten vom Gebäude
+        for (int x = 0; x < newBuildingWidth; x++) {
+            for (int y = 0; y < newBuildingDepth; y++) {
+                if (x + y > 0) {
+                    int tileToCheckX = isFirst ? xCoord + x : xCoord - x;
+                    int tileToCheckY = isFirst ? yCoord + y : yCoord - y;
+                    String tileId = tileToCheckX + "--" + tileToCheckY;
+                    MTile tile = getTileById(tileId);
+                    if (tile != null) {
+                        tilesToBeGrouped.add(tile);
+                    }
+                } else {
+                    tilesToBeGrouped.add(selectedTile);
+                }
+            }
+        }
+
+        return tilesToBeGrouped;
     }
 
     public ArrayList<MTile> getTilesToBeGrouped(int newBuildingWidth, int newBuildingDepth) {
@@ -191,8 +223,21 @@ public class MGame {
 
     public void createVehicle() {
         MTile selectedTile = getSelectedTile();
-        if (selectedTile.state == EBuildType.road) {
-            MVehicles temp = vehicleTypeList.get(0);
+        MVehicles temp = vehicleTypeList.get(0);
+
+        if (selectedTile.state == EBuildType.road || selectedTile.state == EBuildType.rail) {
+
+            if (selectedTile.state == EBuildType.road) {
+                temp = vehicleTypeList.get(0);
+
+            } else {
+                for (MVehicles mVehicles : vehicleTypeList) {
+                    if (mVehicles.getKind().equals("engine")) {
+                        temp = mVehicles;
+                    }
+                }
+            }
+
 
             //todo: vehicle clone Methode
             MVehicles truck = new MVehicles(temp.getName(), temp.getKind(), temp.getGraphic(), temp.getCargo(), temp.getSpeed());
@@ -208,10 +253,11 @@ public class MGame {
             visibleVehiclesArrayList.add(truck);
 
         }
+
     }
 
+
     public void moveVehicles() {
-        System.out.println(visibleVehiclesArrayList);
         visibleVehiclesArrayList.forEach((vehicle) -> {
             MKnotenpunkt nextKnotenpunkt = vehicle.getNextKnotenpunkt();
 
@@ -238,5 +284,58 @@ public class MGame {
         List<Object> productions = building.getProductions();
 
         return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combinesStrings, productions);
+    }
+
+//    public void removeKnotenpunkte() {
+//        MTile selectedTile = getSelectedTile();
+//        if (selectedTile != null &&
+//            selectedTile.getConnectedBuilding() != null &&
+//            (selectedTile.getConnectedBuildingType().equals(EBuildType.rail) || selectedTile.getConnectedBuildingType().equals(EBuildType.road))) {
+//            System.out.println("Remove Knotenpunkt");
+//            Buildings connectedBuilding = selectedTile.getConnectedBuilding();
+//            EBuildType buildingType = connectedBuilding.getBuildType();
+//            Graph relevantGraph = buildingType.equals(EBuildType.rail) ? railGraph : roadGraph;
+//            String groupId;
+//            if (!selectedTile.isFirstTile) {
+//                groupId = selectedTileId + connectedBuilding.getBuildingName();
+//
+//            } else {
+//                groupId = selectedTile.getGroupId();
+//            }
+//            relevantGraph.removeKnotenpunkteByFeld(groupId);
+//        }
+//    }
+
+    public void resetTile() {
+        MTile selectedTile = getSelectedTile();
+        if (selectedTile != null &&
+            selectedTile.getState() != EBuildType.free) {
+            String groupId = "";
+            Graph relevantGraph = selectedTile.getState().equals(EBuildType.road) ? roadGraph : railGraph;
+            for (MTile mTile : getGroupedTiles(selectedTile.getConnectedBuilding().getWidth(), selectedTile.getConnectedBuilding().getDepth(),
+                selectedTile.isFirstTile)) {
+                if (mTile.getState().equals(EBuildType.rail) || mTile.getState().equals(EBuildType.road)) {
+
+
+                    for (MKnotenpunkt k : mTile.getKnotenpunkteArray()) {
+                        if (k.getGroupId().size() > 1) {
+                            System.out.println("mehrere GroupIDs");
+                            if (groupId.length() > 0) {
+                                k.getGroupId().remove(groupId);
+                            } else {
+                                System.out.println("GroupID nicht gesetzt");
+                            }
+                        } else {
+                            if (groupId.length() < 1) {
+                                groupId = k.getGroupId().get(0);
+                            }
+                            relevantGraph.remove(k.getGridCoordinate().toStringCoordinates());
+                        }
+                    }
+                }
+                mTile.reset();
+            }
+
+        }
     }
 }

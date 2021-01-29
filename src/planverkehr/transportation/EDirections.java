@@ -1,9 +1,9 @@
 package planverkehr.transportation;
 
 public enum EDirections {
-    ne,
-    se,
-    sw,
-    nw,
-    empty
+    NE,
+    SE,
+    SW,
+    NW,
+    EMPTY
 }

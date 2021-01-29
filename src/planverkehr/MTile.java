@@ -1,20 +1,20 @@
 package planverkehr;
 
+import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
 import planverkehr.transportation.EDirections;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.EnumSet;
 import java.util.Optional;
 
 public class MTile {
     String id;
     boolean isSelected = false;
-    boolean shouldDraw = true;
-    double  xNew, yNew, xIsoWest, yIsoWest, differenz;
+    boolean isFirstTile = true;
+    double xNew, yNew, xIsoWest, yIsoWest, differenz;
     int höhenorth, höheeast, höhesouth, höhewest, level;
     ArrayList<MKnotenpunkt> knotenpunkteArray;
     EnumSet<EDirections> possibleConnections = EnumSet.noneOf(EDirections.class);
@@ -60,7 +60,11 @@ public class MTile {
         this.isSelected = isSelected;
     }
 
-    public ArrayList<MCoordinate> getPunkte(){ return punkte;};
+    public ArrayList<MCoordinate> getPunkte() {
+        return punkte;
+    }
+
+    ;
 
     public boolean getIsSelected() {
         return isSelected;
@@ -142,24 +146,28 @@ public class MTile {
     }
 
 
-    public String getBuilding(){
+    public String getBuilding() {
         return building;
     }
 
-    public void setBuilding(String building){
+    public void setBuilding(String building) {
         this.building = building;
     }
 
-    public void setBuildingOnTile(Buildings buildingOnTile){ this.buildingOnTile = buildingOnTile; }
+    public void setBuildingOnTile(Buildings buildingOnTile) {
+        this.buildingOnTile = buildingOnTile;
+    }
 
-    public Buildings getBuildingOnTile(){return buildingOnTile;}
+    public Buildings getBuildingOnTile() {
+        return buildingOnTile;
+    }
 
     public boolean isFree() {
         return this.state == EBuildType.free;
     }
 
-    public void setShouldDraw(boolean shouldDraw) {
-        this.shouldDraw = shouldDraw;
+    public void setFirstTile(boolean firstTile) {
+        this.isFirstTile = firstTile;
     }
 
     public void addKnotenpunkt(MKnotenpunkt mKnotenpunkt) {
@@ -169,10 +177,6 @@ public class MTile {
         }
     }
 
-    public EnumSet<EDirections> getPossibleConnections() {
-        return possibleConnections;
-    }
-
     public ArrayList<MKnotenpunkt> getKnotenpunkteArray() {
         return knotenpunkteArray;
     }
@@ -180,36 +184,18 @@ public class MTile {
     private EDirections getOppositeDirection(EDirections directions) {
         EDirections oppositeDirection;
         switch (directions) {
-            case nw -> oppositeDirection = EDirections.se;
-            case ne -> oppositeDirection = EDirections.sw;
-            case se -> oppositeDirection = EDirections.nw;
-            default -> oppositeDirection = EDirections.ne;
+            case NW -> oppositeDirection = EDirections.SE;
+            case NE -> oppositeDirection = EDirections.SW;
+            case SE -> oppositeDirection = EDirections.NW;
+            default -> oppositeDirection = EDirections.NE;
         }
         return oppositeDirection;
 
     }
 
-//    public Optional<MKnotenpunkt> getConnectableNode(EDirections directions) {
-//        MKnotenpunkt knotenpunkt = null;
-//        boolean searching = true;
-//        if (possibleConnections.contains(directions)) {
-//            System.out.println("directions available");
-//            for (int i = 0; i < knotenpunkteArray.size() && searching; i++) {
-//                if (knotenpunkteArray.get(i).getDirection().equals(getOppositeDirection(directions))) {
-//                    knotenpunkt = knotenpunkteArray.get(i);
-//                    System.out.println("tiles connecteable");
-//                    searching = false;
-//                }
-//            }
-//        }
-//
-//        return Optional.ofNullable(knotenpunkt);
-//
-//    }
-
     public Optional<MKnotenpunkt> getNodeByCoordinatesString(String coordsString) {
         MKnotenpunkt knotenpunkt = null;
-       boolean searching = true;
+        boolean searching = true;
         for (int i = 0; i < knotenpunkteArray.size() && searching; i++) {
             if (knotenpunkteArray.get(i).getGridCoordinate().toStringCoordinates().equals(coordsString)) {
                 knotenpunkt = knotenpunkteArray.get(i);
@@ -217,6 +203,10 @@ public class MTile {
             }
         }
         return Optional.ofNullable(knotenpunkt);
+    }
+
+    public EBuildType getConnectedBuildingType() {
+        return connectedBuilding.getBuildType();
     }
 
 
@@ -230,5 +220,49 @@ public class MTile {
             }
         }
         return Optional.ofNullable(knotenpunkt);
+    }
+
+    public String getGroupId() {
+        CharSequence nameArray = this.connectedBuilding.getBuildingName();
+        String possibleID = "";
+        int idOccurrences = 0;
+        for (int i = 0; i < getKnotenpunkteArray().size() && idOccurrences < 2; i++) {
+            possibleID = getKnotenpunkteArray().get(i).getGroupId().get(0);
+            idOccurrences = 0;
+            System.out.println("Enthählt possibleID: [" + possibleID + "] nameArray: [" + nameArray + "] ?");
+
+            if (possibleID.contains(nameArray)) {
+                System.out.println("Ja");
+
+                for (MKnotenpunkt k : getKnotenpunkteArray()) {
+                    for (String id : k.getGroupId()) {
+                        System.out.println("entspricht id: [" + id + "] der possibleID: [" + possibleID + "] ?");
+                        if (id.equals(possibleID)) {
+                            System.out.println("Ja");
+                            idOccurrences++;
+                        } else {
+                            System.out.println("nein");
+                        }
+                    }
+                }
+            } else {
+                System.out.println("nein");
+            }
+
+        }
+
+        return idOccurrences > 1 ? possibleID : "";
+    }
+
+    public void reset() {
+
+        isFirstTile = true;
+        knotenpunkteArray = new ArrayList<>();
+        possibleConnections = EnumSet.noneOf(EDirections.class);
+        state = EBuildType.free;
+        building = null;
+        connectedBuilding = null;
+        buildingOnTile = null;
+
     }
 }

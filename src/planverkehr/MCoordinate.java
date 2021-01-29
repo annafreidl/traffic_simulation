@@ -105,19 +105,19 @@ public class MCoordinate {
             }
 
             if (coord.getX() == 0 && coord.getY() == 0.5) {
-                directions = EDirections.nw;
+                directions = EDirections.NW;
             } else if (coord.getX() == 1 && coord.getY() == 0.5) {
-                directions = EDirections.se;
+                directions = EDirections.SE;
             } else if (coord.getX() == 0.5 && coord.getY() == 0) {
-                directions = EDirections.sw;
+                directions = EDirections.SW;
             } else if (coord.getX() == 0.5 && coord.getY() == 1) {
-                directions = EDirections.ne;
+                directions = EDirections.NE;
             } else {
-                directions = EDirections.empty;
+                directions = EDirections.EMPTY;
             }
         } else {
 
-            directions = EDirections.empty;
+            directions = EDirections.EMPTY;
         }
         return directions;
     }

@@ -13,20 +13,16 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static planverkehr.Controller.*;
 
 public class VGame {
     MGame gameModel;
@@ -38,7 +34,7 @@ public class VGame {
     JSONParser parser;
     MenuBar menuBar;
     Label debugCoord;
-    Button vehicleButton, tickButton;
+    Button vehicleButton, tickButton, defaultRoad, removeButton, defaultRail, clearButton, drawButton;
 
     MouseMode mouseMode;
 
@@ -97,10 +93,38 @@ public class VGame {
         tickButton.setLayoutX(0);
         tickButton.setLayoutY(30);
 
+        defaultRoad = new Button("Straßenbeispiel");
+        group.getChildren().add(defaultRoad);
+        defaultRoad.setLayoutX(510);
+        defaultRoad.setLayoutY(0);
+
+        defaultRail = new Button("Schienenbeispiel");
+        group.getChildren().add(defaultRail);
+        defaultRail.setLayoutX(510);
+        defaultRail.setLayoutY(30);
+
+        removeButton = new Button("Löschen");
+        group.getChildren().add(removeButton);
+        removeButton.setLayoutX(640);
+        removeButton.setLayoutY(0);
+
         vehicleButton = new Button("Road Vehicle");
         group.getChildren().add(vehicleButton);
         vehicleButton.setLayoutX(0);
         vehicleButton.setLayoutY(150);
+
+        clearButton = new Button("clear");
+        group.getChildren().add(clearButton);
+        clearButton.setLayoutX(640);
+        clearButton.setLayoutY(30);
+        clearButton.setOnAction(e -> clearField());
+
+        drawButton = new Button("draw");
+        group.getChildren().add(drawButton);
+        drawButton.setLayoutX(640);
+        drawButton.setLayoutY(60);
+        drawButton.setOnAction(e -> drawField());
+
 
         Slider slider = new Slider();
         group.getChildren().add(slider);
@@ -364,7 +388,7 @@ public class VGame {
         gameModel.getTileArray().forEach((tile) -> {
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);
-            if(tile.shouldDraw) {
+            if(tile.isFirstTile) {
                 tempTileView.drawForeground(gcFront);
             }
             canvas.toBack();
@@ -377,8 +401,9 @@ public class VGame {
     }
 
     public void clearField() {
+
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        gcFront.clearRect(0, 0, canvasFront.getHeight(), canvasFront.getWidth());
+        gcFront.clearRect(0, 0, canvasFront.getWidth(), canvasFront.getHeight());
     }
 
     // Kartesische Koordinaten werden zu isometrischen Koordinaten umgerechnet
@@ -462,6 +487,15 @@ public class VGame {
         tl.play();
     }
 
+    public Button getDefaultRoadButton() {
+        return defaultRoad;
+    }
 
+    public Button getRemoveButton() {
+        return removeButton;
+    }
 
+    public Button getDefaultRailButton() {
+        return defaultRail;
+    }
 }

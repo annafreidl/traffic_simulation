@@ -61,7 +61,22 @@ public class Buildings {
     }
 
     private void setBuildType() {
+        if (getRoads().size() > 0) {
+            buildType = EBuildType.road;
+        } else if (getRails().size() > 0) {
+            buildType = EBuildType.rail;
+        } else if (getPlanes().size() > 0){
+            buildType = EBuildType.airport;
+        } else if (getProductions().size() > 0){
+            buildType = EBuildType.factory;
+        } else {
+            buildType = EBuildType.unknown;
+        }
 
+    }
+
+    public EBuildType getBuildType() {
+        return buildType;
     }
 
     private void setDirections() {
@@ -70,7 +85,7 @@ public class Buildings {
         if (this.getPoints().size() > 0) {
             this.getPoints().forEach((key, coord) -> {
                 if (coord.isEdge()) {
-                    if(coord.isSecondTile()){
+                    if (coord.isSecondTile()) {
                         directionsSecondTile.add(coord.getRoadDirection());
                     }
                     this.directions.add(coord.getRoadDirection());
@@ -97,10 +112,10 @@ public class Buildings {
 
         relevantDirectionSet.forEach((coord) -> {
             switch (coord) {
-                case nw -> relevantConnectionSet.add(EDirections.se);
-                case ne -> relevantConnectionSet.add(EDirections.sw);
-                case se -> relevantConnectionSet.add(EDirections.nw);
-                case sw -> relevantConnectionSet.add(EDirections.ne);
+                case NW -> relevantConnectionSet.add(EDirections.SE);
+                case NE -> relevantConnectionSet.add(EDirections.SW);
+                case SE -> relevantConnectionSet.add(EDirections.NW);
+                case SW -> relevantConnectionSet.add(EDirections.NE);
             }
         });
     }
@@ -174,7 +189,7 @@ public class Buildings {
         return directionsSecondTile;
     }
 
-    public void addCombinedBuilding(String b1, Buildings b2){
+    public void addCombinedBuilding(String b1, Buildings b2) {
         combinesBuildings.put(b1, b2);
     }
 

@@ -3,6 +3,7 @@ package planverkehr.graph;
 import planverkehr.EBuildType;
 import planverkehr.MCoordinate;
 import planverkehr.transportation.EDirections;
+import planverkehr.transportation.ESpecial;
 
 import java.util.*;
 
@@ -18,9 +19,10 @@ public class MKnotenpunkt {
     Set possibleConnections; //EnumSet
     HashMap<String, MKnotenpunkt> connectedKnotenpunkte;
     ArrayList<MKnotenpunkt> connectedKnotenpunkteArray;
-    ArrayList<String> groupIds; //Alle zu einem Gebäude zugehörigen Koordinaten
+    ArrayList<String> groupIds; //Alle zu einem Gebäude zugehörigen Koordinaten haben dieselbe GroupId: feldID-buildingToBeBuiltID;
   //  HashMap<String, MKnotenpunkt> groupedKnotenpunkte;
     EBuildType type;
+    ESpecial targetType;
 
     public MKnotenpunkt(String nodeId, String groupId, MCoordinate coords, EBuildType type, String name, String feldId, EDirections direction, boolean isEdge){
         this.knotenpunktId = nodeId;
@@ -37,6 +39,7 @@ public class MKnotenpunkt {
         connectedKnotenpunkteArray = new ArrayList<>();
       //  groupedKnotenpunkte = new HashMap<>();
         possibleConnections = EnumSet.noneOf(EDirections.class);
+        targetType = null;
 
     }
 
@@ -103,5 +106,17 @@ public void addGroupId(String id){
 
     public ArrayList<MKnotenpunkt> getConnectedKnotenpunkteArray() {
         return connectedKnotenpunkteArray;
+    }
+
+    public void setTargetType(ESpecial targetType) {
+        this.targetType = targetType;
+    }
+
+    public ArrayList<String> getGroupId() {
+        return groupIds;
+    }
+
+    public String getKnotenpunktId() {
+        return knotenpunktId;
     }
 }
