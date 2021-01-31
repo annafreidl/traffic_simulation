@@ -133,19 +133,29 @@ public class VGame {
         slider.setValue(1);
         slider.setLayoutX(0);
         slider.setLayoutY(650);
+        slider.setMajorTickUnit(0.2);
+        slider.setMinorTickCount(0);
+        slider.setSnapToTicks(true);
+
+
+        Label tickText = new Label("Tick:");
+        group.getChildren().add(tickText);
+        tickText.setLayoutX(0);
+        tickText.setLayoutY(670);
+
 
         Label output = new Label("Ausgabe");
         group.getChildren().add(output);
 
 
         output.textProperty().bind(slider.valueProperty().asString());
-        output.setLayoutX(0);
+
+        output.setLayoutX(25);
         output.setLayoutY(670);
 
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-
                 Duration tickFrequency = Duration.seconds((double) t1);
             }
         });
