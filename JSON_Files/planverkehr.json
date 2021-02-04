@@ -423,6 +423,7 @@
       "depth" : 3,
       "special" : "factory",
       "productions" : {"produce":{"glass":4},"consume":{"sand":5},"duration":20},
+      "storage" : {"sand" : 2000},
       "dz" : 1
     },
     "construction yard" : {
@@ -430,6 +431,7 @@
       "depth" : 5,
       "special" : "factory",
       "productions" : [{"consume":{"glass":4, "silicone":1},"duration":8}, {"consume":{"solar panels":2},"duration":25}],
+      "storage" : {"glass" : 1000, "silicone" : 300, "solar panels" : 500},
       "dz" : 1
     },
     "submerged-arc furnace" : {
@@ -437,6 +439,7 @@
       "depth" : 4,
       "special" : "factory",
       "productions" : {"produce":{"silicon":5},"consume":{"sand":8},"duration":35},
+      "storage" : {"sand" : 1300},
       "dz" : 1
     },
     "photovoltaic factory" : {
@@ -444,6 +447,7 @@
       "depth" : 6,
       "special" : "factory",
       "productions" : {"produce":{"solar panels":5},"consume":{"silicon":6},"duration":35},
+      "storage" : {"silicon" : 600},
       "dz" : 1
     },
     "silicone factory" : {
@@ -451,13 +455,14 @@
       "depth" : 4,
       "special" : "factory",
       "productions" : {"produce":{"silicone":7},"consume":{"methyl chloride":4, "silicon":5},"duration":30},
+      "storage" : {"silicon" : 600, "methyl chloride" : 200},
       "dz" : 1
     },
     "chemical plant" : {
       "width" : 4,
       "depth" : 4,
       "special" : "factory",
-      "productions" : {"produce":{"sand":8},"consume":{"sand":8},"duration":15},
+      "productions" : {"produce":{"methyl chloride":8},"duration":15},
       "dz" : 1
     },
     "tree" : {

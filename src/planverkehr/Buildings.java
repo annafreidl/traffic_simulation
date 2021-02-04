@@ -24,7 +24,7 @@ public class Buildings {
     private List<Pair<String, String>> roads;
     private List<Pair<String, String>> rails;
     private List<Pair<String, String>> planes;
-    private List<Object> productions;
+    private List<MProductions> productions;
 
     private EnumSet<EDirections> possibleConnections;
     private EnumSet<EDirections> directions;
@@ -39,7 +39,7 @@ public class Buildings {
     public Buildings(String buildingName, String buildMenu, int width, int depth, java.util.Map<String, MCoordinate> points,
                      List<Pair<String, String>> roads, List<Pair<String, String>> rails,
                      List<Pair<String, String>> planes, int dz, String special, int maxPlanes,
-                     java.util.Map<String, String> combines, List<Object> productions) {
+                     java.util.Map<String, String> combines, List<MProductions> productions) {
 
         this.buildingName = buildingName;
         this.buildMenu = buildMenu;
@@ -177,7 +177,7 @@ public class Buildings {
         return planes;
     }
 
-    public List<Object> getProductions() {
+    public List<MProductions> getProductions() {
         return productions;
     }
 

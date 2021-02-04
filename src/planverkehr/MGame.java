@@ -281,7 +281,7 @@ public class MGame {
         int maxPlanes = building.getMaxPlanes();
         java.util.Map<String, String> combinesStrings = building.getCombinesStrings();
 
-        List<Object> productions = building.getProductions();
+        List<MProductions> productions = building.getProductions();
 
         return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combinesStrings, productions);
     }

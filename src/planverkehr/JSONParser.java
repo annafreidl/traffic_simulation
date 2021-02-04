@@ -11,15 +11,19 @@ import java.util.*;
 
 public class JSONParser {
 
-    final String filename = (Config.jsonFile);
-    final InputStream is = this.getClass().getClassLoader().getResourceAsStream(filename);
-    final JSONObject json = new JSONObject(new JSONTokener(is));
+    final String filename;
+    final InputStream is;
+    final JSONObject json;
 
 
     List<String> commodities;
 
     public JSONParser() throws JSONException {
+        filename = (Config.jsonFile);
+        is = this.getClass().getClassLoader().getResourceAsStream(filename);
+        json = new JSONObject(new JSONTokener(is));
     }
+
 
     public List<String> getCommoditiesFromJSON() {
         if (json.has("commodities")) {
@@ -31,11 +35,19 @@ public class JSONParser {
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+                programmBeenden();
             }
+        } else {
+            System.out.println("No Commodities found!");
+            programmBeenden();
         }
         return commodities;
     }
 
+    private void programmBeenden() {
+        System.out.println("Programm wird beendet!");
+        System.exit(-1);
+    }
 
     public MMap getMapFromJSON() {
 
@@ -43,23 +55,105 @@ public class JSONParser {
         String gameMode;
         int width;
         int depth;
-        MMap map;
+        MMap map = null;
 
-        JSONObject mapObject = json.getJSONObject("map");
-
-        mapGen = mapObject.getString("mapgen");
-        gameMode = mapObject.getString("gamemode");
-        width = mapObject.getInt("width");
-        depth = mapObject.getInt("depth");
-
-        map = new MMap(mapGen, gameMode, width, depth);
-
-        System.out.println(mapGen);
-        System.out.println(gameMode);
-        System.out.println(width);
-        System.out.println(depth);
-
+        if (json.has("map")) {
+            try {
+                JSONObject mapObject = json.getJSONObject("map");
+                mapGen = getSTRING(mapObject, "mapgen");
+                gameMode = getSTRING(mapObject, "gamemode");
+                width = getINT(mapObject, "width");
+                depth = getINT(mapObject, "depth");
+                map = new MMap(mapGen, gameMode, width, depth);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("No Map found");
+            programmBeenden();
+        }
         return map;
+    }
+
+    private int getINT(JSONObject mapObject, String extract) {
+        int value;
+        if (mapObject.has(extract)) {
+            try {
+                value = mapObject.getInt(extract);
+            } catch (JSONException e) {
+                value = 0;
+                e.printStackTrace();
+                programmBeenden();
+            }
+        } else {
+            value = 0;
+            System.out.println("No attibute " + extract + "found");
+            programmBeenden();
+        }
+        return value;
+    }
+
+    private List<Pair<String, String>> getPairs(JSONObject singleBuilding, String kind) {
+        JSONArray pairArray;
+        List<Pair<String, String>> pairList;
+        if (singleBuilding.has(kind)) {
+            pairList = new ArrayList<>();
+            pairArray = singleBuilding.getJSONArray(kind);
+            for (int i = 0; i < pairArray.length(); i++) {
+                JSONArray pairArrayJSONArray = pairArray.getJSONArray(i);
+                for (int j = 0; j < 1; j++) {
+                    pairList.add(new Pair<>(pairArrayJSONArray.getString(j), pairArrayJSONArray.getString(j + 1)));
+                }
+            }
+        } else {
+            pairList = new ArrayList<>();
+        }
+        return pairList;
+    }
+
+
+    private double getDOUBLE(JSONObject mapObject, String extract) {
+        double value;
+        if (mapObject.has(extract)) {
+            try {
+                value = mapObject.getDouble(extract);
+            } catch (JSONException e) {
+                value = 0;
+                e.printStackTrace();
+                programmBeenden();
+            }
+        } else {
+            value = 0;
+            System.out.println("No attibute " + extract + "found");
+            programmBeenden();
+        }
+        return value;
+    }
+
+    private String getSTRING(JSONObject singleVehicle, String string) {
+        String stringValue;
+        if (singleVehicle.has(string)) {
+            try {
+                stringValue = singleVehicle.getString(string);
+            } catch (JSONException e) {
+                stringValue = "";
+                e.printStackTrace();
+            }
+        } else {
+            stringValue = "";
+            programmBeenden();
+        }
+        return stringValue;
+    }
+
+    private void getCargo(HashMap<String, Integer> cargo, JSONObject cargoObject, String kind) {
+        if (cargoObject.has(kind)) {
+            try {
+                cargo.put(kind, cargoObject.getInt(kind));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -70,121 +164,55 @@ public class JSONParser {
         String graphic;
         HashMap<String, Integer> cargo;
         double speed;
+        JSONObject singleVehicle = null;
 
-        JSONObject vehiclesObject = json.getJSONObject("vehicles");
+        JSONObject vehiclesObject = null;
 
+        if (json.has("vehicles")) {
+            try {
+                vehiclesObject = json.getJSONObject("vehicles");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("No vehicles found");
+            programmBeenden();
+        }
+
+        assert vehiclesObject != null;
         Iterator<String> keys = vehiclesObject.keys();
 
         while (keys.hasNext()) {
             String keyValue = keys.next();
-            JSONObject singleVehicle = vehiclesObject.getJSONObject(keyValue);
 
-            kind = singleVehicle.getString("kind");
-            graphic = singleVehicle.getString("graphic");
-            speed = singleVehicle.getDouble("speed");
+            try {
+                singleVehicle = vehiclesObject.getJSONObject(keyValue);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            kind = getSTRING(singleVehicle, "kind");
+            graphic = getSTRING(singleVehicle, "graphic");
+            speed = getDOUBLE(singleVehicle, "speed");
 
             if (singleVehicle.has("cargo")) {
                 cargo = new HashMap<>();
-
                 try {
                     JSONObject cargoObject = singleVehicle.getJSONObject("cargo");
-
-                    if (cargoObject.has("sand")) {
-                        try {
-                            cargo.put("sand", cargoObject.getInt("sand"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                    for (String commodity : getCommoditiesFromJSON()) {
+                        getCargo(cargo, cargoObject, commodity);
                     }
-                    if (cargoObject.has("glass")) {
-                        try {
-                            cargo.put("glass", cargoObject.getInt("glass"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (cargoObject.has("silicon")) {
-                        try {
-                            cargo.put("silicon", cargoObject.getInt("silicon"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (cargoObject.has("solar panels")) {
-                        try {
-                            cargo.put("solar panels", cargoObject.getInt("solar panels"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (cargoObject.has("methyl chloride")) {
-                        try {
-                            cargo.put("methyl chloride", cargoObject.getInt("methyl chloride"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (cargoObject.has("silicone")) {
-                        try {
-                            cargo.put("silicone", cargoObject.getInt("silicone"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
                 try {
                     JSONArray cargoArray = singleVehicle.getJSONArray("cargo");
                     for (int i = 0; i < cargoArray.length(); i++) {
                         try {
                             JSONObject cargoObject = cargoArray.getJSONObject(i);
-                            if (cargoObject.has("sand")) {
-                                try {
-                                    cargo.put("sand", cargoObject.getInt("sand"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
+                            for (String commodity : getCommoditiesFromJSON()) {
+                                getCargo(cargo, cargoObject, commodity);
                             }
-                            if (cargoObject.has("glass")) {
-                                try {
-                                    cargo.put("glass", cargoObject.getInt("glass"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            if (cargoObject.has("silicon")) {
-                                try {
-                                    cargo.put("silicon", cargoObject.getInt("silicon"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            if (cargoObject.has("solar panels")) {
-                                try {
-                                    cargo.put("solar panels", cargoObject.getInt("solar panels"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            if (cargoObject.has("methyl chloride")) {
-                                try {
-                                    cargo.put("methyl chloride", cargoObject.getInt("methyl chloride"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            if (cargoObject.has("silicone")) {
-                                try {
-                                    cargo.put("silicone", cargoObject.getInt("silicone"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -195,18 +223,11 @@ public class JSONParser {
             } else {
                 cargo = new HashMap<>();
             }
-
-//            System.out.println();
-//            System.out.println(keyValue);
-//            System.out.println(kind);
-//            System.out.println(graphic);
-//            System.out.println(cargo);
-//            System.out.println(speed);
-//            System.out.println();
             MVehiclesList.add(new MVehicles(keyValue, kind, graphic, cargo, speed));
         }
         return MVehiclesList;
     }
+
 
     public HashMap<String, Buildings> getBuildingsFromJSON() {
 
@@ -222,6 +243,12 @@ public class JSONParser {
         int maxPlanes;
         java.util.Map<String, String> combines;
         List<Object> productions;
+
+        List<MProductions> MProductionsList = null;
+        int duration = 0;
+        List<HashMap<String, Integer>> produceAll = null;
+        List<HashMap<String, Integer>> consumeAll = null;
+        HashMap<String, Integer> storage;
 
 
         HashMap<String, Buildings> buildingsList = new HashMap<>();
@@ -249,54 +276,33 @@ public class JSONParser {
             dz = singleBuilding.optInt("dz", 1337);
             maxPlanes = singleBuilding.optInt("maxplanes", 0);
             special = singleBuilding.optString("special", "noSpecial");
-            if(singleBuilding.has("signals")){
-                if(special.equals("noSpecial")){
+            buildMenu = singleBuilding.optString("buildmenu", "noBuildMenu");
+            roads = getPairs(singleBuilding, "roads");
+            rails = getPairs(singleBuilding, "rails");
+            planes = getPairs(singleBuilding, "planes");
+
+
+            if (singleBuilding.has("signals")) {
+                if (special.equals("noSpecial")) {
                     special = "signal";
                 } else {
                     System.out.println("!!! Signal wurde nicht als Special gesetzt !!!");
                 }
 
             }
-            buildMenu = singleBuilding.optString("buildmenu", "noBuildMenu");
 
-            if (singleBuilding.has("roads")) {
-                roads = new ArrayList<>();
-                roadsArray = singleBuilding.getJSONArray("roads");
-                for (int i = 0; i < roadsArray.length(); i++) {
-                    JSONArray singleRoadsArray = roadsArray.getJSONArray(i);
-                    for (int j = 0; j < 1; j++) {
-                        roads.add(new Pair<>(singleRoadsArray.getString(j), singleRoadsArray.getString(j + 1)));
+            if (singleBuilding.has("storage")) {
+                storage = new HashMap<>();
+                try {
+                    JSONObject storageObject = singleBuilding.getJSONObject("storage");
+                    for (String kind : getCommoditiesFromJSON()) {
+                        getCargo(storage, storageObject, kind);
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             } else {
-                roads = new ArrayList<>();
-            }
-
-
-            if (singleBuilding.has("rails")) {
-                rails = new ArrayList<>();
-                JSONArray railsArray = singleBuilding.getJSONArray("rails");
-                for (int i = 0; i < railsArray.length(); i++) {
-                    JSONArray singleRailsArray = railsArray.getJSONArray(i);
-                    for (int j = 0; j < 1; j++) {
-                        rails.add(new Pair<>(singleRailsArray.getString(j), singleRailsArray.getString(j + 1)));
-                    }
-                }
-            } else {
-                rails = new ArrayList<>();
-            }
-
-            if (singleBuilding.has("planes")) {
-                planes = new ArrayList<>();
-                JSONArray planesArray = singleBuilding.getJSONArray("planes");
-                for (int i = 0; i < planesArray.length(); i++) {
-                    JSONArray singlePlanesArray = planesArray.getJSONArray(i);
-                    for (int j = 0; j < 1; j++) {
-                        planes.add(new Pair<>(singlePlanesArray.getString(j), singlePlanesArray.getString(j + 1)));
-                    }
-                }
-            } else {
-                planes = new ArrayList<>();
+                storage = new HashMap<>();
             }
 
 
@@ -334,44 +340,104 @@ public class JSONParser {
 
 
             if (singleBuilding.has("productions")) {
-                productions = new ArrayList<>();
+                MProductionsList = new ArrayList<>();
                 try {
                     JSONArray productionsArray = singleBuilding.getJSONArray("productions");
                     for (int a = 0; a <= productionsArray.length(); a++) {
                         JSONObject productionsObject = productionsArray.getJSONObject(a);
-                        productions.add(productionsObject);
+
+                        if (productionsObject.has("produce")) {
+                            HashMap produce = new HashMap();
+                            produceAll = new ArrayList<>();
+                            try {
+                                JSONObject produceObject = productionsObject.getJSONObject("produce");
+                                for (String commodity : getCommoditiesFromJSON()) {
+                                    getCargo(produce, produceObject, commodity);
+                                }
+                                produceAll.add(produce);
+                                //System.out.println("Produce: " + keyValue + produceAll);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            produceAll = new ArrayList<>();
+                        }
+
+                        if (productionsObject.has("consume")) {
+                            HashMap consume = new HashMap();
+                            consumeAll = new ArrayList<>();
+                            try {
+                                JSONObject consumeObject = productionsObject.getJSONObject("consume");
+                                for (String commodity : getCommoditiesFromJSON()) {
+                                    getCargo(consume, consumeObject, commodity);
+                                }
+                                consumeAll.add(consume);
+                                //System.out.println("ConsumeALL: " + keyValue + consumeAll);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            consumeAll = new ArrayList<>();
+                        }
+                        duration = getINT(productionsObject, "duration");
+                        //System.out.println("Duration: " + keyValue + duration);
+                        MProductionsList.add(new MProductions(duration, produceAll, consumeAll, storage));
+                        System.out.println(keyValue + " Duration: " + duration + " Consume: " + consumeAll + " Produce: " + produceAll);
+
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 try {
                     JSONObject productionsObject = singleBuilding.getJSONObject("productions");
-                    productions.add(productionsObject);
+                    if (productionsObject.has("produce")) {
+                        HashMap produce = new HashMap();
+                        produceAll = new ArrayList<>();
+                        try {
+                            JSONObject produceObject = productionsObject.getJSONObject("produce");
+                            for (String commodity : getCommoditiesFromJSON()) {
+                                getCargo(produce, produceObject, commodity);
+
+                            }
+                            produceAll.add(produce);
+                            //System.out.println("Produce: " + keyValue + produceAll);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        produceAll = new ArrayList<>();
+                    }
+                    if (productionsObject.has("consume")) {
+                        HashMap consume = new HashMap();
+                        consumeAll = new ArrayList<>();
+                        try {
+                            JSONObject consumeObject = productionsObject.getJSONObject("consume");
+                            for (String commodity : getCommoditiesFromJSON()) {
+                                getCargo(consume, consumeObject, commodity);
+                            }
+                            consumeAll.add(consume);
+                            //System.out.println("ConsumeALL: " + keyValue + consumeAll);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        consumeAll = new ArrayList<>();
+                    }
+
+                    duration = getINT(productionsObject, "duration");
+                    //System.out.println("Duration: " + keyValue + duration);
+                    MProductionsList.add(new MProductions(duration, produceAll, consumeAll, storage));
+                    System.out.println(keyValue + " Duration: " + duration + " Consume: " + consumeAll + " Produce: " + produceAll);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             } else {
-                productions = new ArrayList<>();
+                consumeAll = new ArrayList<>();
+                produceAll = new ArrayList<>();
+                MProductionsList = new ArrayList<>();
             }
-
-
-            buildingsList.put(keyValue, new Buildings(keyValue.toString(), buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, productions));
-//            System.out.println(keyValue);
-//            System.out.println("buildmenu " + buildMenu);
-//            System.out.println("width " + width);
-//            System.out.println("depth " + depth);
-//            System.out.println("maxplanes " + maxPlanes);
-//            System.out.println("combines " + combines);
-//            System.out.println("roads " + roads);
-//            System.out.println("rails " + rails);
-//            System.out.println("planes " + planes);
-//            System.out.println("points " + points);
-//            System.out.println("dz " + dz);
-//            System.out.println("special " + special);
-//            System.out.println("productions " + productions);
-//            System.out.println();
-//            System.out.println();
-
+            buildingsList.put(keyValue, new Buildings(keyValue, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, MProductionsList));
         }
         return buildingsList;
     }
