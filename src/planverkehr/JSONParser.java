@@ -317,7 +317,7 @@ public class JSONParser {
                     singlePoint = pointsObject.getJSONArray(pointId);
                     double xCoord = singlePoint.getDouble(0);
                     double yCoord = singlePoint.getDouble(1);
-                    MCoordinate tempCoordinate = new MCoordinate(xCoord, yCoord);
+                    MCoordinate tempCoordinate = new MCoordinate(xCoord, yCoord, 0);
                     points.put(pointId, tempCoordinate);
 
                 }

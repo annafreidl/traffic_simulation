@@ -3,21 +3,29 @@ package planverkehr;
 import planverkehr.transportation.EDirections;
 
 public class MCoordinate {
-    double x, y;
+    double x, y, z;
 
-    public MCoordinate(double x, double y) {
+    public MCoordinate(double x, double y, double z) {
         this.x = x;
         this.y = y;
+        this.z = z;
     }
 
-    public MCoordinate toIso() {
-        double xIso = (this.x - this.y) * Config.tWidth / 2;
-        double yIso = (this.x + this.y) * Config.tWidth / 4;
+    public void setZ(double z) {
+        this.z = z;
+    }
 
-        xIso += Config.XOffset;
-        yIso += Config.YOffset;
+    public MCoordinate toCanvasCoord() {
+        double xVisible = (this.x - this.y) * Config.tWidth / 2;
+        double yVisible = (this.x + this.y) * Config.tWidth / 4;
 
-        return new MCoordinate(xIso, yIso);
+        xVisible += Config.XOffset;
+        yVisible += Config.YOffset;
+
+
+        yVisible = yVisible - (z * Config.increase);
+
+        return new MCoordinate(xVisible, yVisible, z);
     }
 
     public boolean isEdge() {
@@ -34,21 +42,26 @@ public class MCoordinate {
         return isSecondTile;
     }
 
-    public MCoordinate toIsoWithoutOffset() {
-        double xIso = (this.x + this.y) * Config.tWidth / 2;
-        double yIso = (this.x - this.y) * Config.tWidth / 4;
+    public MCoordinate toCanvasCoordWithoutOffset() {
+        double xVisible = (this.x - this.y) * Config.tWidth / 2;
+        double yVisible = (this.x + this.y) * Config.tWidth / 4;
 
-        return new MCoordinate(xIso, yIso);
+        xVisible += Config.XOffset;
+        yVisible += Config.YOffset;
+
+        yVisible = yVisible - (z * Config.increase);
+
+        return new MCoordinate(xVisible, yVisible, z);
     }
 
-    public MCoordinate toGrid(){
-        x -= Config.XOffset;
-        y -= Config.YOffset;
+    public MCoordinate toVisibleCoord(){
+       double xNew = x - Config.XOffset;
+       double yNew = y - Config.YOffset;
 
-        double xGrid = ((x / Config.tWidthHalft) + (y / Config.tHeightHalft)) / 2;
-        double yGrid = (((y / Config.tHeightHalft) - (x / Config.tWidthHalft)) / 2 + 1);
+        double xVisible = ((xNew / Config.tWidthHalft) + (yNew / Config.tHeightHalft)) / 2;
+        double yVisible = (((yNew / Config.tHeightHalft) - (xNew / Config.tWidthHalft)) / 2) - Config.worldWidth + 1;
 
-        return new MCoordinate(xGrid, yGrid);
+        return new MCoordinate((int) xVisible, (int) yVisible, z);
     }
 
     public double getX() {
@@ -57,6 +70,10 @@ public class MCoordinate {
 
     public double getY() {
         return y;
+    }
+
+    public double getZ() {
+        return z;
     }
 
     public void setX(double x) {
@@ -92,7 +109,7 @@ public class MCoordinate {
         EDirections directions;
 
         if (this.isEdge()) {
-            MCoordinate coord = new MCoordinate(0, 0);
+            MCoordinate coord = new MCoordinate(0, 0, 0);
             if (x > 1) {
                 coord.setX(x - 1);
             } else {

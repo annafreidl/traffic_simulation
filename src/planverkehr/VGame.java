@@ -19,10 +19,9 @@ import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.util.*;
+import static planverkehr.Controller.*;
 
 public class VGame {
     MGame gameModel;
@@ -300,74 +299,138 @@ public class VGame {
 
     }
 
+                /* Idee: von jedem Tile auf dem Spielbrett werden die Eckpunkte ausgelesen
+            und die Schnittmenge mit den Eckpunkten des angeklickten Tiles erstellt.
+            Ist die Schnittmenge leer passiert nichts, weil das Tile dann kein Nachbar vom angeklickten Tile ist,
+            ist die Schnittmenge jedoch nicht leer, so werden die Punkte in der Schnittmenge für
+            das jeweilige Tile um einen Höhenschritt erhöht bzw. abgesenkt.
+             */
+
     //verändert die Höhe der Tiles und setzt den y-Wert nach oben
     public void setHigh(MTile t, boolean richtung) {
 
-        double factor = 1.0;
-        if(!richtung){
-            factor *= -1;
+        // wenn richtung = true: Anheben des Bodens, also Faktor positiv
+        // wenn richtung = false: Absenken des Bodens, also Faktor negativ
+        int factor = 1;
+        if (!richtung) {
+            factor = -1;
         }
 
-        if (t.differenz == 0 && t.höhen.toString().equals("[0, 0, 0, 0]")) {
+        if (!t.getIncline()) {
 
-            System.out.println("Diff geklicktes" + t.differenz);
+            HashMap<MTile, ArrayList> erhöheAmEnde = new HashMap<>();
+            ArrayList<MTile> bereitserhöht = new ArrayList();
+            LinkedList<MTile> openList = new LinkedList();
+            openList.add(t);
 
-            for (MTile g : gameModel.getTileArray()) {
+            while(!openList.isEmpty()) {
 
-                ArrayList<MCoordinate> gemeinsamepunkte = intersection(t.getPunkte(), g.getPunkte());
-                // ArrayList<MCoordinate> restlichepunkte = entferne(g.getPunkte(), gemeinsamepunkte);
+                Collections.sort(openList, Comparator.comparingInt(current
+                    -> current.höhendif().stream().mapToInt(Integer::intValue).sum()));
+                Collections.reverse(openList);
+                MTile currentMittelPunkt = openList.pollFirst();
+                bereitserhöht.add(currentMittelPunkt);
 
-                MTile feld = gameModel.getTileById(g.getId());
+                    erhöheAmEnde.put(currentMittelPunkt, currentMittelPunkt.getPunkte());
 
-                if (!gemeinsamepunkte.isEmpty() && g != t) {
+                    ArrayList<MTile> nachbarnsortiert = gameModel.getNeighbours(currentMittelPunkt);
 
-                    for (MCoordinate gemeinsamerpunkt : gemeinsamepunkte) {
-                        for (MCoordinate currentpoint : feld.getPunkte()) {
-                            if (currentpoint.istGleich(gemeinsamerpunkt)) {
-                                int indexi = feld.getPunkte().indexOf(currentpoint);
+                    Collections.sort(nachbarnsortiert, Comparator.comparingInt(nachbar -> nachbar.intersection(currentMittelPunkt).size()));
+                    Collections.reverse(nachbarnsortiert);
 
-                                feld.punkte.get(indexi).y = feld.punkte.get(indexi).y - factor *increase;
-                                if (indexi == 3) {
-                                    feld.yIsoWest = feld.yIsoWest - factor * increase;
+                    for (MTile currentNachbar : nachbarnsortiert) {
+
+                        if (!bereitserhöht.contains(currentNachbar)) {
+
+                            switch (currentMittelPunkt.höhendif().stream().mapToInt(Integer::intValue).sum()) {
+                                case 2: {
+                                    if (currentNachbar.intersection(currentMittelPunkt).size() == 2
+                                    ) {
+                                        bereitserhöht.add(currentNachbar);
+                                        ArrayList<MCoordinate> same = currentNachbar.intersection(currentMittelPunkt);
+                                        ArrayList<MCoordinate> other = entferne(currentNachbar.getPunkte(), currentNachbar.intersection(currentMittelPunkt));
+                                        for (MCoordinate o : other) {
+                                            ArrayList<MCoordinate> zuerhöhende = new ArrayList<>();
+                                            if ((factor>0&&currentNachbar.getMeZ(o)<currentNachbar.getMeZ(same.get(0)))||
+                                                (factor<0&&currentNachbar.getMeZ(o)>currentNachbar.getMeZ(same.get(0)))){
+                                               openList.add(currentNachbar);
+                                                zuerhöhende.add(o);
+                                            }
+                                            erhöheAmEnde.put(currentNachbar, same);
+                                            if (!zuerhöhende.isEmpty()) {
+                                                ArrayList<MCoordinate> merge = erhöheAmEnde.get(currentNachbar);
+                                                for (MCoordinate erhöhe : zuerhöhende) {
+                                                    if(!merge.contains(erhöhe)) {
+                                                        merge.add(erhöhe);
+                                                    }
+                                                }
+                                                erhöheAmEnde.put(currentNachbar, merge);
+                                            }
+                                        }
+                                    }
+                                    break;
                                 }
-
-                                feld.höhen.set(indexi, 1);
-
-//                                if(feld.höhen.toString().equals("[1, 1, 1, 1]")){
-//                                    for(int ind = 0; ind<4; ind++){
-//                                        feld.höhen.set(ind, 0);
-//                                    }
-//                                    feld.level += 1;
-//                                }
+                                case 0, 1, 3: {
+                                    bereitserhöht.add(currentNachbar);
+                                    ArrayList<MCoordinate> same = currentNachbar.intersection(currentMittelPunkt);
+                                    ArrayList<MCoordinate> other = entferne(currentNachbar.getPunkte(), currentNachbar.intersection(currentMittelPunkt));
+                                    for (MCoordinate o : other) {
+                                        ArrayList<MCoordinate> zuerhöhende = new ArrayList<>();
+                                        if ((factor>0&&currentNachbar.getMeZ(o)<currentNachbar.getMeZ(same.get(0)))||
+                                            (factor<0&&currentNachbar.getMeZ(o)>currentNachbar.getMeZ(same.get(0)))){
+                                            openList.add(currentNachbar);
+                                            zuerhöhende.add(o);
+                                        }
+                                        erhöheAmEnde.put(currentNachbar, same);
+                                        if (!zuerhöhende.isEmpty()) {
+                                            ArrayList<MCoordinate> merge = erhöheAmEnde.get(currentNachbar);
+                                            for (MCoordinate erhöhe : zuerhöhende) {
+                                                if(!merge.contains(erhöhe)) {
+                                                    merge.add(erhöhe);
+                                                }
+                                            }
+                                            erhöheAmEnde.put(currentNachbar, merge);
+                                        }
+                                    }
+                                    break;
+                                }
                             }
                         }
-                    }
-                    feld.differenz = (Integer) Collections.max(feld.höhen) - (Integer) Collections.min(feld.höhen);
-                    System.out.println(feld.getId().toString() + feld.höhen.toString() + " Differenz: " + feld.differenz
-                        + ", Level: " + feld.level );
                 }
             }
-            t.yIsoWest = t.yIsoWest - factor* increase;
-            for (MCoordinate c : t.punkte) {
-                c.y = c.y - factor* increase;
+
+            boolean darferhöhtwerden = true;
+            for(MTile key : erhöheAmEnde.keySet()){
+                if(!(key.getState()==EBuildType.free||key.getState()==EBuildType.water)){
+                    darferhöhtwerden = false;
+                }
             }
-            for(int ind = 0; ind<4; ind++){
-                t.höhen.set(ind, 1);
+
+            // ACHTUNG: hier wird nicht das Tile selbst verändert!
+            if(darferhöhtwerden) {
+                for (MTile key : erhöheAmEnde.keySet()) {
+
+                    key.erhöhePunkte(erhöheAmEnde.get(key), factor);
+                    key.createCreateHoehenArray();
+                    key.höhendif();
+                    key.setHoch(richtung);
+                }
             }
-            t.differenz = (Integer) Collections.max(t.höhen) - (Integer) Collections.min(t.höhen);
 
         }
+
+        // wenn Feld nicht eben/erhöhbar, gebe aus:
         else System.out.println("Feld ist zu schief");
     }
 
 
     //Differenz
-    public ArrayList<MCoordinate> entferne(ArrayList<MCoordinate> list1, ArrayList<MCoordinate> list2){
+    public ArrayList<MCoordinate> entferne(ArrayList<MCoordinate> list1, ArrayList<MCoordinate> list2) {
         ArrayList<MCoordinate> übrige = new ArrayList<>();
 
-        for(MCoordinate t: list1){
-            for(MCoordinate p: list2){
-                if(!(t.istGleich(p))){
+        for (MCoordinate t : list1) {
+            for (MCoordinate p : list2) {
+                if (!(t.istGleich(p))) {
                     übrige.add(t);
                 }
             }
@@ -380,8 +443,8 @@ public class VGame {
         ArrayList<MCoordinate> list = new ArrayList<>();
 
         for (MCoordinate t : list1) {
-            for(MCoordinate p : list2){
-                if(t.istGleich(p)){
+            for (MCoordinate p : list2) {
+                if (t.istGleich(p)) {
                     list.add(t);
                 }
             }
@@ -390,7 +453,7 @@ public class VGame {
     }
 
 
-
+    //zeichne das Spielfeld neu
     public void drawField() {
         clearField();
         gc.setTextAlign(TextAlignment.CENTER);
@@ -398,7 +461,7 @@ public class VGame {
         gameModel.getTileArray().forEach((tile) -> {
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);
-            if(tile.isFirstTile) {
+            if (tile.isFirstTile) {
                 tempTileView.drawForeground(gcFront);
             }
             canvas.toBack();
@@ -428,17 +491,6 @@ public class VGame {
         return new double[]{i, j};
     }
 
-    // isometrische Koordinaten werden zu kartesischen umgerechnet
-    public double[] toGrid(double x, double y) {
-//        x -= Config.Xoffset;
-//        y -= Config.Yoffset;
-
-        double i = ((x / tWidthHalf) + (y / tHeightHalf)) / 2;
-        double j = -(((y / tHeightHalf) - (x / tWidthHalf)) / 2 /*-(int)worldWidth + 1*/);
-
-        return new double[]{i, j};
-    }
-
     public MenuBar getMenuBar() {
         return menuBar;
     }
@@ -452,12 +504,9 @@ public class VGame {
     }
 
     public void showCoordinates(double coordX, double coordY) {
-
-        double[] gridCoordinates = toGrid(coordX, coordY);
-        double gridX = gridCoordinates[0];
-        double gridY = gridCoordinates[1];
-
-        debugCoord.setText("x: " + (int)gridX + "   y: " + (int)gridY + "     xGrid: " + coordX + "  yGrid: " + coordY);
+        MCoordinate canvasCoord = new MCoordinate(coordX, coordY, 0);
+        MCoordinate visibleCoord = canvasCoord.toVisibleCoord();
+        debugCoord.setText("x: " + visibleCoord.getX() + "   y: " + visibleCoord.getY() + "     xGrid: " + coordX + "  yGrid: " + coordY);
     }
 
     public void runTick() {
@@ -477,11 +526,11 @@ public class VGame {
     }
 
 
-    public void runUp(){
+    public void runUp() {
         setMouseMode(MouseMode.MOVE_UP);
     }
 
-    public void runDown(){
+    public void runDown() {
         setMouseMode(MouseMode.MOVE_DOWN);
     }
 

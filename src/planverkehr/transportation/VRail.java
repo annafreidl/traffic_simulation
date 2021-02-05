@@ -9,9 +9,11 @@ import planverkehr.Buildings;
 import planverkehr.Config;
 import planverkehr.MCoordinate;
 
+import java.util.ArrayList;
+
 public class VRail extends VTransportation {
-    public VRail(Buildings road, GraphicsContext gc, MCoordinate west) {
-        super(road, gc, west, Color.FIREBRICK);
+    public VRail(Buildings road, GraphicsContext gc, ArrayList<MCoordinate> punkteNeu, MCoordinate westVisibleCoord, boolean isSchraeg, int level, boolean hoch) {
+        super(road, gc, westVisibleCoord, Color.FIREBRICK, punkteNeu, isSchraeg, level, hoch);
         drawRoadOrRail();
 
         if(road.getSpecial().equals(String.valueOf(ESpecial.RAILSTATION).toLowerCase())){
@@ -22,8 +24,16 @@ public class VRail extends VTransportation {
     }
 
     private void drawSignal() {
-        double centerX = westX + Config.tWidthHalft;
-        double centerY = westY;
+        double schraege;
+        if(isSchraeg) {
+            schraege = gehtHoch ? westAbsolutZ - 0.5 : westAbsolutZ + 0.5;
+        } else {
+            schraege = westAbsolutZ;
+        }
+       MCoordinate centerCoord = new MCoordinate(0.5 + westAbsolutX, westAbsolutY - 0.5, schraege).toCanvasCoordWithoutOffset();
+
+        double centerX = centerCoord.getX();
+        double centerY = centerCoord.getY();
         gc.setStroke(Color.BLACK);
         gc.setFill(Color.BLACK);
         gc.setLineCap(StrokeLineCap.ROUND);
@@ -36,9 +46,10 @@ public class VRail extends VTransportation {
     }
 
     private void drawRailStation() {
+        MCoordinate canvasCoord = westAbsCoord.toCanvasCoord();
         gc.setFill(Color.DARKBLUE);
 
-        gc.fillRect(this.westX + 10, this.westY - 8, 14, 14);
+        gc.fillRect(canvasCoord.getX() + 10, canvasCoord.getY()- 8, 14, 14);
 
 
 
@@ -47,8 +58,8 @@ public class VRail extends VTransportation {
         gc.setTextBaseline(VPos.CENTER);
         gc.fillText(
             "U" ,
-            this.westX + 16.5,
-            this.westY - 1
+            canvasCoord.getX()+ 16.5,
+            canvasCoord.getY() - 1
         );
     }
 }

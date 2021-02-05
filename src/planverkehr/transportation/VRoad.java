@@ -7,11 +7,11 @@ import javafx.scene.text.TextAlignment;
 import planverkehr.Buildings;
 import planverkehr.MCoordinate;
 
-import java.util.Locale;
+import java.util.ArrayList;
 
 public class VRoad extends VTransportation{
-    public VRoad(Buildings road, GraphicsContext gc, MCoordinate west) {
-        super(road, gc, west, Color.DIMGRAY);
+    public VRoad(Buildings road, GraphicsContext gc, ArrayList<MCoordinate> punkteNeu, MCoordinate westVisibleCoord, boolean isSchraeg, int level, boolean hoch) {
+        super(road, gc, westVisibleCoord, Color.DIMGRAY, punkteNeu, isSchraeg, level, hoch);
         drawRoadOrRail();
 
        if(road.getSpecial().equals(String.valueOf(ESpecial.BUSSTOP).toLowerCase())){
@@ -20,12 +20,13 @@ public class VRoad extends VTransportation{
     }
 
     private void drawBusStop() {
+       MCoordinate canvasCoord = westAbsCoord.toCanvasCoord();
         gc.setFill(Color.YELLOW);
         gc.setStroke(Color.GREEN);
         gc.setLineWidth(1);
 
-        gc.fillOval(this.westX + 10, this.westY - 8, 14, 14);
-        gc.strokeOval(this.westX + 10, this.westY - 8, 14, 14);
+        gc.fillOval(canvasCoord.getX() + 10, canvasCoord.getY() - 8, 14, 14);
+        gc.strokeOval(canvasCoord.getX() + 10, canvasCoord.getY() - 8, 14, 14);
 
 
         gc.setFill(Color.GREEN);
@@ -33,8 +34,8 @@ public class VRoad extends VTransportation{
         gc.setTextBaseline(VPos.CENTER);
         gc.fillText(
             "H" ,
-            this.westX + 16.5,
-            this.westY - 1
+            canvasCoord.getX() + 16.5,
+            canvasCoord.getY() - 1
         );
 
     }

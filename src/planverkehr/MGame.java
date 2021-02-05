@@ -37,6 +37,12 @@ public class MGame {
         linkBuildings();
         constructedBuildings = new ArrayList<>(); //factories von Anfang an muessen rein
 
+
+        MCoordinate visible1 = new MCoordinate(1, 1, 0);
+        MCoordinate canvas2 = visible1.toCanvasCoord();
+        MCoordinate visible2 = canvas2.toVisibleCoord();
+
+
     }
 
     private void linkBuildings() {
@@ -50,15 +56,27 @@ public class MGame {
         });
     }
 
+    public ArrayList<MTile> getNeighbours(MTile m1){
+        ArrayList<MTile> neighbours = new ArrayList<>();
+
+        for (MTile feld : getTileArray()) {
+
+            if (!m1.intersection(feld).isEmpty() && m1!=feld) {
+                neighbours.add(feld);
+            }
+        }
+        return neighbours;
+    }
+
     public void createTileMap() {
         tileHashMap = new HashMap<>();
-        tileArray = new ArrayList<>();
+        tileArray = new ArrayList<MTile>();
         for (int x = 0; x < Config.worldWidth; x++) {
             for (int y = 0; y < Config.worldHeight; y++) {
-                MCoordinate gridCoordinates = new MCoordinate(x, y);
-                MCoordinate isoCoordinates = gridCoordinates.toIso();
+                MCoordinate visibleCoordinates = new MCoordinate(x, y, 0);
+                MCoordinate canvasCoordinates = visibleCoordinates.toCanvasCoord();
                 String id = x + "-" + (y - Config.worldWidth + 1);
-                MTile tempTileModel = new MTile(gridCoordinates, isoCoordinates, id);
+                MTile tempTileModel = new MTile(visibleCoordinates, canvasCoordinates, id);
 
                 tileArray.add(tempTileModel);
                 tileHashMap.put(id, tempTileModel);
@@ -66,24 +84,6 @@ public class MGame {
             }
         }
     }
-
-    public double[] toGrid(double x, double y) {
-        double tWidth = 80;
-        double tHeight = tWidth / 2;
-        double tHeightHalf = tHeight / 2;
-        double tWidthHalf = tWidth / 2;
-        double worldWidth = 10;
-        double worldHeight = 10;
-
-        x -= Config.XOffset;
-        y -= Config.YOffset;
-
-        double i = ((x / tWidthHalf) + (y / tHeightHalf)) / 2;
-        double j = (((y / tHeightHalf) - (x / tWidthHalf)) / 2 + 1);
-
-        return new double[]{i, j};
-    }
-
     public ArrayList<MTile> getTileArray() {
         return tileArray;
     }
@@ -106,10 +106,8 @@ public class MGame {
     }
 
     public boolean selectTileByCoordinates(double x, double y) {
-        double[] gridCoordinates = toGrid(x, y);
-        int gridX = (int) gridCoordinates[0];
-        int gridY = (int) gridCoordinates[1] - Config.worldWidth + 1;
-        String searchId = gridX + "-" + gridY;
+
+        String searchId = getFeldIdByCanvasCoords(x, y);
         Optional<MTile> tileOpt = findOptionalTileById(searchId);
         boolean[] selectedTile = new boolean[1];
         selectedTile[0] = false;
@@ -149,8 +147,8 @@ public class MGame {
     }
 
     //Depth = Y
-    public boolean hasSpaceForBuilding(int newBuildingWidth, int newBuildingDepth) {
-        return getTilesToBeGrouped(newBuildingWidth, newBuildingDepth) != null;
+    public boolean hasSpaceForBuilding(int newBuildingWidth, int newBuildingDepth, int dz) {
+        return getTilesToBeGrouped(newBuildingWidth, newBuildingDepth, dz) != null;
     }
 
     private MTile getSelectedTile() {
@@ -185,7 +183,7 @@ public class MGame {
         return tilesToBeGrouped;
     }
 
-    public ArrayList<MTile> getTilesToBeGrouped(int newBuildingWidth, int newBuildingDepth) {
+    public ArrayList<MTile> getTilesToBeGrouped(int newBuildingWidth, int newBuildingDepth, int dz) {
         MTile selectedTile = getSelectedTile();
         MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
         int xCoord = (int) selectedCoordinates.getX();
@@ -203,11 +201,13 @@ public class MGame {
                     String checkId = tileToCheckX + "--" + tileToCheckY;
                     MTile tileToCheck = getTileById(checkId);
                     if (tileToCheck != null) {
-                        hasSpace = tileToCheck.isFree();
+                        hasSpace = tileToCheck.isFree() && !tileToCheck.getIncline();
                         tilesToBeGrouped.add(tileToCheck);
                     }
-                } else if (selectedTile.isFree()) {
+                } else if (selectedTile.isFree() &&
+                    (dz>0 ||(dz==0 && !selectedTile.getIncline()))) {
                     tilesToBeGrouped.add(selectedTile);
+
                 } else {
                     hasSpace = false;
                 }
@@ -337,5 +337,15 @@ public class MGame {
             }
 
         }
+    }
+
+    public String getFeldIdByCanvasCoords(double canvasX, double canvasY) {
+        MCoordinate canvasCoordinate = new MCoordinate(canvasX, canvasY, 0);
+
+        MCoordinate visibleCoordinate = canvasCoordinate.toVisibleCoord();
+
+
+        // rufe Tile an der Stelle auf
+        return (int) visibleCoordinate.getX() + "-" + (int) visibleCoordinate.getY();
     }
 }

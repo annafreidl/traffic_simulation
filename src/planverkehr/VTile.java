@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import planverkehr.transportation.VRail;
 import planverkehr.transportation.VRoad;
+import java.util.Collections;
 
 
 public class VTile {
@@ -28,54 +29,120 @@ public class VTile {
 
     public void drawBackground(GraphicsContext gc) {
 
+        double visibleXOriginal = tileModel.getVisibleCoordinates().getX();
+        double visibleYOriginal = tileModel.getVisibleCoordinates().getY();
+
         if (tileModel.getIsSelected()) {
             gc.setFill(Color.LIME);
             gc.beginPath();
-            //West Point x, y
-            gc.moveTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-            //North
-            gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-            //West
-            gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-            //South
-            gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
+            MCoordinate temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+            MCoordinate tempIso = temp.toCanvasCoord();
+            gc.moveTo(tempIso.getX(), tempIso.getY());
+            temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+            tempIso = temp.toCanvasCoord();
+            gc.lineTo(tempIso.getX(), tempIso.getY());
+            temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+            tempIso = temp.toCanvasCoord();
+            gc.lineTo(tempIso.getX(), tempIso.getY());
+            temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+            tempIso = temp.toCanvasCoord();
+            gc.lineTo(tempIso.getX(), tempIso.getY());
             gc.setLineWidth(1);
             gc.setStroke(Color.BLACK);
             gc.closePath();
             gc.fill();
             gc.stroke();
         } else {
-            switch (tileModel.höhen.toString()) {
+            if(Collections.min(tileModel.höhen)<0){
+                        //flat
+                        gc.beginPath();
+                        MCoordinate temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                        MCoordinate tempIso = temp.toCanvasCoord();
+                        gc.moveTo(tempIso.getX(), tempIso.getY());
+                        temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                        tempIso = temp.toCanvasCoord();
+                        gc.lineTo(tempIso.getX(), tempIso.getY());
+                        temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                        tempIso = temp.toCanvasCoord();
+                        gc.lineTo(tempIso.getX(), tempIso.getY());
+                        temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                        tempIso = temp.toCanvasCoord();
+                        gc.lineTo(tempIso.getX(), tempIso.getY());
+                        temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                        tempIso = temp.toCanvasCoord();
+                        gc.lineTo(tempIso.getX(), tempIso.getY());
+                        temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                        tempIso = temp.toCanvasCoord();
+                        gc.lineTo(tempIso.getX(), tempIso.getY());
+
+                        // gc.lineTo(gridX + tileModel.getNorth().toIso().getX(), gridY + tileModel.getIsoNorth().getY());
+
+                gc.setFill(Color.rgb(0, 0, 204));
+                        gc.fill();
+                        //gc.stroke();
+                        gc.closePath();
+                }
+
+            else {
+            switch (tileModel.höhendif().toString()) {
                 case "[0, 0, 0, 0]", "[1, 1, 1, 1]":
+//                    System.out.println("iso: " + tileModel.getIsoNorth().getX());
+//                    System.out.println("relativ: " + tileModel.getNorth().toCanvasCoord().getX());
+
                     //flat
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    MCoordinate temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    MCoordinate tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                     temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                     tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+
+                   // gc.lineTo(gridX + tileModel.getNorth().toIso().getX(), gridY + tileModel.getIsoNorth().getY());
                     gc.setFill(Color.rgb(0, 153, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     break;
+
+
                 case "[0, 0, 0, 1]":
                     //north
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    //gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
                     gc.setFill(Color.rgb(0, 51, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //south
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 102, 0));
                     gc.fill();
                     gc.stroke();
@@ -84,20 +151,30 @@ public class VTile {
                 case "[0, 0, 1, 0]":
                     //east
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());;
                     gc.setFill(Color.rgb(0, 51, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //west
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 204, 0));
                     gc.fill();
                     gc.stroke();
@@ -106,20 +183,30 @@ public class VTile {
                 case "[0, 1, 0, 0]":
                     //north
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 204, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //south
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 255, 0));
                     gc.fill();
                     gc.stroke();
@@ -128,20 +215,30 @@ public class VTile {
                 case "[1, 0, 0, 0]":
                     //east
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 102, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //west
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 255, 0));
                     gc.fill();
                     gc.stroke();
@@ -150,11 +247,21 @@ public class VTile {
                 case "[1, 1, 0, 0]":
                     //inclined
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 255, 0));
                     gc.fill();
                     gc.stroke();
@@ -163,11 +270,21 @@ public class VTile {
                 case "[1, 0, 0, 1]":
                     //flat
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 102, 0));
                     gc.fill();
                     gc.stroke();
@@ -176,11 +293,21 @@ public class VTile {
                 case "[0, 0, 1, 1]":
                     //inclined
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 51, 0));
                     gc.fill();
                     gc.stroke();
@@ -189,11 +316,21 @@ public class VTile {
                 case "[0, 1, 1, 0]":
                     //inclined
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 204, 0));
                     gc.fill();
                     gc.stroke();
@@ -202,20 +339,30 @@ public class VTile {
                 case "[1, 1, 1, 0]":
                     //north
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 255, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //south
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 204, 0));
                     gc.fill();
                     gc.stroke();
@@ -224,20 +371,30 @@ public class VTile {
                 case "[1, 0, 1, 1]":
                     //north
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 102, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //south
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 51, 0));
                     gc.fill();
                     gc.stroke();
@@ -246,20 +403,30 @@ public class VTile {
                 case "[1, 1, 0, 1]":
                     //east
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());;
                     gc.setFill(Color.rgb(0, 255, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //west
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 102, 0));
                     gc.fill();
                     gc.stroke();
@@ -268,20 +435,30 @@ public class VTile {
                 case "[0, 1, 1, 1]":
                     //east
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());;
                     gc.setFill(Color.rgb(0, 204, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //west
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 51, 0));
                     gc.fill();
                     gc.stroke();
@@ -290,20 +467,30 @@ public class VTile {
                 case "[0, 1, 0, 1]":
                     //east
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());;
                     gc.setFill(Color.rgb(0, 255, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     //west
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.rgb(0, 102, 0));
                     gc.fill();
                     gc.stroke();
@@ -312,10 +499,15 @@ public class VTile {
                 case "[1, 0, 1, 0]":
                     //north
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoNorth().getX(), tileModel.getIsoNorth().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.YELLOW);
                     //gc.setFill(Color.rgb(0, 102, 0));
                     gc.fill();
@@ -323,36 +515,67 @@ public class VTile {
                     gc.closePath();
                     //south
                     gc.beginPath();
-                    gc.moveTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
-                    gc.lineTo(tileModel.getIsoSouth().getX(), tileModel.getIsoSouth().getY());
-                    gc.lineTo(tileModel.getXIsoWest(), tileModel.getYIsoWest());
-                    gc.lineTo(tileModel.getIsoEast().getX(), tileModel.getIsoEast().getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
                     gc.setFill(Color.BLUE);
                     //gc.setFill(Color.rgb(0, 51, 0));
                     gc.fill();
                     gc.stroke();
                     gc.closePath();
                     break;
+
+
                 default:
-                    throw new IllegalStateException("Unexpected value: " + tileModel.höhen.toString());
+                    gc.beginPath();
+                     temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                     tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getEast().getX(), visibleYOriginal - tileModel.getEast().getY(), tileModel.getEast().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.lineTo(tempIso.getX(), tempIso.getY());
+                    temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+                    tempIso = temp.toCanvasCoord();
+                    gc.moveTo(tempIso.getX(), tempIso.getY());
+
+                    // gc.lineTo(gridX + tileModel.getNorth().toIso().getX(), gridY + tileModel.getIsoNorth().getY());
+                    gc.setFill(Color.rgb(0, 153, 0));
+                    gc.fill();
+                    gc.stroke();
+                    gc.closePath();
+                   // throw new IllegalStateException("Unexpected value: " + tileModel.höhen.toString());
             }
-        }
+        }}
 
         //Hilfestellung: Koordinaten an den Westnodes der Tiles
         gc.setFill(Color.BLACK);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
+        MCoordinate temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+       MCoordinate tempIso = temp.toCanvasCoord();
         gc.fillText(
-            (int) tileModel.getGridCoordinates().getX() + "-" + ((int) tileModel.getGridCoordinates().getY() - Config.worldWidth + 1),
-            tileModel.getXIsoWest(),
-            tileModel.getYIsoWest() - 2
+            (int) tileModel.getVisibleCoordinates().getX() + "-" + ((int) tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1),
+            tempIso.getX(),
+            tempIso.getY() - 2
         );
     }
 
     public void drawForeground(GraphicsContext gc) {
 
-        double xIso = tileModel.getXIsoWest();
-        double yIso = tileModel.getYIsoWest();
+        double xIso = tileModel.getIsoWest().getX();
+        double yIso = tileModel.getIsoWest().getY();
         double widthHalf = Config.tWidth / 2;
         double heightHalf = Config.tWidth / 4;
 
@@ -365,7 +588,7 @@ public class VTile {
         switch (tileModel.getState()) {
 
             case building -> {
-                String buildingName = building.replace(" ","-");
+                String buildingName = building.replace(" ", "-");
                 image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
                 imageScale = widthHalf / image.getWidth();
@@ -376,15 +599,15 @@ public class VTile {
             }
 
             case road -> {
-                new VRoad(tileModel.getConnectedBuilding(), gc, tileModel.getIsoWest());
+                new VRoad(tileModel.getConnectedBuilding(), gc, tileModel.getPunkteNeu(), tileModel.getVisibleCoordinates(), tileModel.isSchraeg(), tileModel.getLevel(), tileModel.isHoch());
             }
 
             case rail -> {
-                new VRail(tileModel.getConnectedBuilding(), gc, tileModel.getIsoWest());
+                new VRail(tileModel.getConnectedBuilding(), gc, tileModel.getPunkteNeu(), tileModel.getVisibleCoordinates(), tileModel.isSchraeg(), tileModel.getLevel(), tileModel.isHoch());
             }
 
             case airport -> {
-                String buildingName = building.replace(" ","-");
+                String buildingName = building.replace(" ", "-");
                 System.out.println(buildingName);
                 image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
@@ -396,7 +619,7 @@ public class VTile {
             }
 
             case nature -> {
-                String buildingName = building.replace(" ","-");
+                String buildingName = building.replace(" ", "-");
                 image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
                 imageScale = widthHalf / image.getWidth();

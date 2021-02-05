@@ -98,8 +98,8 @@ public class MTransportConnection {
     }
 
     private void connectKnotenpunkte() {
-        double feldX = feld.getGridCoordinates().getX();
-        double feldY = feld.getGridCoordinates().getY();
+        double feldX = feld.getVisibleCoordinates().getX();
+        double feldY = feld.getVisibleCoordinates().getY();
         List<Pair<String, String>> connectionList = null;
 
 
@@ -118,8 +118,8 @@ public class MTransportConnection {
                 MCoordinate firstCoord = buildingToBeBuilt.getPoints().get(firstNodeName);
                 MCoordinate secondCoord = buildingToBeBuilt.getPoints().get(secondNodeName);
 
-                MCoordinate firstGridCoord = new MCoordinate(feldX + firstCoord.getX(), feldY - firstCoord.getY());
-                MCoordinate secondGridCoord = new MCoordinate(feldX + secondCoord.getX(), feldY - secondCoord.getY());
+                MCoordinate firstGridCoord = new MCoordinate(feldX + firstCoord.getX(), feldY - firstCoord.getY(), firstCoord.getZ());
+                MCoordinate secondGridCoord = new MCoordinate(feldX + secondCoord.getX(), feldY - secondCoord.getY(), secondCoord.getZ());
 
 
                 feld.getNodeByCoordinatesString(firstGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> {
@@ -203,11 +203,11 @@ public class MTransportConnection {
 
     private MKnotenpunkt createKnotenpunkt(MCoordinate coords, String name) {
         String nodeId = "" + buildingToBeBuiltType + relevantGraph.getIncreasedId();
-        MCoordinate feldGridCoordinates = feld.getGridCoordinates();
+        MCoordinate feldGridCoordinates = feld.getVisibleCoordinates();
 
 
 
-        MCoordinate nodeCoordinate = new MCoordinate(feldGridCoordinates.getX() + coords.getX(), feldGridCoordinates.getY() - coords.getY());
+        MCoordinate nodeCoordinate = new MCoordinate(feldGridCoordinates.getX() + coords.getX(), feldGridCoordinates.getY() - coords.getY(), feld.getLevel());
 
         MKnotenpunkt knotenpunkt;
 

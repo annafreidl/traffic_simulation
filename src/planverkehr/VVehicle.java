@@ -11,8 +11,8 @@ public class VVehicle {
     public VVehicle(MVehicles vehicle, GraphicsContext gc) {
 
 
-        isoX = vehicle.getCurrentPosition().toIso().getX();
-        isoY = vehicle.getCurrentPosition().toIso().getY();
+        isoX = vehicle.getCurrentPosition().toCanvasCoord().getX();
+        isoY = vehicle.getCurrentPosition().toCanvasCoord().getY();
 
         gc.setFill(Color.BLACK);
         gc.setTextAlign(TextAlignment.CENTER);
