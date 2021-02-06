@@ -23,6 +23,10 @@ public class MKnotenpunkt {
   //  HashMap<String, MKnotenpunkt> groupedKnotenpunkte;
     EBuildType type;
     ESpecial targetType;
+    final TreeSet<Integer> blockedForTickList;
+    boolean isBlocked = false;
+    boolean isTempTarget = false;  //todo: prüfen ob überhaupt noch nötig
+
 
     public MKnotenpunkt(String nodeId, String groupId, MCoordinate coords, EBuildType type, String name, String feldId, EDirections direction, boolean isEdge){
         this.knotenpunktId = nodeId;
@@ -40,6 +44,7 @@ public class MKnotenpunkt {
       //  groupedKnotenpunkte = new HashMap<>();
         possibleConnections = EnumSet.noneOf(EDirections.class);
         targetType = null;
+        blockedForTickList = new TreeSet<>();
 
     }
 
@@ -112,11 +117,48 @@ public void addGroupId(String id){
         this.targetType = targetType;
     }
 
-    public ArrayList<String> getGroupId() {
+    public ArrayList<String> getListOfGroupId() {
         return groupIds;
     }
 
     public String getKnotenpunktId() {
         return knotenpunktId;
+    }
+
+    public ESpecial getTargetType() {
+        return targetType;
+    }
+
+    public void addEntryToBlockedForTickList(int tick) {
+        blockedForTickList.add(tick);
+    }
+
+    public boolean isTempTarget() {
+        return isTempTarget;
+    }
+
+    public void setBlocked(boolean blocked) {
+        isBlocked = blocked;
+    }
+
+    //todo: muss für Verlehrsmittel geschrieben werden
+    public boolean isFreeFor(int timeBetretenUm) {
+        Integer lowerTime = blockedForTickList.higher(timeBetretenUm-1);
+        Integer upperTime = blockedForTickList.higher(timeBetretenUm + 1);
+
+        if (isBlocked) {
+            return false;
+        } else if ((blockedForTickList.isEmpty() || (lowerTime == null)) ) {
+            return true;
+        } else if ((upperTime == null)) {
+            return false;
+        } else if (blockedForTickList.subSet(lowerTime, upperTime).isEmpty()) {
+            return true;
+        }
+        return true;
+    }
+
+    public TreeSet<Integer> getBlockedForTickList() {
+        return blockedForTickList;
     }
 }

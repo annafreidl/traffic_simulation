@@ -7,6 +7,7 @@ import java.util.Optional;
 import javafx.util.Pair;
 import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
+import planverkehr.graph.MTargetpointList;
 
 import java.util.*;
 
@@ -23,6 +24,8 @@ public class MGame {
     ArrayList<MVehicles> visibleVehiclesArrayList;
     ArrayList<MVehicles> vehicleTypeList;
     int vehicleId = 0;
+    MTargetpointList listeDerBushaltestellen, listeDerBahnhöfe;
+    int tickNumber = 0;
 
 
     public MGame(GameConfig config) {
@@ -42,6 +45,8 @@ public class MGame {
         MCoordinate canvas2 = visible1.toCanvasCoord();
         MCoordinate visible2 = canvas2.toVisibleCoord();
 
+        listeDerBushaltestellen = new MTargetpointList();
+        listeDerBahnhöfe = new MTargetpointList();
 
     }
 
@@ -224,15 +229,18 @@ public class MGame {
     public void createVehicle() {
         MTile selectedTile = getSelectedTile();
         MVehicles temp = vehicleTypeList.get(0);
+        MTargetpointList relevantTargetPoints = null;
 
         if (selectedTile.state == EBuildType.road || selectedTile.state == EBuildType.rail) {
 
             if (selectedTile.state == EBuildType.road) {
                 temp = vehicleTypeList.get(0);
+                relevantTargetPoints = listeDerBushaltestellen;
 
             } else {
                 for (MVehicles mVehicles : vehicleTypeList) {
                     if (mVehicles.getKind().equals("engine")) {
+                        relevantTargetPoints = listeDerBahnhöfe;
                         temp = mVehicles;
                     }
                 }
@@ -246,9 +254,12 @@ public class MGame {
 
             knotenpunktOptional.ifPresentOrElse((truck::setCurrentKnotenpunkt), (() -> {
                 truck.setCurrentKnotenpunkt(getSelectedTile().getKnotenpunkteArray().get(0));
-                System.out.println("center not found");
             }));
             truck.setId(vehicleId);
+
+          if(relevantTargetPoints != null) {
+              truck.findPath(relevantTargetPoints, tickNumber);
+          }
             vehicleId++;
             visibleVehiclesArrayList.add(truck);
 
@@ -259,13 +270,34 @@ public class MGame {
 
     public void moveVehicles() {
         visibleVehiclesArrayList.forEach((vehicle) -> {
-            MKnotenpunkt nextKnotenpunkt = vehicle.getNextKnotenpunkt();
+            if(!vehicle.isWaiting){
+            vehicle.getCurrentKnotenpunkt().getBlockedForTickList().pollFirst();
+            MTargetpointList relevantTargetpoints;
+            Graph relevantGraph;
+            //todo: explizit andere Fahrzeugtypen prüfen
+            if(vehicle.getKind().equals("engine")){
+                relevantTargetpoints = listeDerBahnhöfe;
+                relevantGraph = railGraph;
+            } else {
+                relevantTargetpoints = listeDerBushaltestellen;
+                relevantGraph = roadGraph;
+            }
+            MKnotenpunkt nextKnotenpunkt = vehicle.getNextKnotenpunktFromPath(relevantTargetpoints, tickNumber, relevantGraph);
+            nextKnotenpunkt.getBlockedForTickList().pollFirst();
+            if(vehicle.pathStack.isEmpty()){
+                vehicle.setAtGoal(true);
+            }
 
-            vehicle.setCurrentKnotenpunkt(nextKnotenpunkt);
+            vehicle.setCurrentKnotenpunkt(nextKnotenpunkt);}
+            else {
+                vehicle.setWaiting(false);
+            }
         });
+
+        tickNumber++;
     }
 
-    //todo: dynamisch klonen, damit es auch noch funktioniert wenn Attribute hinzugefügt werden (bsp combinesBuildings)
+    //todo: dynamisch klonen, damit es auch noch funktioniert wenn Attribute hinzugefügt werden (bsp combinesBuildings). Muss in die Buildingsklasse
     public Buildings copyBuilding(Buildings building) {
 
         String buildingName = building.getBuildingName();
@@ -286,26 +318,6 @@ public class MGame {
         return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combinesStrings, productions);
     }
 
-//    public void removeKnotenpunkte() {
-//        MTile selectedTile = getSelectedTile();
-//        if (selectedTile != null &&
-//            selectedTile.getConnectedBuilding() != null &&
-//            (selectedTile.getConnectedBuildingType().equals(EBuildType.rail) || selectedTile.getConnectedBuildingType().equals(EBuildType.road))) {
-//            System.out.println("Remove Knotenpunkt");
-//            Buildings connectedBuilding = selectedTile.getConnectedBuilding();
-//            EBuildType buildingType = connectedBuilding.getBuildType();
-//            Graph relevantGraph = buildingType.equals(EBuildType.rail) ? railGraph : roadGraph;
-//            String groupId;
-//            if (!selectedTile.isFirstTile) {
-//                groupId = selectedTileId + connectedBuilding.getBuildingName();
-//
-//            } else {
-//                groupId = selectedTile.getGroupId();
-//            }
-//            relevantGraph.removeKnotenpunkteByFeld(groupId);
-//        }
-//    }
-
     public void resetTile() {
         MTile selectedTile = getSelectedTile();
         if (selectedTile != null &&
@@ -318,16 +330,16 @@ public class MGame {
 
 
                     for (MKnotenpunkt k : mTile.getKnotenpunkteArray()) {
-                        if (k.getGroupId().size() > 1) {
+                        if (k.getListOfGroupId().size() > 1) {
                             System.out.println("mehrere GroupIDs");
                             if (groupId.length() > 0) {
-                                k.getGroupId().remove(groupId);
+                                k.getListOfGroupId().remove(groupId);
                             } else {
                                 System.out.println("GroupID nicht gesetzt");
                             }
                         } else {
                             if (groupId.length() < 1) {
-                                groupId = k.getGroupId().get(0);
+                                groupId = k.getListOfGroupId().get(0);
                             }
                             relevantGraph.remove(k.getGridCoordinate().toStringCoordinates());
                         }

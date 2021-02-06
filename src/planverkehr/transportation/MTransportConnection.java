@@ -8,6 +8,7 @@ import planverkehr.MCoordinate;
 import planverkehr.MTile;
 import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
+import planverkehr.graph.MTargetpointList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +28,12 @@ public class MTransportConnection {
     HashMap<String, MKnotenpunkt> mKnotenpunktHashMapSecondNode; //rename to newKnotenpunktMap
     Map<String, MCoordinate> newPoints;
     boolean isTwoTileTransport, isConnection, relevantTilesFree, shouldAlwaysDraw;
+    MTargetpointList targetpointList;
 
     ArrayList<MTile> relevantTiles;
     Graph relevantGraph;
 
-    public MTransportConnection(MTile feld, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, boolean relevantTilesFree, ArrayList<MTile> relevantTiles, Graph relevantGraph, boolean shouldAlwaysDraw) {
+    public MTransportConnection(MTile feld, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, boolean relevantTilesFree, ArrayList<MTile> relevantTiles, Graph relevantGraph, boolean shouldAlwaysDraw, MTargetpointList relevantTargetpointlist) {
         this.feld = feld;
         feldBuildingType = feld.getState();
         this.buildingToBeBuiltType = buildingToBeBuiltType;
@@ -42,6 +44,7 @@ public class MTransportConnection {
         this.relevantTiles = relevantTiles;
         this.relevantGraph = relevantGraph;
         this.shouldAlwaysDraw = shouldAlwaysDraw;
+        this.targetpointList = relevantTargetpointlist;
 
         groupId = feld.getId() + "-" + buildingToBeBuiltID;
         mKnotenpunktHashMap = new HashMap<>();
@@ -54,6 +57,7 @@ public class MTransportConnection {
         checkIsConnection();
 
         //1. Prüfen ob Platz für Straße ist
+        //todo: dz und Haltestellen einbeziehen
         if (checkForSpace()) {
 
             //2. State und Building von Kachel setzten
@@ -82,8 +86,16 @@ public class MTransportConnection {
     private void checkForTargetTypes() {
 
         switch (buildingToBeBuilt.getSpecial()){
-            case "railsstation" -> mKnotenpunktHashMap.forEach((id, knoten) -> knoten.setTargetType(ESpecial.RAILSTATION));
-            case "bussstation" -> mKnotenpunktHashMap.forEach((id, knoten) -> knoten.setTargetType(ESpecial.BUSSTOP));
+            case "railstation" -> mKnotenpunktHashMap.forEach((id, knoten) -> {
+                knoten.setTargetType(ESpecial.RAILSTATION);
+                targetpointList.add(knoten);
+            });
+            case "busstop" -> mKnotenpunktHashMap.forEach((id, knoten) -> {
+                if(knoten.getName().equals("c")) {
+                    knoten.setTargetType(ESpecial.BUSSTOP);
+                    targetpointList.add(knoten);
+                }
+            });
             case "signal" -> mKnotenpunktHashMap.forEach((id, knoten) -> knoten.setTargetType(ESpecial.SIGNAL));
         }
     }

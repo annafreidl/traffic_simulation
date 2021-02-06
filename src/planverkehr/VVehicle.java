@@ -8,6 +8,7 @@ import javafx.scene.text.TextAlignment;
 public class VVehicle {
     double isoX;
     double isoY;
+
     public VVehicle(MVehicles vehicle, GraphicsContext gc) {
 
 
@@ -18,19 +19,27 @@ public class VVehicle {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
         gc.fillText(
-            "" + vehicle.getId() ,
+            "" + vehicle.getId(),
             isoX - 2,
             isoY - 10
         );
 
-        if(vehicle.getKind().equals("engine")){
+        if (vehicle.getKind().equals("engine")) {
             gc.setFill(Color.NAVAJOWHITE);
             gc.fillRect(isoX, isoY, 5, 5);
-        } else if (vehicle.getKind().equals("road vehicle")){
-            gc.setFill(Color.RED);
-            gc.fillRoundRect(isoX + 2, isoY-8, 12, 8, 10, 10);
-            gc.setFill(Color.RED);
-            gc.fillRoundRect(isoX - 2, isoY-4, 18, 6, 5, 5);
+        } else if (vehicle.getKind().equals("road vehicle")) {
+
+            gc.setFill(Color.GOLDENROD);
+
+
+            gc.fillRoundRect(isoX + 2, isoY - 8, 12, 8, 10, 10);
+
+            if (vehicle.isAtGoal()) {
+                gc.setFill(Color.BLUE);
+            } else {
+                gc.setFill(Color.RED);
+            }
+            gc.fillRoundRect(isoX - 2, isoY - 4, 18, 6, 5, 5);
 //            gc.setFill(Color.RED);
 //            gc.fillRoundRect(isoX - 2, isoY, 10, 1.5, 10, 5);
             gc.setFill(Color.LIGHTSLATEGRAY);

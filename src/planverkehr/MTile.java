@@ -276,7 +276,7 @@ public class MTile {
         String possibleID = "";
         int idOccurrences = 0;
         for (int i = 0; i < getKnotenpunkteArray().size() && idOccurrences < 2; i++) {
-            possibleID = getKnotenpunkteArray().get(i).getGroupId().get(0);
+            possibleID = getKnotenpunkteArray().get(i).getListOfGroupId().get(0);
             idOccurrences = 0;
             System.out.println("Enthählt possibleID: [" + possibleID + "] nameArray: [" + nameArray + "] ?");
 
@@ -284,7 +284,7 @@ public class MTile {
                 System.out.println("Ja");
 
                 for (MKnotenpunkt k : getKnotenpunkteArray()) {
-                    for (String id : k.getGroupId()) {
+                    for (String id : k.getListOfGroupId()) {
                         System.out.println("entspricht id: [" + id + "] der possibleID: [" + possibleID + "] ?");
                         if (id.equals(possibleID)) {
                             System.out.println("Ja");

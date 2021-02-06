@@ -8,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import planverkehr.graph.Graph;
+import planverkehr.graph.MTargetpointList;
 import planverkehr.transportation.MTransportConnection;
 
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ public class Controller {
 
             //BusStop
             Buildings buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            MTargetpointList relevantTargetpointlist = gameModel.listeDerBushaltestellen;
+
             for (int x = 0; x < 3; x++) {
                 for (int y = 2; y < 8; y++) {
                     String tileId = x + "--" + y;
@@ -51,7 +54,7 @@ public class Controller {
                     ArrayList<MTile> relevantTiles = new ArrayList<>();
                     relevantTiles.add(feld);
                     if (x == 1 && (y == 2 || y == 4 || y == 7)) {
-                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true);
+                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
                     }
                 }
             }
@@ -66,8 +69,8 @@ public class Controller {
                     MTile feld = gameModel.getTileById(tileId);
                     ArrayList<MTile> relevantTiles = new ArrayList<>();
                     relevantTiles.add(feld);
-                    if ((x == 0 || x == 3) && (y == 3 || y == 5)) {
-                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true);
+                    if ((x == 0 || x == 2) && (y == 3 || y == 5)) {
+                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
                     }
                 }
             }
@@ -84,7 +87,7 @@ public class Controller {
                     ArrayList<MTile> relevantTiles = new ArrayList<>();
                     relevantTiles.add(feld);
                     if (feld.getConnectedBuilding() == null || (!feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true);
+                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
                     }
                 }
                 x++;
@@ -101,7 +104,7 @@ public class Controller {
                     ArrayList<MTile> relevantTiles = new ArrayList<>();
                     relevantTiles.add(feld);
                     if (feld.getConnectedBuilding() == null || (!feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true);
+                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
                     }
                 }
                 x++;
@@ -119,7 +122,7 @@ public class Controller {
                     ArrayList<MTile> relevantTiles = new ArrayList<>();
                     relevantTiles.add(feld);
                     if ((y == 2 || y == 4 || y == 7) && (feld.getConnectedBuilding() == null || !feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true);
+                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
                     }
                 }
             }
@@ -136,7 +139,7 @@ public class Controller {
                     ArrayList<MTile> relevantTiles = new ArrayList<>();
                     relevantTiles.add(feld);
                     if ((y == 2 || y == 4 || y == 7) && (feld.getConnectedBuilding() == null || !feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true);
+                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
                     }
                 }
             }
@@ -147,139 +150,140 @@ public class Controller {
         });
 
         gameView.getDefaultRailButton().setOnAction(e -> {
-                e.consume();
-                Graph relevantGraph = gameModel.railGraph;
-                EBuildType buildingToBeBuiltType = EBuildType.rail;
-                boolean hasSpaceForBuilding = true;
+            e.consume();
+            Graph relevantGraph = gameModel.railGraph;
+            EBuildType buildingToBeBuiltType = EBuildType.rail;
+            boolean hasSpaceForBuilding = true;
+            MTargetpointList relevantTargetpointlist = gameModel.listeDerBahnhöfe;
 
-                //Geraden
+            //Geraden
 
-                String newBuildingId = "rail-ne-sw";
-                Buildings buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                for (int x = 1; x < 8; x++) {
-                    for (int y = 0; y < 10; y++) {
-                        if (((x == 1 || x == 7) && (y == 0 || y == 1 || y == 4))) {
-                            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
-                        }
-
+            String newBuildingId = "rail-ne-sw";
+            Buildings buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            for (int x = 1; x < 8; x++) {
+                for (int y = 0; y < 10; y++) {
+                    if (((x == 1 || x == 7) && (y == 0 || y == 1 || y == 4))) {
+                        drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
                     }
                 }
-                newBuildingId = "rail-nw-se";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                for (int x = 1; x < 8; x++) {
-                    for (int y = 0; y < 10; y++) {
-                        if (((x == 4) && (y == 1 || y == 7 || y == 9))) {
-                            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
-                        }
+            }
+            newBuildingId = "rail-nw-se";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            for (int x = 1; x < 8; x++) {
+                for (int y = 0; y < 10; y++) {
+                    if (((x == 4) && (y == 1 || y == 7 || y == 9))) {
+                        drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
                     }
                 }
+            }
 
-                //Switches
-                newBuildingId = "railswitch-ne-s";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                int x = 1;
-                int y = 2;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            //Switches
+            newBuildingId = "railswitch-ne-s";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            int x = 1;
+            int y = 2;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "railswitch-sw-e";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 1;
-                y = 5;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "railswitch-sw-e";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 1;
+            y = 5;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "railswitch-sw-n";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 7;
-                y = 5;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "railswitch-sw-n";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 7;
+            y = 5;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "railswitch-ne-w";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 7;
-                y = 2;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "railswitch-ne-w";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 7;
+            y = 2;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                //Kurven
-                newBuildingId = "railcurve-se-n";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 2;
-                y = 1;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            //Kurven
+            newBuildingId = "railcurve-se-n";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 2;
+            y = 1;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "railcurve-sw-n";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 7;
-                y = 7;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "railcurve-sw-n";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 7;
+            y = 7;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "railcurve-sw-e";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 1;
-                y = 7;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "railcurve-sw-e";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 1;
+            y = 7;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
 
-                newBuildingId = "railcurve-nw-e";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 5;
-                y = 1;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "railcurve-nw-e";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 5;
+            y = 1;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "railcurve-nw-s";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 5;
-                y = 7;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "railcurve-nw-s";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 5;
+            y = 7;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                x = 5;
-                y = 9;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            x = 5;
+            y = 9;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "railcurve-se-w";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 2;
-                y = 7;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "railcurve-se-w";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 2;
+            y = 7;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                x = 2;
-                y = 9;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            x = 2;
+            y = 9;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
 //Eckverbindungen
-                newBuildingId = "rail-nw-sw";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 2;
-                y = 2;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "rail-nw-sw";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 2;
+            y = 2;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "rail-se-sw";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 6;
-                y = 2;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "rail-se-sw";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 6;
+            y = 2;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "rail-ne-se";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 6;
-                y = 6;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "rail-ne-se";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 6;
+            y = 6;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                x = 6;
-                y = 8;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            x = 6;
+            y = 8;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                newBuildingId = "rail-ne-nw";
-                buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                x = 2;
-                y = 6;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            newBuildingId = "rail-ne-nw";
+            buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
+            x = 2;
+            y = 6;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                x = 2;
-                y = 8;
-                drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph);
+            x = 2;
+            y = 8;
+            drawDefaultNode(x, y, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantGraph, relevantTargetpointlist);
 
-                gameView.drawField();
-            });
+            gameView.drawField();
+
+        });
 
         gameView.getTickButton().setOnAction(e -> {
             e.consume();
@@ -311,13 +315,24 @@ public class Controller {
                         if (buildingToBeBuiltType.equals(EBuildType.rail) || buildingToBeBuiltType.equals(EBuildType.road)) {
 
                             Graph relevantGraph;
+                            MTargetpointList relevantTargetpointlist;
 
                             switch (buildingToBeBuiltType) {
-                                case rail -> relevantGraph = gameModel.railGraph;
-                                case road -> relevantGraph = gameModel.roadGraph;
-                                default -> relevantGraph = gameModel.gameGraph;
+                                case rail -> {
+                                    relevantGraph = gameModel.railGraph;
+                                    relevantTargetpointlist = gameModel.listeDerBahnhöfe;
+                                }
+                                case road -> {
+                                    relevantGraph = gameModel.roadGraph;
+                                    relevantTargetpointlist = gameModel.listeDerBushaltestellen;
+                                }
+                                default -> {
+                                    relevantGraph = gameModel.gameGraph;
+                                    relevantTargetpointlist = gameModel.listeDerBushaltestellen;
+                                    System.out.println("Achtung - falsche Targetpointlist ");
+                                }
                             }
-                            new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false);
+                            new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist);
 
 
                         } else if (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.airport) || buildingToBeBuiltType.equals(EBuildType.nature)) {
@@ -330,7 +345,7 @@ public class Controller {
                             newBuilding.startProductionandCosumption();
                         }
                         gameView.drawField();
-                       // gameModel.railGraph.print();
+                        // gameModel.railGraph.print();
                     }
                 });
             });
@@ -384,6 +399,7 @@ public class Controller {
             }
         });
 
+        //todo: remove stations from Targettypelist
         gameView.getRemoveButton().setOnAction(e -> {
             //   gameModel.removeKnotenpunkte();
             gameModel.resetTile();
@@ -395,10 +411,10 @@ public class Controller {
 
     }
 
-    private void drawDefaultNode(int x, int y, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, boolean hasSpaceForBuilding, Graph relevantGraph) {
+    private void drawDefaultNode(int x, int y, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, boolean hasSpaceForBuilding, Graph relevantGraph, MTargetpointList relevantTargetpointlist) {
         String tileId = x + "--" + y;
         MTile feld = gameModel.getTileById(tileId);
-        if(feld == null){
+        if (feld == null) {
             tileId = x + "-" + y;
             feld = gameModel.getTileById(tileId);
         }
@@ -408,7 +424,7 @@ public class Controller {
 
         Boolean hasSpace = gameModel.hasSpaceForBuilding(buildingToBeBuilt.getWidth(), buildingToBeBuilt.getDepth(), buildingToBeBuilt.getDz());
 
-        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpace, relevantTiles, relevantGraph, true);
+        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
 
     }
 
