@@ -1,6 +1,5 @@
 package planverkehr;
 
-import javafx.scene.control.Alert;
 import javafx.scene.input.MouseButton;
 import javafx.geometry.Point2D;
 import javafx.animation.KeyFrame;
@@ -328,7 +327,7 @@ public class Controller {
                             Buildings newBuilding = gameModel.copyBuilding(buildingToBeBuilt); //new Building that's copied
                             feld.setBuildingOnTile(newBuilding);
                             feld.addConnectedBuilding(newBuilding);
-
+                            newBuilding.startProductionandCosumption();
                         }
                         gameView.drawField();
                        // gameModel.railGraph.print();

@@ -3,10 +3,7 @@ package planverkehr;
 import javafx.util.Pair;
 import planverkehr.transportation.EDirections;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Buildings {
 
@@ -119,6 +116,17 @@ public class Buildings {
             }
         });
     }
+    //called when building is placed
+    public void startProductionandCosumption(){
+        List<MProductions> productionsList = productions;
+        if (productions!= null ) {
+            for (int i = 0; i < productionsList.size(); i++) {
+                MProductions production = productionsList.get(i);
+                production.consumeAndProduce();
+            }
+        }
+    }
+
 
 
     public EnumSet<EDirections> getPossibleConnections() {
