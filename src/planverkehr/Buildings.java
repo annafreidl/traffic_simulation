@@ -57,6 +57,32 @@ public class Buildings {
         setPossibleConnection();
     }
 
+
+    //Konstruktor, der das Building was wir ihm geben kopiert
+    //nimmt Werte vom alten Objekt
+    public Buildings (Buildings building) {
+
+        this.buildingName = building.getBuildingName();
+        this.buildMenu = building.getBuildMenu();
+        this.width = building.getWidth();
+        this.depth = building.getDepth();
+        this.combinesStrings = building.getCombinesStrings();
+        this.points = building.getPoints();
+        this.roads = building.getRoads();
+        this.rails = building.getRails();
+        this.planes = building.getPlanes();
+        this.dz = building.getDz();
+        this.special = building.getSpecial();
+        this.maxPlanes = building.getMaxPlanes();
+        this.productions = building.getProductions();
+        combinesBuildings = new HashMap<>();
+        setBuildType();
+        setDirections();
+        setPossibleConnection();
+    }
+
+
+
     private void setBuildType() {
         if (getRoads().size() > 0) {
             buildType = EBuildType.road;

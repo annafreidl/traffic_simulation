@@ -297,27 +297,6 @@ public class MGame {
         tickNumber++;
     }
 
-    //todo: dynamisch klonen, damit es auch noch funktioniert wenn Attribute hinzugefügt werden (bsp combinesBuildings). Muss in die Buildingsklasse
-    public Buildings copyBuilding(Buildings building) {
-
-        String buildingName = building.getBuildingName();
-        String buildMenu = building.getBuildMenu();
-        int width = building.getWidth();
-        int depth = building.getDepth();
-        java.util.Map<String, MCoordinate> points = building.getPoints();
-        java.util.List<Pair<String, String>> roads = building.getRoads();
-        List<Pair<String, String>> rails = building.getRails();
-        List<Pair<String, String>> planes = building.getPlanes();
-        int dz = building.getDz();
-        String special = building.getSpecial();
-        int maxPlanes = building.getMaxPlanes();
-        java.util.Map<String, String> combinesStrings = building.getCombinesStrings();
-
-        List<MProductions> productions = building.getProductions();
-
-        return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combinesStrings, productions);
-    }
-
     public void resetTile() {
         MTile selectedTile = getSelectedTile();
         if (selectedTile != null &&

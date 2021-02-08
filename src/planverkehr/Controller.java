@@ -339,7 +339,7 @@ public class Controller {
                             feld.setState(buildingToBeBuiltType);
                             feld.setBuilding(i.getText()); //damit wissen wir welches Menu Ding genau wir angeklickt haben, e.g. chemical plant
 
-                            Buildings newBuilding = gameModel.copyBuilding(buildingToBeBuilt); //new Building that's copied
+                            Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
                             feld.setBuildingOnTile(newBuilding);
                             feld.addConnectedBuilding(newBuilding);
                             newBuilding.startProductionandCosumption();
