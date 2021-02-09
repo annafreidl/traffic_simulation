@@ -8,10 +8,12 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import planverkehr.graph.Graph;
+import planverkehr.graph.MKnotenpunkt;
 import planverkehr.graph.MTargetpointList;
 import planverkehr.transportation.MTransportConnection;
 
 import java.util.ArrayList;
+
 
 
 enum MouseMode {
@@ -21,6 +23,7 @@ enum MouseMode {
 public class Controller {
     MGame gameModel;
     VGame gameView;
+    Buildings newBuilding;
 
     public Controller(MGame gameModel, VGame gameView) {
         this.gameView = gameView;
@@ -339,10 +342,12 @@ public class Controller {
                             feld.setState(buildingToBeBuiltType);
                             feld.setBuilding(i.getText()); //damit wissen wir welches Menu Ding genau wir angeklickt haben, e.g. chemical plant
 
-                            Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
+                            newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
                             feld.setBuildingOnTile(newBuilding);
                             feld.addConnectedBuilding(newBuilding);
+                           // createKnotenpunktBuilding()
                             newBuilding.startProductionandCosumption();
+                            createBuildingNodeByCenter();
                         }
                         gameView.drawField();
                         // gameModel.railGraph.print();
@@ -442,5 +447,70 @@ public class Controller {
         gameView.drawField();
     };
 
+    private void createBuildingNodeByCenter() {
+
+        String startPoint = gameModel.getSelectedTileId(); //get Startpoint
+        MTile field = gameModel.getTileById(startPoint);
+        double x = field.getIDCoordinates().getX(); //get startpoint X and Y
+        double y = field.getIDCoordinates().getY();
+
+        double buildingX = newBuilding.getWidth(); //get Höhe und Breite des Buildings
+        double buildingY = newBuilding.getDepth();
+
+        double centerX = x + (buildingX/2); //calculate Building Center
+        double centerY = y + (buildingY/2);
+
+       MCoordinate coords;
+       String key = "centerNode";
+       double level = field.getLevel(); //checking hoehe der tile for coords
+
+       coords = new MCoordinate(centerX, centerY, level);
+       MKnotenpunkt buildingPoint = createBuildingNode(coords, key);
+        //System.out.println(buildingPoint);
+    }
+
+    private MKnotenpunkt createBuildingNode(MCoordinate coords, String name) {
+
+       // EBuildType buildingToBeBuiltType = EBuildType.factory;
+        EBuildType buildingType = EBuildType.factory; //we know we gonna need factory
+        Graph buildingGraph = new Graph();
+
+        //node ID setzt sich zusammen aus string, building type and Nummer (reihenfolge) (ID +1)
+        String nodeId = "" + buildingType + buildingGraph.getIncreasedId();
+        //System.out.println("nodeID:" + nodeId); //ID DOESNT GET INCREASED FOR SOME REASON
+
+        String selectedTileId = gameModel.getSelectedTileId(); //getting the tile we selected
+
+        //Wenn selected tile NICHT null ist, dann mach den Kram
+        if (!selectedTileId.equals("null")) {
+            MTile buildingField = gameModel.getTileById(selectedTileId);
+            String buildingNameID = newBuilding.getBuildingName(); //getting the Name of the copied building we placed
+            String groupId = buildingField.getId() + "-" + buildingNameID;
+
+            //speichern koordinate vom aktuellen Feld
+            MCoordinate fieldGridCoordinates = buildingField.getVisibleCoordinates();
+
+            //speichern koordinaten vom NODE nicht vom Feld
+            //feld koordinate is das geklickte feld, node coordinate ist die eigtl koordinate
+
+           // MCoordinate nodeCoordinate = new MCoordinate(fieldGridCoordinates.getX() + coords.getX(), fieldGridCoordinates.getY() - coords.getY(), buildingField.getLevel());
+            //WE GIVE HIM OUR OWN NODE ISNTEAD
+
+            MKnotenpunkt knotenpunkt;
+
+            //wenn graph kooordinaten diese koordinaten enthält, dann geben wir dem knotenpunkt diese aktuellen werte und fügen den der group ID hinzu
+            //wenn er das NICHT hat (else), dann machen wir neuen Knotenpunkt und adden den in graph
+            if (buildingGraph.containsKey(coords.toStringCoordinates())) {
+                knotenpunkt = buildingGraph.get(coords.toStringCoordinates());
+                knotenpunkt.addGroupId(groupId);
+            } else {
+                knotenpunkt = new MKnotenpunkt(nodeId, groupId, coords, buildingType, name, buildingField.getId(), coords.getRoadDirection(), coords.isEdge());
+                System.out.println("knotenpunkt:"+ knotenpunkt);
+                buildingGraph.put(coords.toStringCoordinates(), knotenpunkt);
+            }
+            return knotenpunkt;
+        }
+        return null;
+    }
 
 }

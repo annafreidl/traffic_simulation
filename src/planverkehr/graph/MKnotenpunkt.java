@@ -1,5 +1,6 @@
 package planverkehr.graph;
 
+import planverkehr.Buildings;
 import planverkehr.EBuildType;
 import planverkehr.MCoordinate;
 import planverkehr.transportation.EDirections;
@@ -45,8 +46,9 @@ public class MKnotenpunkt {
         possibleConnections = EnumSet.noneOf(EDirections.class);
         targetType = null;
         blockedForTickList = new TreeSet<>();
-
     }
+
+
 
 public void addGroupId(String id){
         groupIds.add(id);
