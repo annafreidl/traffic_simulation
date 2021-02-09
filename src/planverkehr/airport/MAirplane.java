@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
 
-/*
+
 //Model des Flugzeugs
 public class MAirplane implements Comparable<MAirplane> {
     final int initTime;
@@ -82,4 +82,3 @@ public class MAirplane implements Comparable<MAirplane> {
         wayPointList.remove(0);
     }
 }
-*/

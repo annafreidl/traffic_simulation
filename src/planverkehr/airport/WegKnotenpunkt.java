@@ -2,7 +2,7 @@ package planverkehr.airport;
 
 import java.util.ArrayList;
 
-/*
+
 public class WegKnotenpunkt {
     final int betretenUm;
     final Knotenpunkt knotenpunkt;
@@ -27,4 +27,3 @@ public class WegKnotenpunkt {
     }
 
 }
-*/

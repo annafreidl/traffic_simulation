@@ -2,7 +2,7 @@ package planverkehr.airport;
 
 import java.util.Stack;
 
-/*
+
 public class Path extends Stack<WegKnotenpunkt> {
     boolean isSearching, changedWayPoint, noPathFound;
     SearchObject so;
@@ -192,4 +192,3 @@ public class Path extends Stack<WegKnotenpunkt> {
 
 }
 
- */

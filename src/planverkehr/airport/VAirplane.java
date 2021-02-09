@@ -7,8 +7,8 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-/*
 
+/*
 public class VAirplane {
     Rectangle rectangle;
     final double faktor;
@@ -99,5 +99,4 @@ public class VAirplane {
         group.getChildren().remove(rectangle);
     }
 }
-
 */

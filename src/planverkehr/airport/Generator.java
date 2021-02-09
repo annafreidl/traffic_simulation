@@ -1,6 +1,6 @@
 package planverkehr.airport;
 
-/*
+
 public class Generator {
     final String[] waypoints;
     final double chance;
@@ -11,4 +11,4 @@ public class Generator {
     }
 }
 
-*/
+

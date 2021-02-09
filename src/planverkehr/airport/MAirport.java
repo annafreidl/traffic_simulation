@@ -4,8 +4,8 @@ package planverkehr.airport;
 import java.util.ArrayList;
 import java.util.Queue;
 
-/*
 
+/*
 //Model des Flughafens
 public class MAirport {
     int numOfPlanesOnAirport;

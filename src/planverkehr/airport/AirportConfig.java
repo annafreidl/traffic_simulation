@@ -1,30 +1,35 @@
 package planverkehr.airport;
 
-/*import org.json.JSONException;
+import org.json.JSONException;
+import planverkehr.JSONParser;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
 public class AirportConfig {
-    public final JSON_PARSER parser;
-    public final int maxPlanes;
+    public final JSONParser parser;
+    /*public final int maxPlanes;
     public final Queue<MAirplane> defaultPlanesQueue;
     public final List<Generator> randomPlanesToBeGenerated;
-    public final ArrayList<Knotenpunkt> nodesList;
+    public final ArrayList<Knotenpunkt> nodesList; */
 
 
     public AirportConfig() throws JSONException {
-        parser = new JSON_PARSER();
+        parser = new JSONParser();
         System.out.println("I have the JSON parser");
-        maxPlanes = parser.getMaxPlanesFromJSON();
+       /* maxPlanes = parser.getMaxPlanesFromJSON();
 
         defaultPlanesQueue = parser.getPlanesFromJSON();
         randomPlanesToBeGenerated = parser.getGeneratorsFromJSON();
         nodesList = parser.getNodesFromJSON();
         System.out.println("config works");
+
+        */
     }
 
+
+    /*
     public int getMaxPlanes () { return maxPlanes; }
 
     public ArrayList<Knotenpunkt> getNodeList() {
@@ -36,8 +41,7 @@ public class AirportConfig {
     }
 
     public List<Generator> getRandomPlanesToBeGenerated () { return randomPlanesToBeGenerated; }
-
+*/
 
 }
-*/
 

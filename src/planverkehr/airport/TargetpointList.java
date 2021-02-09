@@ -2,7 +2,7 @@ package planverkehr.airport;
 
 import java.util.ArrayList;
 
-/* public class TargetpointList extends ArrayList<Knotenpunkt> {
+public class TargetpointList extends ArrayList<Knotenpunkt> {
 
     @Override
     public TargetpointList clone() {
@@ -56,4 +56,3 @@ import java.util.ArrayList;
     }
 
 }
-*/

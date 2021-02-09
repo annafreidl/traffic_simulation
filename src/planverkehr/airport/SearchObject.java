@@ -3,7 +3,7 @@ package planverkehr.airport;
 import java.util.ArrayList;
 import java.util.Stack;
 
-/*
+
 public class SearchObject {
     final ArrayList<WegKnotenpunkt> arrayListZuBesuchenderWegpunkte;
     final Stack<WegKnotenpunkt> arrayListBesuchterWegpunkte;
@@ -116,4 +116,4 @@ public class SearchObject {
     }
 }
 
-*/
+
