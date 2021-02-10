@@ -146,7 +146,7 @@ public class JSONParser {
         return stringValue;
     }
 
-    private void getCargo(HashMap<String, Integer> cargo, JSONObject cargoObject, String kind) {
+    private void JSONObjectToMap(HashMap<String, Integer> cargo, JSONObject cargoObject, String kind) {
         if (cargoObject.has(kind)) {
             try {
                 cargo.put(kind, cargoObject.getInt(kind));
@@ -198,23 +198,24 @@ public class JSONParser {
             if (singleVehicle.has("cargo")) {
                 cargo = new HashMap<>();
                 try {
-                    JSONObject cargoObject = singleVehicle.getJSONObject("cargo");
-                    for (String commodity : getCommoditiesFromJSON()) {
-                        getCargo(cargo, cargoObject, commodity);
+                    Object cargoObject = singleVehicle.get("cargo");
+                    if (cargoObject instanceof JSONObject) {
+                        JSONObject cargoJSONObject = (JSONObject) cargoObject;
+                        for (String commodity : getCommoditiesFromJSON()) {
+                            JSONObjectToMap(cargo, cargoJSONObject, commodity);
+                        }
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    JSONArray cargoArray = singleVehicle.getJSONArray("cargo");
-                    for (int i = 0; i < cargoArray.length(); i++) {
-                        try {
-                            JSONObject cargoObject = cargoArray.getJSONObject(i);
-                            for (String commodity : getCommoditiesFromJSON()) {
-                                getCargo(cargo, cargoObject, commodity);
+                    if (cargoObject instanceof JSONArray) {
+                        JSONArray cargoJSONArray = (JSONArray) cargoObject;
+                        for (int i = 0; i < cargoJSONArray.length(); i++) {
+                            try {
+                                JSONObject cargoJSONObject = cargoJSONArray.getJSONObject(i);
+                                for (String commodity : getCommoditiesFromJSON()) {
+                                    JSONObjectToMap(cargo, cargoJSONObject, commodity);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
                     }
                 } catch (JSONException e) {
@@ -224,6 +225,7 @@ public class JSONParser {
                 cargo = new HashMap<>();
             }
             MVehiclesList.add(new MVehicles(keyValue, kind, graphic, cargo, speed));
+            //System.out.println("Vehicle: " + keyValue + "Kind: " + kind + "Graphic: " + graphic + "Cargo: " + cargo + "Speed: " + speed);
         }
         return MVehiclesList;
     }
@@ -296,7 +298,7 @@ public class JSONParser {
                 try {
                     JSONObject storageObject = singleBuilding.getJSONObject("storage");
                     for (String kind : getCommoditiesFromJSON()) {
-                        getCargo(storage, storageObject, kind);
+                        JSONObjectToMap(storage, storageObject, kind);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -341,94 +343,90 @@ public class JSONParser {
 
             if (singleBuilding.has("productions")) {
                 MProductionsList = new ArrayList<>();
+                Object productionsObject;
+                JSONArray productionsJSONArray;
+                JSONObject productionsJSONObject;
+                JSONObject produceObject;
+                JSONObject consumeObject;
                 try {
-                    JSONArray productionsArray = singleBuilding.getJSONArray("productions");
-                    for (int a = 0; a <= productionsArray.length(); a++) {
-                        JSONObject productionsObject = productionsArray.getJSONObject(a);
-
-                        if (productionsObject.has("produce")) {
+                    productionsObject = singleBuilding.get("productions");
+                    if(productionsObject instanceof JSONArray){
+                        productionsJSONArray = (JSONArray) productionsObject;
+                        for (int a = 0; a < productionsJSONArray.length(); a++) {
+                            productionsJSONObject = productionsJSONArray.getJSONObject(a);
+                            if (productionsJSONObject.has("produce")) {
+                                HashMap produce = new HashMap();
+                                produceAll = new ArrayList<>();
+                                try {
+                                    produceObject = productionsJSONObject.getJSONObject("produce");
+                                    for (String commodity : getCommoditiesFromJSON()) {
+                                        JSONObjectToMap(produce, produceObject, commodity);
+                                    }
+                                    produceAll.add(produce);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                produceAll = new ArrayList<>();
+                            }
+                            if (productionsJSONObject.has("consume")) {
+                                HashMap consume = new HashMap();
+                                consumeAll = new ArrayList<>();
+                                try {
+                                    consumeObject = productionsJSONObject.getJSONObject("consume");
+                                    for (String commodity : getCommoditiesFromJSON()) {
+                                        JSONObjectToMap(consume, consumeObject, commodity);
+                                    }
+                                    consumeAll.add(consume);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                consumeAll = new ArrayList<>();
+                            }
+                            duration = getINT(productionsJSONObject, "duration");
+                            MProductionsList.add(new MProductions(duration, produceAll, consumeAll, storage));
+                            //System.out.println(keyValue + " Duration: " + duration + " Consume: " + consumeAll + " Produce: " + produceAll);
+                        }
+                    }
+                    if (productionsObject instanceof JSONObject) {
+                        productionsJSONObject = (JSONObject) productionsObject;
+                        if (productionsJSONObject.has("produce")) {
                             HashMap produce = new HashMap();
                             produceAll = new ArrayList<>();
                             try {
-                                JSONObject produceObject = productionsObject.getJSONObject("produce");
+                                produceObject = productionsJSONObject.getJSONObject("produce");
                                 for (String commodity : getCommoditiesFromJSON()) {
-                                    getCargo(produce, produceObject, commodity);
+                                    JSONObjectToMap(produce, produceObject, commodity);
                                 }
                                 produceAll.add(produce);
-                                //System.out.println("Produce: " + keyValue + produceAll);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         } else {
                             produceAll = new ArrayList<>();
                         }
-
-                        if (productionsObject.has("consume")) {
+                        if (productionsJSONObject.has("consume")) {
                             HashMap consume = new HashMap();
                             consumeAll = new ArrayList<>();
                             try {
-                                JSONObject consumeObject = productionsObject.getJSONObject("consume");
+                                consumeObject = productionsJSONObject.getJSONObject("consume");
                                 for (String commodity : getCommoditiesFromJSON()) {
-                                    getCargo(consume, consumeObject, commodity);
+                                    JSONObjectToMap(consume, consumeObject, commodity);
                                 }
                                 consumeAll.add(consume);
-                                //System.out.println("ConsumeALL: " + keyValue + consumeAll);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         } else {
                             consumeAll = new ArrayList<>();
                         }
-                        duration = getINT(productionsObject, "duration");
-                        //System.out.println("Duration: " + keyValue + duration);
+                        duration = getINT(productionsJSONObject, "duration");
                         MProductionsList.add(new MProductions(duration, produceAll, consumeAll, storage));
-                        System.out.println(keyValue + " Duration: " + duration + " Consume: " + consumeAll + " Produce: " + produceAll);
-
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    JSONObject productionsObject = singleBuilding.getJSONObject("productions");
-                    if (productionsObject.has("produce")) {
-                        HashMap produce = new HashMap();
-                        produceAll = new ArrayList<>();
-                        try {
-                            JSONObject produceObject = productionsObject.getJSONObject("produce");
-                            for (String commodity : getCommoditiesFromJSON()) {
-                                getCargo(produce, produceObject, commodity);
-
-                            }
-                            produceAll.add(produce);
-                            //System.out.println("Produce: " + keyValue + produceAll);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        produceAll = new ArrayList<>();
-                    }
-                    if (productionsObject.has("consume")) {
-                        HashMap consume = new HashMap();
-                        consumeAll = new ArrayList<>();
-                        try {
-                            JSONObject consumeObject = productionsObject.getJSONObject("consume");
-                            for (String commodity : getCommoditiesFromJSON()) {
-                                getCargo(consume, consumeObject, commodity);
-                            }
-                            consumeAll.add(consume);
-                            //System.out.println("ConsumeALL: " + keyValue + consumeAll);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        //System.out.println(keyValue + " Duration: " + duration + " Consume: " + consumeAll + " Produce: " + produceAll);
                     } else {
                         consumeAll = new ArrayList<>();
                     }
-
-                    duration = getINT(productionsObject, "duration");
-                    //System.out.println("Duration: " + keyValue + duration);
-                    MProductionsList.add(new MProductions(duration, produceAll, consumeAll, storage));
-                    System.out.println(keyValue + " Duration: " + duration + " Consume: " + consumeAll + " Produce: " + produceAll);
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
