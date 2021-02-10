@@ -454,17 +454,19 @@ public class Controller {
         double x = field.getIDCoordinates().getX(); //get startpoint X and Y
         double y = field.getIDCoordinates().getY();
 
-        double buildingX = newBuilding.getWidth(); //get Höhe und Breite des Buildings
+      /*  double buildingX = newBuilding.getWidth(); //get Höhe und Breite des Buildings
         double buildingY = newBuilding.getDepth();
 
         double centerX = x + (buildingX/2); //calculate Building Center
-        double centerY = y + (buildingY/2);
+        double centerY = y + (buildingY/2);*/
 
-       MCoordinate coords;
+        double centerX = x + 0.5;   //PUNKT AUF SÜDWEST UNTEN LINKS
+
+        MCoordinate coords;
        String key = "centerNode";
        double level = field.getLevel(); //checking hoehe der tile for coords
 
-       coords = new MCoordinate(centerX, centerY, level);
+       coords = new MCoordinate(centerX, y, level);
        MKnotenpunkt buildingPoint = createBuildingNode(coords, key);
         //System.out.println(buildingPoint);
     }
