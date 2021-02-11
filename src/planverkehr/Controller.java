@@ -347,7 +347,7 @@ public class Controller {
                             feld.addConnectedBuilding(newBuilding);
                            // createKnotenpunktBuilding()
                             newBuilding.startProductionandCosumption();
-                            createBuildingNodeByCenter();
+                            createBuildingNodeByCenter(buildingToBeBuiltType);
                         }
                         gameView.drawField();
                         // gameModel.railGraph.print();
@@ -447,38 +447,52 @@ public class Controller {
         gameView.drawField();
     };
 
-    private void createBuildingNodeByCenter() {
+    private void createBuildingNodeByCenter(EBuildType buildingToBeBuiltType) {
 
         String startPoint = gameModel.getSelectedTileId(); //get Startpoint
         MTile field = gameModel.getTileById(startPoint);
-        double x = field.getIDCoordinates().getX(); //get startpoint X and Y
-        double y = field.getIDCoordinates().getY();
+        double startPointX = field.getIDCoordinates().getX(); //get startpoint X and Y
+        double startPointY = field.getIDCoordinates().getY();
+        double centerX = startPointX + 0.5;   //PUNKT AUF SÜDWEST UNTEN LINKS
 
       /*  double buildingX = newBuilding.getWidth(); //get Höhe und Breite des Buildings
         double buildingY = newBuilding.getDepth();
-
         double centerX = x + (buildingX/2); //calculate Building Center
         double centerY = y + (buildingY/2);*/
 
-        double centerX = x + 0.5;   //PUNKT AUF SÜDWEST UNTEN LINKS
-
+        String key = "centerNode";
+        double level = field.getLevel(); //checking hoehe der tile for coords
         MCoordinate coords;
-       String key = "centerNode";
-       double level = field.getLevel(); //checking hoehe der tile for coords
+        coords = new MCoordinate(centerX, startPointY, level);
 
-       coords = new MCoordinate(centerX, y, level);
-       MKnotenpunkt buildingPoint = createBuildingNode(coords, key);
-        //System.out.println(buildingPoint);
+        //GOTTA ADD JSON POINTS TO AIRPORT BUILDINGS THAT HAVE THEM
+        if (newBuilding.getSpecial().equals("runway") || (newBuilding.getSpecial().equals("terminal") || (newBuilding.getSpecial().equals("taxiway")))){
+            newBuilding.getPoints().forEach((name, point) -> {
+
+            double finalPointX = startPointX + point.getX(); //points aus JSON auf Startpoint rechnen
+            double finalPointY = startPointY + point.getY();
+
+            MCoordinate finalCoords;
+            finalCoords = new MCoordinate(finalPointX,finalPointY, level);
+
+             MKnotenpunkt buildingPoint = createBuildingNode(finalCoords, name, buildingToBeBuiltType);
+                System.out.println(buildingPoint);
+                System.out.println("Hi");
+            });
+
+            //IF NOT THOSE 3, SET POINT TO SOUTHWEST
+        } else { MKnotenpunkt buildingPoint = createBuildingNode(coords, key, buildingToBeBuiltType); }
     }
 
-    private MKnotenpunkt createBuildingNode(MCoordinate coords, String name) {
+    private MKnotenpunkt createBuildingNode(MCoordinate coords, String name, EBuildType buildingToBeBuiltType) {
 
        // EBuildType buildingToBeBuiltType = EBuildType.factory;
-        EBuildType buildingType = EBuildType.factory; //we know we gonna need factory
+       //EBuildType buildingType = EBuildType.factory; //we know we gonna need factory
+        //GET BUILDTYPE DYNAMIC FROM BUILDING WE BUILD
         Graph buildingGraph = new Graph();
 
         //node ID setzt sich zusammen aus string, building type and Nummer (reihenfolge) (ID +1)
-        String nodeId = "" + buildingType + buildingGraph.getIncreasedId();
+        String nodeId = "" +  buildingToBeBuiltType + buildingGraph.getIncreasedId();
         //System.out.println("nodeID:" + nodeId); //ID DOESNT GET INCREASED FOR SOME REASON
 
         String selectedTileId = gameModel.getSelectedTileId(); //getting the tile we selected
@@ -506,8 +520,8 @@ public class Controller {
                 knotenpunkt = buildingGraph.get(coords.toStringCoordinates());
                 knotenpunkt.addGroupId(groupId);
             } else {
-                knotenpunkt = new MKnotenpunkt(nodeId, groupId, coords, buildingType, name, buildingField.getId(), coords.getRoadDirection(), coords.isEdge());
-                System.out.println("knotenpunkt:"+ knotenpunkt);
+                knotenpunkt = new MKnotenpunkt(nodeId, groupId, coords, buildingToBeBuiltType, name, buildingField.getId(), coords.getRoadDirection(), coords.isEdge());
+                //System.out.println("knotenpunkt:"+ knotenpunkt);
                 buildingGraph.put(coords.toStringCoordinates(), knotenpunkt);
             }
             return knotenpunkt;

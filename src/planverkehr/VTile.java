@@ -608,7 +608,7 @@ public class VTile {
 
             case airport -> {
                 String buildingName = building.replace(" ", "-");
-                System.out.println(buildingName);
+               // System.out.println(buildingName);
                 image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
                 imageScale = widthHalf / image.getWidth();
