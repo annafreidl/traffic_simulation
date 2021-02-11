@@ -5,8 +5,8 @@ import javafx.util.Duration;
 public class Config {
     public static final int scaleFactor = 20;
     public static final int windowSize = 700;
-    public static final int worldWidth = 10;
-    public static final int worldHeight = 10;
+    public static final int worldWidth = 20;
+    public static final int worldHeight = 20;
     public static final int tWidth = 80;
     public static final int tWidthHalft = tWidth / 2;
     public static final int tHeight = tWidth / 2;

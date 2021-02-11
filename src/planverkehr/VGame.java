@@ -18,6 +18,8 @@ import javafx.stage.Stage;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.util.Pair;
+import planverkehr.graph.Graph;
+import planverkehr.transportation.MTransportConnection;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -33,7 +35,7 @@ public class VGame {
     JSONParser parser;
     MenuBar menuBar;
     Label debugCoord;
-    Button vehicleButton, tickButton, defaultRoad, removeButton, defaultRail, clearButton, drawButton;
+    Button vehicleButton, tickButton, defaultRoad, removeButton, defaultRail, clearButton, drawButton, kartengeneratorButton;
 
     MouseMode mouseMode;
 
@@ -123,6 +125,15 @@ public class VGame {
         drawButton.setLayoutX(640);
         drawButton.setLayoutY(60);
         drawButton.setOnAction(e -> drawField());
+
+        kartengeneratorButton = new Button("Kartengenerator");
+        group.getChildren().add(kartengeneratorButton);
+        kartengeneratorButton.setLayoutX(600);
+        kartengeneratorButton.setLayoutY(650);
+        kartengeneratorButton.setOnAction(e -> {
+            e.consume();
+            drawGeneratedMap();
+        });
 
 
         Slider slider = new Slider();
@@ -224,6 +235,8 @@ public class VGame {
         window.show();
 
         scene.setOnScroll(event -> {
+
+            event.consume();
             if (event.getDeltaY() == 0)
                 return;
 
@@ -259,7 +272,7 @@ public class VGame {
             canvasFront.setTranslateY(canvas.getTranslateY() - fy * dy);
 
 
-            event.consume();
+            //event.consume();
         });
 
         // Events für drag&drop
@@ -299,6 +312,112 @@ public class VGame {
 
     }
 
+    private void drawGeneratedMap() {
+
+        ebneMap();
+
+        gameModel.getBuildingsList().forEach((key, b) -> {
+
+            if (b.getSpecial().equals("factory")) {
+
+                Graph relevantGraph = gameModel.gameGraph;
+
+                int xId = generateRandomInt(Config.worldHeight-b.getWidth());
+                int yId = generateRandomInt(Config.worldWidth-b.getDepth());
+                String randomId = xId + "--" + yId;
+                if(yId==0){
+                    randomId = xId + "-" + yId;
+                }
+
+                MTile t = gameModel.getTileById(randomId);
+                ArrayList<MTile> mitbesetzte = gameModel.getTilesToBeGroupedFactorie(b,t);
+
+//                if(mitbesetzte != null){
+//
+//                    for(MTile mitbesetzt: mitbesetzte){
+//                        if(mitbesetzt.isFree()){
+//                            mitbesetzt.setState(EBuildType.factory);
+//                            //mitbesetzt.setBuildingOnTile(b);
+//                        }
+//                    }
+//                }
+                if(t.isFree()){
+                    t.setState(EBuildType.factory);
+                    t.setBuildingOnTile(b);
+                }
+
+            }
+        });
+        //System.out.println("Anzahl Factories: " + countfactories);
+
+        gameModel.getTileArray().forEach((tile) -> {
+            int wirdhöhenrandom = generateRandomInt(40);
+            int erhöhtodervertieft = generateRandomInt(2);
+            int wiehoch = generateRandomInt(3);
+            //wird erhöht mit Wahrscheinlichkeit von 30%
+            if(wirdhöhenrandom<2){
+
+                if(erhöhtodervertieft == 0){
+
+                    boolean nachbarlevelniedrigeralseins = true;
+                    for(MTile m : gameModel.getNeighbours(tile)){
+                        if(m.getIncline()){
+                            nachbarlevelniedrigeralseins = false;
+                        }
+                    }
+                    if(nachbarlevelniedrigeralseins){
+                        for(int i = 0; i<=wiehoch; i++){
+                            setHigh(tile, true);
+                        }
+                    }
+
+                }
+                else {
+                    if (wirdhöhenrandom < 1) {
+                        boolean nachbarlevelniedrigeralseins = true;
+                        for (MTile m : gameModel.getNeighbours(tile)) {
+                            if (m.getIncline() || tile.getLevel() > 0) {
+                                nachbarlevelniedrigeralseins = false;
+                            }
+                        }
+                        if (nachbarlevelniedrigeralseins) {
+                            setHigh(tile, false);
+                        }
+                    }
+                }
+            }
+            tile.createCreateHoehenArray();
+            VTile tempTileView = new VTile(tile);
+            tempTileView.drawBackground(gc);
+        });
+        drawField();
+
+    }
+
+    public static int generateRandomInt(int i) {
+        Random random = new Random();
+        return random.nextInt(i);
+    }
+
+    private void ebneMap() {
+
+        clearField();
+        gameModel.getTileArray().forEach((tile) -> {
+            tile.reset();
+            for(MCoordinate m: tile.getPunkteNeu()){
+                m.setZ(0);
+                tile.createCreateHoehenArray();
+            }
+            VTile tempTileView = new VTile(tile);
+            tempTileView.drawBackground(gc);
+            if (tile.getState()==EBuildType.water){
+                tile.setState(EBuildType.free);
+            }
+            });
+        drawField();
+
+    }
+
                 /* Idee: von jedem Tile auf dem Spielbrett werden die Eckpunkte ausgelesen
             und die Schnittmenge mit den Eckpunkten des angeklickten Tiles erstellt.
             Ist die Schnittmenge leer passiert nichts, weil das Tile dann kein Nachbar vom angeklickten Tile ist,
@@ -316,7 +435,43 @@ public class VGame {
             factor = -1;
         }
 
-        if (!t.getIncline()) {
+        boolean nachbaristwasser = true;
+
+        if(t.getLevel()==0 && factor<0){
+            for(MTile nachbart: gameModel.getNeighbours(t)){
+                for(int höhe : nachbart.höhen){
+                    if(höhe>0){
+                        nachbaristwasser = false;
+                    }
+                }
+            }
+        }
+
+        if(t.getLevel()==0&&factor>0){
+            for(MTile nachbart: gameModel.getNeighbours(t)){
+                for(int höhe : nachbart.höhen){
+                    if(höhe<0){
+                        nachbaristwasser = false;
+                    }
+                }
+            }
+        }
+
+        if(t.getLevel()==1&&factor>0){
+            for(MTile nachbart: gameModel.getNeighbours(t)){
+                for(MTile nachbar2 : gameModel.getNeighbours(nachbart)){
+                    for(int höhe : nachbar2.höhen){
+                        if(höhe<0){
+                            nachbaristwasser = false;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        //bei factor 1 auch level <0
+        if (!t.getIncline()&&((factor>0 && t.getLevel()<2)||factor<0 && t.getLevel()>=0)&&nachbaristwasser) {
 
             HashMap<MTile, ArrayList> erhöheAmEnde = new HashMap<>();
             ArrayList<MTile> bereitserhöht = new ArrayList();

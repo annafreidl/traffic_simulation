@@ -188,6 +188,43 @@ public class MGame {
         return tilesToBeGrouped;
     }
 
+    public ArrayList<MTile> getTilesToBeGroupedFactorie(Buildings b, MTile selectedTile) {
+        MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
+        int xCoord = (int) selectedCoordinates.getX();
+        int yCoord = (int) selectedCoordinates.getY();
+        ArrayList<MTile> tilesToBeGrouped = new ArrayList<>();
+
+        boolean hasSpace = true;
+
+        //geht durch alle relevanten Tiles. selected Tile ist link unten vom Gebäude
+        for (int x = 0; x < b.getWidth() && hasSpace; x++) {
+            for (int y = 0; y < b.getDepth() && hasSpace; y++) {
+                if (x + y > 0) {
+                    int tileToCheckX = xCoord + x;
+                    int tileToCheckY = yCoord + y;
+                    String checkId = tileToCheckX + "--" + tileToCheckY;
+                    MTile tileToCheck = getTileById(checkId);
+                    if (tileToCheck != null) {
+                        hasSpace = tileToCheck.isFree() && !tileToCheck.getIncline();
+                        tilesToBeGrouped.add(tileToCheck);
+                    }
+                } else if (selectedTile.isFree() &&
+                    (b.getDz()>0 ||(b.getDz()==0 && !selectedTile.getIncline()))) {
+                    tilesToBeGrouped.add(selectedTile);
+
+                } else {
+                    hasSpace = false;
+                }
+            }
+        }
+
+        if (!hasSpace) {
+            tilesToBeGrouped = null;
+        }
+
+        return tilesToBeGrouped;
+    }
+
     public ArrayList<MTile> getTilesToBeGrouped(int newBuildingWidth, int newBuildingDepth, int dz) {
         MTile selectedTile = getSelectedTile();
         MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();

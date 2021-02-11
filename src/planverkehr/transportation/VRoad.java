@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class VRoad extends VTransportation{
     public VRoad(Buildings road, GraphicsContext gc, ArrayList<MCoordinate> punkteNeu, MCoordinate westVisibleCoord, boolean isSchraeg, int level, boolean hoch) {
-        super(road, gc, westVisibleCoord, Color.DIMGRAY, punkteNeu, isSchraeg, level, hoch);
+        super(road, gc, westVisibleCoord, Color.WHITE, punkteNeu, isSchraeg, level, hoch);
         drawRoadOrRail();
 
        if(road.getSpecial().equals(String.valueOf(ESpecial.BUSSTOP).toLowerCase())){
