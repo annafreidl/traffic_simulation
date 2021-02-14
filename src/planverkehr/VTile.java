@@ -645,7 +645,7 @@ public class VTile {
 
             case nature -> {
                 String buildingName = building.replace(" ", "-");
-                image = new Image("Images/" + buildingName /*+ random*/ + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
+                image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
                 imageScale = widthHalf / image.getWidth();
                 imageHeight = image.getHeight() * imageScale;
