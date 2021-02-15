@@ -4,5 +4,6 @@ public enum ESpecial {
     RAILSTATION,
     BUSSTOP,
     SIGNAL,
-    FACTORY
+    FACTORY,
+    AIRPORT
 }

@@ -18,13 +18,14 @@ public class MGame {
     Graph gameGraph;
     Graph roadGraph;
     Graph railGraph;
+    Graph airportGraph;
     String selectedTileId = "null";
     HashMap<String, Buildings> possibleBuildings;
     ArrayList<Buildings> constructedBuildings;
     ArrayList<MVehicles> visibleVehiclesArrayList;
     ArrayList<MVehicles> vehicleTypeList;
     int vehicleId = 0;
-    MTargetpointList listeDerBushaltestellen, listeDerBahnhöfe;
+    MTargetpointList listeDerBushaltestellen, listeDerBahnhöfe, listeDerFlughafenGebäude;
     int tickNumber = 0;
 
 
@@ -33,6 +34,7 @@ public class MGame {
         createTileMap();
         roadGraph = new Graph();
         railGraph = new Graph();
+        airportGraph = new Graph();
         visibleVehiclesArrayList = new ArrayList<>();
         vehicleTypeList = gameConfig.getVehiclesList();
 
@@ -47,6 +49,7 @@ public class MGame {
 
         listeDerBushaltestellen = new MTargetpointList();
         listeDerBahnhöfe = new MTargetpointList();
+        listeDerFlughafenGebäude = new MTargetpointList();
 
     }
 

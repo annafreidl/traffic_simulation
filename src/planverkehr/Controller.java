@@ -329,6 +329,10 @@ public class Controller {
                                     relevantGraph = gameModel.roadGraph;
                                     relevantTargetpointlist = gameModel.listeDerBushaltestellen;
                                 }
+                                case airport -> {
+                                    relevantGraph = gameModel.airportGraph;
+                                    relevantTargetpointlist = gameModel.listeDerFlughafenGebäude;
+                                }
                                 default -> {
                                     relevantGraph = gameModel.gameGraph;
                                     relevantTargetpointlist = gameModel.listeDerBushaltestellen;

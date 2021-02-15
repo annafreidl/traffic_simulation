@@ -96,7 +96,13 @@ public class MTransportConnection {
                     targetpointList.add(knoten);
                 }
             });
+            case "airport" -> mKnotenpunktHashMap.forEach((id, knoten) -> {
+                knoten.setTargetType(ESpecial.AIRPORT);
+                targetpointList.add(knoten);
+            });
             case "signal" -> mKnotenpunktHashMap.forEach((id, knoten) -> knoten.setTargetType(ESpecial.SIGNAL));
+
+
         }
     }
 
@@ -118,6 +124,7 @@ public class MTransportConnection {
         switch (buildingToBeBuiltType) {
             case rail -> connectionList = buildingToBeBuilt.getRails();
             case road -> connectionList = buildingToBeBuilt.getRoads();
+            case airport -> connectionList = buildingToBeBuilt.getPlanes();   /** Morgen fragen, ob getPlanes richtig **/
         }
 
         if (connectionList != null) {

@@ -1,24 +1,120 @@
 package planverkehr.airport;
 
 
+import planverkehr.Buildings;
+import planverkehr.MGame;
+import planverkehr.MTile;
+import planverkehr.VGame;
+import planverkehr.graph.MTargetpointList;
+import planverkehr.transportation.MTransportConnection;
+
 import java.util.ArrayList;
 import java.util.Queue;
 
 
-/*
+
 //Model des Flughafens
 public class MAirport {
-    int numOfPlanesOnAirport;
-    final AirportConfig config;
-    final ArrayList<Knotenpunkt> nodeList;
-    final Queue<MAirplane> availableAirplaneQueue;
-    final ArrayList<MAirplane> visibleAirplaneList;
-    TargetpointList waypointList;
-    TargetpointList einflugList;
-    TargetpointList ausflugList;
-    TargetpointList gateWayList;
-    TargetpointList waitList;
-    TargetpointList otherTargetTypeList;
+    MGame gameModel;
+    VGame gameView;
+    Buildings newBuilding;
+
+
+    public MAirport(MGame gameModel, VGame gameView) {
+
+    }
+
+}
+
+
+
+
+
+
+
+
+    /*public MAirport(AirportConfig config) {
+        this.config = config;
+        visibleAirplaneList = new ArrayList<>();
+        //nodeList = config.getNodeList();
+        linkNodeList();
+        createWaypointList();
+        createSpecialTargetTypeLists();
+        //availableAirplaneQueue = config.getDefaultPlanesQueue();
+    }
+
+
+
+
+    private void createSpecialTargetTypeLists() {
+        einflugList = new TargetpointList();
+        ausflugList = new TargetpointList();
+        gateWayList = new TargetpointList();
+        waitList = new TargetpointList();
+        otherTargetTypeList = new TargetpointList();
+
+        for (Knotenpunkt knotenpunkt : waypointList) {
+            switch (knotenpunkt.targetType) {
+                case "einflug" -> einflugList.add(knotenpunkt);
+                case "gateway" -> gateWayList.add(knotenpunkt);
+                case "ausflug" -> ausflugList.add(knotenpunkt);
+                case "wait" -> waitList.add(knotenpunkt);
+                default -> otherTargetTypeList.add(knotenpunkt);
+            }
+        }
+    }
+
+    private void createWaypointList() {
+        waypointList = new TargetpointList();
+        nodeList.forEach(n -> {
+            if (!n.targetType.equals("noTargetType")) {
+                waypointList.add(n);
+            }
+        });
+    }
+
+    private void linkNodeList() {
+        for (Knotenpunkt p : nodeList
+        ) {
+
+            String[] toAsStringArray = p.getTo();
+            for (String s : toAsStringArray
+            ) {
+                Knotenpunkt toNode = searchForNode(s);
+                p.addToKnotenpunkt(toNode);
+            }
+
+            if (p.kind.equals("concrete")) {
+                p.addToKnotenpunkt(p);
+            }
+
+            if (p.hasConflict) {
+                String[] conflictAsStringArray = p.getConflict();
+                for (String s : conflictAsStringArray
+                ) {
+                    Knotenpunkt conflictNode = searchForNode(s);
+                    p.addConflictNode(conflictNode);
+                }
+            }
+
+        }
+    }
+
+    private Knotenpunkt searchForNode(String s) {
+
+        for (Knotenpunkt p : nodeList
+        ) {
+            if (p.getName().equals(s)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+}
+
+
+
 
 
     public MAirport(AirportConfig config) {
@@ -144,9 +240,13 @@ public class MAirport {
         return numOfPlanesOnAirport < config.maxPlanes;
     }
 
+
+
     public TargetpointList getWaitList() {
         return waitList;
     }
 }
 
 */
+
+/** Bei hasSpaceForNewPlane statt config.MaxPlanes > building.MaxPlanes **/
