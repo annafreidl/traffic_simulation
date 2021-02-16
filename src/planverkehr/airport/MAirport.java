@@ -1,10 +1,7 @@
 package planverkehr.airport;
 
 
-import planverkehr.Buildings;
-import planverkehr.MGame;
-import planverkehr.MTile;
-import planverkehr.VGame;
+import planverkehr.*;
 import planverkehr.graph.MTargetpointList;
 import planverkehr.transportation.MTransportConnection;
 
@@ -18,40 +15,34 @@ public class MAirport {
     MGame gameModel;
     VGame gameView;
     Buildings newBuilding;
+    TargetpointList waypointList;
+    TargetpointList einflugList;
+    TargetpointList gateWayList;
+    TargetpointList ausflugList;
+    TargetpointList waitList;
+    TargetpointList otherTargetTypeList;
+
+
+
 
 
     public MAirport(MGame gameModel, VGame gameView) {
-
-    }
-
-}
-
-
-
-
-
-
-
-
-    /*public MAirport(AirportConfig config) {
-        this.config = config;
-        visibleAirplaneList = new ArrayList<>();
-        //nodeList = config.getNodeList();
-        linkNodeList();
-        createWaypointList();
+        ArrayList nodesList = new ArrayList<Knotenpunkt>();
         createSpecialTargetTypeLists();
-        //availableAirplaneQueue = config.getDefaultPlanesQueue();
+        createWaypointList();
+
+        JSONParser parser = new JSONParser();
+        //nodesList = parser.
+
+
     }
-
-
-
 
     private void createSpecialTargetTypeLists() {
-        einflugList = new TargetpointList();
-        ausflugList = new TargetpointList();
-        gateWayList = new TargetpointList();
-        waitList = new TargetpointList();
-        otherTargetTypeList = new TargetpointList();
+        TargetpointList einflugList = new TargetpointList();
+        TargetpointList ausflugList = new TargetpointList();
+        TargetpointList gateWayList = new TargetpointList();
+        TargetpointList waitList = new TargetpointList();
+        TargetpointList otherTargetTypeList = new TargetpointList();
 
         for (Knotenpunkt knotenpunkt : waypointList) {
             switch (knotenpunkt.targetType) {
@@ -65,58 +56,21 @@ public class MAirport {
     }
 
     private void createWaypointList() {
-        waypointList = new TargetpointList();
-        nodeList.forEach(n -> {
+        TargetpointList waypointList = new TargetpointList();
+       /* nodeList.forEach(n -> {
             if (!n.targetType.equals("noTargetType")) {
                 waypointList.add(n);
             }
-        });
+        }); */
     }
 
-    private void linkNodeList() {
-        for (Knotenpunkt p : nodeList
-        ) {
-
-            String[] toAsStringArray = p.getTo();
-            for (String s : toAsStringArray
-            ) {
-                Knotenpunkt toNode = searchForNode(s);
-                p.addToKnotenpunkt(toNode);
-            }
-
-            if (p.kind.equals("concrete")) {
-                p.addToKnotenpunkt(p);
-            }
-
-            if (p.hasConflict) {
-                String[] conflictAsStringArray = p.getConflict();
-                for (String s : conflictAsStringArray
-                ) {
-                    Knotenpunkt conflictNode = searchForNode(s);
-                    p.addConflictNode(conflictNode);
-                }
-            }
-
-        }
-    }
-
-    private Knotenpunkt searchForNode(String s) {
-
-        for (Knotenpunkt p : nodeList
-        ) {
-            if (p.getName().equals(s)) {
-                return p;
-            }
-        }
-        return null;
-    }
 
 }
 
 
 
 
-
+/*
     public MAirport(AirportConfig config) {
         this.config = config;
         visibleAirplaneList = new ArrayList<>();
@@ -234,6 +188,7 @@ public class MAirport {
     public TargetpointList getWaypointList() {
         return waypointList;
     }
+
 
 
     public boolean hasSpaceForNewPlane() {
