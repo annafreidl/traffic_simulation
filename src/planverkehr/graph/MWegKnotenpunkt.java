@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class MWegKnotenpunkt {
     final int betretenUm;
     final MKnotenpunkt knotenpunkt;
-    final MKnotenpunkt vorgaenger;
+    private MKnotenpunkt vorgaenger;
 
     public MWegKnotenpunkt(int betretenUm, MKnotenpunkt knotenpunkt, MKnotenpunkt vorgaenger){
         this.betretenUm = betretenUm;
@@ -25,7 +25,19 @@ public class MWegKnotenpunkt {
         return knotenpunkt.connectedKnotenpunkteArray;
     }
 
+    public MKnotenpunkt getVorgaenger() {
+        return vorgaenger;
+    }
+
     public MKnotenpunkt getKnotenpunkt() {
         return knotenpunkt;
+    }
+
+    public int getBetretenUm() {
+        return betretenUm;
+    }
+
+    public void setVorgaenger(MKnotenpunkt knotenpunkt) {
+        vorgaenger = knotenpunkt;
     }
 }

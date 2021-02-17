@@ -4,9 +4,20 @@ import java.util.Stack;
 
 public class Path extends Stack<MWegKnotenpunkt> {
     boolean isSearching, changedWayPoint, noPathFound;
+    boolean reverse = false;
     SearchObject so;
 
     public Path() {
+
+    }
+
+    public Path(SearchObject so, boolean reverse) {
+        this.reverse = reverse;
+        this.so = so;
+        isSearching = true;
+        changedWayPoint = false;
+
+        searchPath();
 
     }
 
@@ -14,11 +25,17 @@ public class Path extends Stack<MWegKnotenpunkt> {
         SearchObject so) {
         isSearching = true;
         changedWayPoint = false;
-        int i = 0;
+
 
         this.so = so;
-        MKnotenpunkt planePosition = so.getCurrentNodeKnotenpunkt();
 
+        searchPath();
+
+    }
+
+    private void searchPath() {
+        MKnotenpunkt planePosition = so.getCurrentNodeKnotenpunkt();
+        int i = 0;
 
         while (isSearching) {
             i++;
@@ -41,7 +58,7 @@ public class Path extends Stack<MWegKnotenpunkt> {
                     so.clearBesuchteWegpunkte();
                 }
 
-                // aktuell betrachteten Wegpunkt aus der Liste der zubesuchendenWegpunkte entfernen
+                // aktuell betrachtiseten Wegpunkt aus der Liste der zubesuchendenWegpunkte entfernen
                 so.removeFirstFromZuBesuchendeWegpunkte();
 
                 // Prüfen, ob die Liste überläuft
@@ -84,8 +101,6 @@ public class Path extends Stack<MWegKnotenpunkt> {
     }
 
 
-
-
     private void tryWaitNodeAsTarget() {
 
         so.setCurrentWayNode(so.getFirstElementBesuchterWegpunkte());
@@ -114,7 +129,7 @@ public class Path extends Stack<MWegKnotenpunkt> {
         for (MKnotenpunkt k : so.getNeighboursOfCurrentWaynode()) {
             //erstelle aus dem Knotenpunkt einen Wegpunkt, wenn er zu dem Tick betretbar ist und existiert
             if (k != null
-                && k.isFreeFor(so.getCurrentNodeBetretenUm() + 1)
+              //  && (reverse || k.isFreeFor(so.getCurrentNodeBetretenUm() + 1, true))
             ) {
                 MWegKnotenpunkt tempWegpunkt = new MWegKnotenpunkt(so.getCurrentNodeBetretenUm() + 1, k, so.getCurrentNodeKnotenpunkt());
 
@@ -129,9 +144,9 @@ public class Path extends Stack<MWegKnotenpunkt> {
                         so.addWaynodeToBesuchteWegpunkte(tempWegpunkt);
 
                         isSearching = false;
-                     //   if (!tempWegpunkt.knotenpunkt.targetType.equals("ausflug")) {
-                            tempWegpunkt.knotenpunkt.setBlocked(true);
-                    //    }
+                        //   if (!tempWegpunkt.knotenpunkt.targetType.equals("ausflug")) {
+                       // tempWegpunkt.knotenpunkt.setBlocked(true);
+                        //    }
                         break;
                     } else {
 
@@ -162,6 +177,7 @@ public class Path extends Stack<MWegKnotenpunkt> {
 
         //Knotenpunk wird dann zur finalen Wegliste hinzgefügt, wenn der Vorgänger sein Vorgänger ist. Gestartet wird beim Zielknoten.
         // Zusätzlich werden die Blockaden für alle passierten knoten hinzugefügt
+
         for (int i = so.arrayListBesuchterWegpunkte.size() - 1; i > 0; i--) {
 
             MWegKnotenpunkt prevWegpunkt = so.getWegKnotenpunktAtIndex(i - 1);
@@ -170,14 +186,16 @@ public class Path extends Stack<MWegKnotenpunkt> {
             if (prevWegpunkt.betretenUm + 1 == so.getCurrentNodeBetretenUm() &&
                 (prev == so.getVorgaenger())) {
                 so.setCurrentWayNode(prevWegpunkt);
-                wpStack.add(prevWegpunkt);
-
-                prev.addEntryToBlockedForTickList(prevWegpunkt.betretenUm);
-                prev.addEntryToBlockedForTickList(prevWegpunkt.betretenUm + 1);
+                if (reverse) {
+                    wpStack.add(0, prevWegpunkt);
+                } else {
+                    wpStack.add(prevWegpunkt);
+                }
 
             }
+
         }
-        if (planePosition != wpStack.firstElement().knotenpunkt) {
+        if (!reverse && planePosition != wpStack.firstElement().knotenpunkt || reverse && planePosition != wpStack.peek().getKnotenpunkt()) {
             wpStack.pop();
         }
 

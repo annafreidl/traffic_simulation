@@ -10,10 +10,7 @@ import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
 import planverkehr.graph.MTargetpointList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MTransportConnection {
     MTile feld;
@@ -69,14 +66,15 @@ public class MTransportConnection {
             //4. Koordinaten zum Feld hinzufügen
             addKnotenpunktToFeldAndMergeMaps();
 
-            //5. check for TargetTypes
-            checkForTargetTypes();
-
             //6. Knotenpunkte verbinden
             connectKnotenpunkte();
 
-        }
-        else {
+            //5. check for TargetTypes
+            checkForTargetTypes();
+
+
+
+        } else {
             showAlert();
         }
 
@@ -85,25 +83,82 @@ public class MTransportConnection {
 
     private void checkForTargetTypes() {
 
-        switch (buildingToBeBuilt.getSpecial()){
+        switch (buildingToBeBuilt.getSpecial()) {
             case "railstation" -> mKnotenpunktHashMap.forEach((id, knoten) -> {
                 knoten.setTargetType(ESpecial.RAILSTATION);
                 targetpointList.add(knoten);
+                feld.setStation(true);
             });
             case "busstop" -> mKnotenpunktHashMap.forEach((id, knoten) -> {
-                if(knoten.getName().equals("c")) {
+                if (knoten.getName().equals("c")) {
                     knoten.setTargetType(ESpecial.BUSSTOP);
                     targetpointList.add(knoten);
+                    feld.setStation(true);
                 }
             });
             case "airport" -> mKnotenpunktHashMap.forEach((id, knoten) -> {
                 knoten.setTargetType(ESpecial.AIRPORT);
                 targetpointList.add(knoten);
             });
-            case "signal" -> mKnotenpunktHashMap.forEach((id, knoten) -> knoten.setTargetType(ESpecial.SIGNAL));
+
+            case "signal" -> {
+                mKnotenpunktHashMap.forEach((id, knoten) -> {
+                    if (knoten.getName().equals("c")) {
+                        knoten.setTargetType(ESpecial.SIGNAL);
+                        findBlock(knoten);
+                    }
+                });
 
 
+            }
         }
+    }
+
+    private void findBlock(MKnotenpunkt knotenpunkt) {
+        MKnotenpunkt connection1 = knotenpunkt.getConnectedKnotenpunkteArray().get(0);
+        MKnotenpunkt connection2 = knotenpunkt.getConnectedKnotenpunkteArray().get(1);
+
+        if (knotenpunkt.getBlockId().equals(0)) {
+
+            HashMap<String, MKnotenpunkt> registeredKnotenpunkte = findNodesForBlock(knotenpunkt, connection2);
+            MKnotenpunkt connection2Neighbour = null;
+            for (MKnotenpunkt c : connection2.getConnectedKnotenpunkteArray()
+            ) {
+                if (!c.getKnotenpunktId().equals(knotenpunkt.getKnotenpunktId())) {
+                    connection2Neighbour = c;
+                }
+            }
+
+            if (connection2Neighbour != null && registeredKnotenpunkte.containsKey(connection2Neighbour.getKnotenpunktId())) {
+                registeredKnotenpunkte.put(connection2.getKnotenpunktId(), connection2);
+
+            }
+        } else {
+            findNodesForBlock(knotenpunkt, connection2);
+            findNodesForBlock(knotenpunkt, connection1);
+        }
+    }
+
+    public HashMap<String, MKnotenpunkt> findNodesForBlock(MKnotenpunkt startNode, MKnotenpunkt forbiddenNode) {
+        HashMap<String, MKnotenpunkt> registeredKnotenpunkte = new HashMap<>();
+        Stack<MKnotenpunkt> geseheneKnotenpunkte = new Stack<>();
+        geseheneKnotenpunkte.add(startNode);
+        relevantGraph.increaseBlockId();
+
+        while (!geseheneKnotenpunkte.isEmpty()) {
+            MKnotenpunkt temp = geseheneKnotenpunkte.pop();
+            //todo: setID
+            temp.setBlockId(relevantGraph.getBlockId());
+            registeredKnotenpunkte.put(temp.getKnotenpunktId(), temp);
+            temp.getConnectedKnotenpunkteArray().forEach(k -> {
+                if (!k.getTargetType().equals(ESpecial.SIGNAL) && !registeredKnotenpunkte.containsKey(k.getKnotenpunktId()) && !geseheneKnotenpunkte.contains(k) && k != forbiddenNode) {
+                    geseheneKnotenpunkte.add(k);
+                }
+            });
+        }
+
+        return registeredKnotenpunkte;
+
     }
 
     private void showAlert() {
@@ -169,7 +224,7 @@ public class MTransportConnection {
                     mKnotenpunktHashMapSecondNode.forEach(((s, mKnotenpunkt) -> relevantTile.addKnotenpunkt(mKnotenpunkt)));
                 }
             }
-            if(mKnotenpunktHashMapSecondNode.size() > 0) {
+            if (mKnotenpunktHashMapSecondNode.size() > 0) {
                 mKnotenpunktHashMap.putAll(mKnotenpunktHashMapSecondNode);
             }
         }
@@ -202,40 +257,74 @@ public class MTransportConnection {
     }
 
     private boolean checkForSpace() {
-        return relevantTilesFree || isConnection;
+        return relevantTilesFree || (isConnection && (!feld.isSchraeg() || buildingToBeBuilt.getDz() > 0));
 
     }
 
     private void createKnotenpunkteByBuildingPoints() {
-        buildingToBeBuilt.getPoints().forEach((key, coord) -> {
+        buildingToBeBuilt.getPoints().forEach((key, relCoords) -> {
             if (!isConnection || !currentBuilding.getPoints().containsKey(key)) {
-                MKnotenpunkt punkt = createKnotenpunkt(coord, key);
-                if (coord.isSecondTile()) {
-                    mKnotenpunktHashMapSecondNode.put(punkt.getGridCoordinate().toStringCoordinates(), punkt);
+                MKnotenpunkt punkt = createKnotenpunkt(relCoords, key);
+                if (relCoords.isSecondTile()) {
+                    mKnotenpunktHashMapSecondNode.put(punkt.getVisibleCoordinate().toStringCoordinates(), punkt);
                 } else {
-                    mKnotenpunktHashMap.put(punkt.getGridCoordinate().toStringCoordinates(), punkt);
+                    mKnotenpunktHashMap.put(punkt.getVisibleCoordinate().toStringCoordinates(), punkt);
                 }
             }
         });
 
     }
 
-    private MKnotenpunkt createKnotenpunkt(MCoordinate coords, String name) {
+    private MKnotenpunkt createKnotenpunkt(MCoordinate relCoords, String name) {
         String nodeId = "" + buildingToBeBuiltType + relevantGraph.getIncreasedId();
-        MCoordinate feldGridCoordinates = feld.getVisibleCoordinates();
+        MCoordinate feldVisibleCoordinates = feld.getVisibleCoordinates();
+
+        if(feld.isSchraeg()){
+            boolean westTief = true;
+            if(feld.getWest().getZ() > feld.getLevel()){
+                westTief = false;
+            }
+            MCoordinate firstCoord = null;
+            MCoordinate secondCoord = null;
+            double half = westTief ? 0.5 : -0.5;
+            if (relCoords.getX() % 1 == 0) {
+
+                for (MCoordinate c : feld.getPunkteNeu()
+                ) {
+                    if (c.getX() == relCoords.getX() && c.getY() == (relCoords.getY() - 0.5)) {
+                        firstCoord = c;
+                    } else if (c.getX() == relCoords.getX() && c.getY() == (relCoords.getY() + 0.5)) {
+                        secondCoord = c;
+                    }
+                }
+            } else if (relCoords.getY() % 1 == 0) {
+                for (MCoordinate c : feld.getPunkteNeu()
+                ) {
+                    if (c.getX() == (relCoords.getX() - 0.5) && c.getY() == (relCoords.getY())) {
+                        firstCoord = c;
+                    } else if (c.getX() == relCoords.getX() + 0.5 && c.getY() == relCoords.getY()) {
+                        secondCoord = c;
+                    }
+                }
+            }
+            if (firstCoord != null && secondCoord != null && firstCoord.getZ() == secondCoord.getZ()) {
+                relCoords.setZ(firstCoord.getZ());
+            } else {
+                relCoords.setZ(half);
+            }
+        }
 
 
-
-        MCoordinate nodeCoordinate = new MCoordinate(feldGridCoordinates.getX() + coords.getX(), feldGridCoordinates.getY() - coords.getY(), feld.getLevel());
+        MCoordinate nodeVisibleCoord = new MCoordinate(feldVisibleCoordinates.getX() + relCoords.getX(), feldVisibleCoordinates.getY() - relCoords.getY(), feld.getWest().getZ()+ relCoords.getZ());
 
         MKnotenpunkt knotenpunkt;
 
-        if (relevantGraph.containsKey(nodeCoordinate.toStringCoordinates())) {
-            knotenpunkt = relevantGraph.get(nodeCoordinate.toStringCoordinates());
+        if (relevantGraph.containsKey(nodeVisibleCoord.toStringCoordinates())) {
+            knotenpunkt = relevantGraph.get(nodeVisibleCoord.toStringCoordinates());
             knotenpunkt.addGroupId(groupId);
         } else {
-            knotenpunkt = new MKnotenpunkt(nodeId, groupId, nodeCoordinate, buildingToBeBuiltType, name, feld.getId(), coords.getRoadDirection(), coords.isEdge());
-            relevantGraph.put(nodeCoordinate.toStringCoordinates(), knotenpunkt);
+            knotenpunkt = new MKnotenpunkt(nodeId, groupId, nodeVisibleCoord, buildingToBeBuiltType, name, feld.getId(), relCoords.getRoadDirection(), relCoords.isEdge());
+            relevantGraph.put(nodeVisibleCoord.toStringCoordinates(), knotenpunkt);
         }
 
         return knotenpunkt;

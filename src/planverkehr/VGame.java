@@ -13,29 +13,33 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import planverkehr.graph.Graph;
-import planverkehr.transportation.MTransportConnection;
+import planverkehr.verkehrslinien.LinienInfoButton;
+import planverkehr.verkehrslinien.MLinie;
+import planverkehr.verkehrslinien.VActiveLinie;
+import planverkehr.verkehrslinien.VLinie;
 
-import java.text.DecimalFormat;
 import java.util.*;
-import static planverkehr.Controller.*;
 
 public class VGame {
     MGame gameModel;
     Stage window;
-    Group group;
-    Canvas canvas, canvasFront;
-    GraphicsContext gc, gcFront;
+    Group group, linienGroup;
+    Canvas canvas, canvasFront, canvasLinie;
+    GraphicsContext gc, gcFront, gcLinie;
     Scene scene;
     JSONParser parser;
     MenuBar menuBar;
     Label debugCoord;
-    Button vehicleButton, tickButton, defaultRoad, removeButton, defaultRail, clearButton, drawButton, kartengeneratorButton;
+    Button tickButton, defaultRoad, removeButton, defaultRail, kartengeneratorButton, pauseButton, upButton, downButton;
+    Label linieInfoLabel;
+    Button linienButton, linienButtonWeiter, linienButtonAbbrechen;
 
     MouseMode mouseMode;
 
@@ -63,6 +67,8 @@ public class VGame {
         this.gameModel = gameModel;
         this.window = stage;
         group = new Group();
+        linienGroup = new Group();
+
         parser = new JSONParser();
         canvas = new Canvas((worldWidth + 1) * tWidth, (worldHeight + 1) * tHeight);
         canvasFront = new Canvas((worldWidth + 1) * tWidth, (worldHeight + 1) * tHeight);
@@ -71,27 +77,27 @@ public class VGame {
         canvasFront.toFront();
         group.getChildren().addAll(canvas, canvasFront);
 
-        Button pauseButton = new Button("Pause");
+        pauseButton = new Button("Pause");
         group.getChildren().add(pauseButton);
-        pauseButton.setLayoutX(0);
+        pauseButton.setLayoutX(10);
         pauseButton.setLayoutY(60);
         pauseButton.setOnAction(event -> tl.pause());
 
-        Button upButton = new Button("up");
+        upButton = new Button("up");
         group.getChildren().add(upButton);
-        upButton.setLayoutX(0);
+        upButton.setLayoutX(10);
         upButton.setLayoutY(90);
         upButton.setOnAction(event -> runUp());
 
-        Button downButton = new Button("down");
+        downButton = new Button("down");
         group.getChildren().add(downButton);
-        downButton.setLayoutX(0);
+        downButton.setLayoutX(10);
         downButton.setLayoutY(120);
         downButton.setOnAction(event -> runDown());
 
         tickButton = new Button("Tick");
         group.getChildren().add(tickButton);
-        tickButton.setLayoutX(0);
+        tickButton.setLayoutX(10);
         tickButton.setLayoutY(30);
 
         defaultRoad = new Button("Straßenbeispiel");
@@ -103,31 +109,31 @@ public class VGame {
         defaultRail = new Button("Schienenbeispiel");
         group.getChildren().add(defaultRail);
         defaultRail.setLayoutX(510);
-        defaultRail.setLayoutY(30);
+        defaultRail.setLayoutY(60);
 
         removeButton = new Button("Löschen");
         group.getChildren().add(removeButton);
         removeButton.setLayoutX(640);
         removeButton.setLayoutY(0);
 
-        vehicleButton = new Button("Road Vehicle");
-        group.getChildren().add(vehicleButton);
-        vehicleButton.setLayoutX(0);
-        vehicleButton.setLayoutY(150);
+        linienButton = new Button("Linie erstellen");
+        group.getChildren().add(linienButton);
+        linienButton.setLayoutX(10);
+        linienButton.setLayoutY(150);
 
-        clearButton = new Button("clear");
-        group.getChildren().add(clearButton);
-        clearButton.setLayoutX(640);
-        clearButton.setLayoutY(30);
-        clearButton.setOnAction(e -> clearField());
+        linieInfoLabel = new Label("wähle zuerst die zur Linie gehörigen Haltestellen aus, klicke dann auf weiter um ein Fahrzeug zu bestimmen");
+        linieInfoLabel.setLayoutX(100);
+        linieInfoLabel.setLayoutY(600);
 
-        drawButton = new Button("draw");
-        group.getChildren().add(drawButton);
-        drawButton.setLayoutX(640);
-        drawButton.setLayoutY(60);
-        drawButton.setOnAction(e -> drawField());
+        linienButtonAbbrechen = new Button("Abbrechen");
+        linienButtonAbbrechen.setLayoutX(150);
+        linienButtonAbbrechen.setLayoutY(650);
 
-        kartengeneratorButton = new Button("Kartengenerator");
+        linienButtonWeiter = new Button("Weiter");
+        linienButtonWeiter.setLayoutX(250);
+        linienButtonWeiter.setLayoutY(650);
+
+        kartengeneratorButton = new Button("Karten Generator");
         group.getChildren().add(kartengeneratorButton);
         kartengeneratorButton.setLayoutX(600);
         kartengeneratorButton.setLayoutY(650);
@@ -229,7 +235,8 @@ public class VGame {
 
         drawField();
 
-        scene = new Scene(group, Config.windowSize, Config.windowSize);
+        scene = new Scene(group, Config.windowSize + 150, Config.windowSize, Color.rgb(153, 106, 8));
+        scene.getStylesheets().add("/planverkehr/layout.css");
 
         window.setTitle("Planverkehr");
         window.setScene(scene);
@@ -479,61 +486,37 @@ public class VGame {
             LinkedList<MTile> openList = new LinkedList();
             openList.add(t);
 
-            while(!openList.isEmpty()) {
+            while (!openList.isEmpty()) {
 
-                Collections.sort(openList, Comparator.comparingInt(current
+                openList.sort(Comparator.comparingInt(current
                     -> current.höhendif().stream().mapToInt(Integer::intValue).sum()));
                 Collections.reverse(openList);
                 MTile currentMittelPunkt = openList.pollFirst();
                 bereitserhöht.add(currentMittelPunkt);
 
-                    erhöheAmEnde.put(currentMittelPunkt, currentMittelPunkt.getPunkte());
+                assert currentMittelPunkt != null;
+                erhöheAmEnde.put(currentMittelPunkt, currentMittelPunkt.getPunkte());
 
-                    ArrayList<MTile> nachbarnsortiert = gameModel.getNeighbours(currentMittelPunkt);
+                ArrayList<MTile> nachbarnsortiert = gameModel.getNeighbours(currentMittelPunkt);
 
-                    Collections.sort(nachbarnsortiert, Comparator.comparingInt(nachbar -> nachbar.intersection(currentMittelPunkt).size()));
-                    Collections.reverse(nachbarnsortiert);
+                Collections.sort(nachbarnsortiert, Comparator.comparingInt(nachbar -> nachbar.intersection(currentMittelPunkt).size()));
+                Collections.reverse(nachbarnsortiert);
 
-                    for (MTile currentNachbar : nachbarnsortiert) {
+                for (MTile currentNachbar : nachbarnsortiert) {
 
-                        if (!bereitserhöht.contains(currentNachbar)) {
+                    if (!bereitserhöht.contains(currentNachbar)) {
 
-                            switch (currentMittelPunkt.höhendif().stream().mapToInt(Integer::intValue).sum()) {
-                                case 2: {
-                                    if (currentNachbar.intersection(currentMittelPunkt).size() == 2
-                                    ) {
-                                        bereitserhöht.add(currentNachbar);
-                                        ArrayList<MCoordinate> same = currentNachbar.intersection(currentMittelPunkt);
-                                        ArrayList<MCoordinate> other = entferne(currentNachbar.getPunkte(), currentNachbar.intersection(currentMittelPunkt));
-                                        for (MCoordinate o : other) {
-                                            ArrayList<MCoordinate> zuerhöhende = new ArrayList<>();
-                                            if ((factor>0&&currentNachbar.getMeZ(o)<currentNachbar.getMeZ(same.get(0)))||
-                                                (factor<0&&currentNachbar.getMeZ(o)>currentNachbar.getMeZ(same.get(0)))){
-                                               openList.add(currentNachbar);
-                                                zuerhöhende.add(o);
-                                            }
-                                            erhöheAmEnde.put(currentNachbar, same);
-                                            if (!zuerhöhende.isEmpty()) {
-                                                ArrayList<MCoordinate> merge = erhöheAmEnde.get(currentNachbar);
-                                                for (MCoordinate erhöhe : zuerhöhende) {
-                                                    if(!merge.contains(erhöhe)) {
-                                                        merge.add(erhöhe);
-                                                    }
-                                                }
-                                                erhöheAmEnde.put(currentNachbar, merge);
-                                            }
-                                        }
-                                    }
-                                    break;
-                                }
-                                case 0, 1, 3: {
+                        switch (currentMittelPunkt.höhendif().stream().mapToInt(Integer::intValue).sum()) {
+                            case 2: {
+                                if (currentNachbar.intersection(currentMittelPunkt).size() == 2
+                                ) {
                                     bereitserhöht.add(currentNachbar);
                                     ArrayList<MCoordinate> same = currentNachbar.intersection(currentMittelPunkt);
                                     ArrayList<MCoordinate> other = entferne(currentNachbar.getPunkte(), currentNachbar.intersection(currentMittelPunkt));
                                     for (MCoordinate o : other) {
                                         ArrayList<MCoordinate> zuerhöhende = new ArrayList<>();
-                                        if ((factor>0&&currentNachbar.getMeZ(o)<currentNachbar.getMeZ(same.get(0)))||
-                                            (factor<0&&currentNachbar.getMeZ(o)>currentNachbar.getMeZ(same.get(0)))){
+                                        if ((factor > 0 && currentNachbar.getMeZ(o) < currentNachbar.getMeZ(same.get(0))) ||
+                                            (factor < 0 && currentNachbar.getMeZ(o) > currentNachbar.getMeZ(same.get(0)))) {
                                             openList.add(currentNachbar);
                                             zuerhöhende.add(o);
                                         }
@@ -541,29 +524,55 @@ public class VGame {
                                         if (!zuerhöhende.isEmpty()) {
                                             ArrayList<MCoordinate> merge = erhöheAmEnde.get(currentNachbar);
                                             for (MCoordinate erhöhe : zuerhöhende) {
-                                                if(!merge.contains(erhöhe)) {
+                                                if (!merge.contains(erhöhe)) {
                                                     merge.add(erhöhe);
                                                 }
                                             }
                                             erhöheAmEnde.put(currentNachbar, merge);
                                         }
                                     }
-                                    break;
                                 }
+                                break;
+                            }
+                            case 0, 1, 3: {
+                                bereitserhöht.add(currentNachbar);
+                                ArrayList<MCoordinate> same = currentNachbar.intersection(currentMittelPunkt);
+                                ArrayList<MCoordinate> other = entferne(currentNachbar.getPunkte(), currentNachbar.intersection(currentMittelPunkt));
+                                for (MCoordinate o : other) {
+                                    ArrayList<MCoordinate> zuerhöhende = new ArrayList<>();
+                                    if ((factor > 0 && currentNachbar.getMeZ(o) < currentNachbar.getMeZ(same.get(0))) ||
+                                        (factor < 0 && currentNachbar.getMeZ(o) > currentNachbar.getMeZ(same.get(0)))) {
+                                        openList.add(currentNachbar);
+                                        zuerhöhende.add(o);
+                                    }
+                                    erhöheAmEnde.put(currentNachbar, same);
+                                    if (!zuerhöhende.isEmpty()) {
+                                        ArrayList<MCoordinate> merge = erhöheAmEnde.get(currentNachbar);
+                                        for (MCoordinate erhöhe : zuerhöhende) {
+                                            if (!merge.contains(erhöhe)) {
+                                                merge.add(erhöhe);
+                                            }
+                                        }
+                                        erhöheAmEnde.put(currentNachbar, merge);
+                                    }
+                                }
+                                break;
                             }
                         }
+                    }
                 }
             }
 
             boolean darferhöhtwerden = true;
-            for(MTile key : erhöheAmEnde.keySet()){
-                if(!(key.getState()==EBuildType.free||key.getState()==EBuildType.water)){
+            for (MTile key : erhöheAmEnde.keySet()) {
+                if (!(key.getState() == EBuildType.free || key.getState() == EBuildType.water)) {
                     darferhöhtwerden = false;
+                    break;
                 }
             }
 
             // ACHTUNG: hier wird nicht das Tile selbst verändert!
-            if(darferhöhtwerden) {
+            if (darferhöhtwerden) {
                 for (MTile key : erhöheAmEnde.keySet()) {
 
                     key.erhöhePunkte(erhöheAmEnde.get(key), factor);
@@ -620,9 +629,25 @@ public class VGame {
             if (tile.isFirstTile) {
                 tempTileView.drawForeground(gcFront);
             }
+
+
             canvas.toBack();
 
         });
+
+        if (gameModel.isCreateLine()) {
+            gameModel.activeLinie.getListOfHaltestellenKnotenpunkten().forEach(wp -> {
+                new VActiveLinie(wp, gcFront, true, gameModel.activeLinie.getColor());
+            });
+
+            int i = 0;
+
+            for(MLinie l : gameModel.linienList){
+                new VLinie(gcFront, group, l, i);
+                    i++;
+            }
+
+        }
 
         gameModel.visibleVehiclesArrayList.forEach((vehicle) -> {
             new VVehicle(vehicle, gcFront);
@@ -669,8 +694,8 @@ public class VGame {
 
     }
 
-    public Button getVehicleButton() {
-        return vehicleButton;
+    public Button getLinienButton() {
+        return linienButton;
     }
 
     public Button getTickButton() {
@@ -702,6 +727,36 @@ public class VGame {
         tl.play();
     }
 
+    public void toggleLinienInfoLabel(boolean shouldShow) {
+        if (shouldShow) {
+
+            int i = 0;
+            for(MLinie l : gameModel.linienList){
+                Button b = new Button(l.getName() + "(" + l.getVehicle().getName() + ")");
+                String webFormat = String.format("#%02x%02x%02x",
+                    (int) (255 * l.getColor().getRed()),
+                    (int) (255 * l.getColor().getGreen()),
+                    (int) (255 * l.getColor().getBlue()));
+                b.getStyleClass().add("linienButton");
+                b.setStyle(" -fx-border-color:" + webFormat);
+                linienGroup.getChildren().add(b);
+                b.setLayoutX(10);
+                b.setLayoutY( 30 + (60 * i));
+                b.setOnAction(event -> {
+                    gameModel.activeLinie = l;
+                });
+
+                i++;
+            }
+
+            group.getChildren().addAll(linieInfoLabel, linienButtonAbbrechen, linienButtonWeiter, linienGroup);
+            group.getChildren().removeAll(linienButton, tickButton, defaultRoad, removeButton, defaultRail, kartengeneratorButton, pauseButton, upButton, downButton, menuBar );
+        } else {
+            group.getChildren().removeAll(linieInfoLabel, linienButtonAbbrechen, linienButtonWeiter, linienGroup);
+            group.getChildren().addAll(linienButton, tickButton, defaultRoad, removeButton, defaultRail, kartengeneratorButton, pauseButton, upButton, downButton, menuBar );
+        }
+    }
+
     public Button getDefaultRoadButton() {
         return defaultRoad;
     }
@@ -714,4 +769,13 @@ public class VGame {
         return defaultRail;
     }
 
+    public Button getLinienButtonAbbrechen() {
+        return linienButtonAbbrechen;
+    }
+
+    public Button getLinienButtonWeiter() {
+        return linienButtonWeiter;
+    }
+
 }
+

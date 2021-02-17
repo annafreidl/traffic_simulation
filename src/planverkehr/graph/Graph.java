@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 public class Graph extends HashMap<String, MKnotenpunkt> {
     int id = 0;
+    int blockId = 0;
     public boolean canConnectToNeighbour(MKnotenpunkt neighbour, EDirections roadDirection) {
        return neighbour.possibleConnections.contains(roadDirection);
     }
@@ -23,7 +24,15 @@ public class Graph extends HashMap<String, MKnotenpunkt> {
        return id++;
     }
 
-//    public void removeKnotenpunkteByGroupID(String groupId) {
+    public int getBlockId() {
+        return blockId;
+    }
+
+    public void increaseBlockId(){
+        blockId++;
+    }
+
+    //    public void removeKnotenpunkteByGroupID(String groupId) {
 //        ArrayList<String> KnotenpunkteToRemove = new ArrayList<>();
 //        System.out.println("removeKnotenpunkteByGroupID");
 //        this.forEach((key, point) -> {

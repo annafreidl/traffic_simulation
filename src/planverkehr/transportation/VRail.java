@@ -4,17 +4,21 @@ import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
+import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import planverkehr.Buildings;
 import planverkehr.Config;
 import planverkehr.MCoordinate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class VRail extends VTransportation {
+public class VRail extends VTransportConnection {
+
     public VRail(Buildings road, GraphicsContext gc, ArrayList<MCoordinate> punkteNeu, MCoordinate westVisibleCoord, boolean isSchraeg, int level, boolean hoch) {
         super(road, gc, westVisibleCoord, Color.FIREBRICK, punkteNeu, isSchraeg, level, hoch);
         drawRoadOrRail();
+
 
         if(road.getSpecial().equals(String.valueOf(ESpecial.RAILSTATION).toLowerCase())){
             drawRailStation();
@@ -31,6 +35,8 @@ public class VRail extends VTransportation {
             schraege = westAbsolutZ;
         }
        MCoordinate centerCoord = new MCoordinate(0.5 + westAbsolutX, westAbsolutY - 0.5, schraege).toCanvasCoordWithoutOffset();
+
+
 
         double centerX = centerCoord.getX();
         double centerY = centerCoord.getY();
@@ -49,16 +55,17 @@ public class VRail extends VTransportation {
         MCoordinate canvasCoord = westAbsCoord.toCanvasCoord();
         gc.setFill(Color.DARKBLUE);
 
-        gc.fillRect(canvasCoord.getX() + 10, canvasCoord.getY()- 8, 14, 14);
+        gc.fillRect(canvasCoord.getX() + Config.tHeightHalft / 2, canvasCoord.getY()- Config.tHeightHalft / 4, Config.tHeightHalft / 2, Config.tHeightHalft / 2);
 
 
 
         gc.setFill(Color.WHITESMOKE);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
+        gc.setFont(new Font(Config.tWidth / 10));
         gc.fillText(
             "U" ,
-            canvasCoord.getX()+ 16.5,
+            canvasCoord.getX()+ (double)Config.tHeightHalft / 2 + Config.tHeightHalft / 4,
             canvasCoord.getY() - 1
         );
     }

@@ -5,6 +5,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import planverkehr.transportation.VRail;
 import planverkehr.transportation.VRoad;
@@ -33,6 +34,8 @@ public class VTile {
 
         double visibleXOriginal = tileModel.getVisibleCoordinates().getX();
         double visibleYOriginal = tileModel.getVisibleCoordinates().getY();
+        gc.setStroke(Color.rgb(1, 89, 0));
+        gc.stroke();
 
         if (tileModel.getIsSelected()) {
             gc.setFill(Color.LIME);
@@ -104,12 +107,23 @@ public class VTile {
                         gc.lineTo(tempIso.getX(), tempIso.getY());
 
                         // gc.lineTo(gridX + tileModel.getNorth().toIso().getX(), gridY + tileModel.getIsoNorth().getY());
-
+/*
+                         if (tileModel.getState().equals(EBuildType.road)) {
+                    gc.setFill(Color.GRAY);
+                    gc.fill();
+                } else {
+                    gc.setFill(Color.rgb(15, 65, 153));
+                    gc.fill();
+                    gc.setStroke(Color.BLACK);
+                    gc.stroke();} */
                 gc.setFill(Color.rgb(0, 0, 204));
                         gc.fill();
                         //gc.stroke();
                         gc.closePath();
                 }
+
+
+
 
             else {
             switch (tileModel.höhendif().toString()) {
@@ -131,9 +145,9 @@ public class VTile {
                     temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
                     tempIso = temp.toCanvasCoord();
                     gc.lineTo(tempIso.getX(), tempIso.getY());
-                     temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
-                     tempIso = temp.toCanvasCoord();
-                    gc.moveTo(tempIso.getX(), tempIso.getY());
+//                     temp = new MCoordinate(visibleXOriginal + tileModel.getNorth().getX(), visibleYOriginal - tileModel.getNorth().getY(), tileModel.getNorth().getZ());
+//                     tempIso = temp.toCanvasCoord();
+//                    gc.moveTo(tempIso.getX(), tempIso.getY());
 
                    // gc.lineTo(gridX + tileModel.getNorth().toIso().getX(), gridY + tileModel.getIsoNorth().getY());
                     gc.setFill(eben);
@@ -584,17 +598,7 @@ public class VTile {
             }
         }}
 
-        //Hilfestellung: Koordinaten an den Westnodes der Tiles
-        gc.setFill(Color.BLACK);
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.CENTER);
-        MCoordinate temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
-       MCoordinate tempIso = temp.toCanvasCoord();
-        gc.fillText(
-            (int) tileModel.getVisibleCoordinates().getX() + "-" + ((int) tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1),
-            tempIso.getX(),
-            tempIso.getY() - 2
-        );
+
     }
 
     public void drawForeground(GraphicsContext gc) {
@@ -604,6 +608,30 @@ public class VTile {
         double widthHalf = Config.tWidth / 2;
         double heightHalf = Config.tWidth / 4;
 
+        double visibleXOriginal = tileModel.getVisibleCoordinates().getX();
+        double visibleYOriginal = tileModel.getVisibleCoordinates().getY();
+
+        //Hilfestellung: Koordinaten an den Westnodes der Tiles
+        gc.setFill(Color.rgb(0, 0, 0, 0.75));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setFont(new Font(Config.tHeightHalft / 1.5));
+        gc.setTextBaseline(VPos.CENTER);
+        MCoordinate temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
+        MCoordinate tempIso = temp.toCanvasCoord();
+        if(tileModel.getVisibleCoordinates().getY()- Config.worldWidth + 1 == 0){
+            gc.fillText(
+                (int) tileModel.getVisibleCoordinates().getX() + "-" + ((int) tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1),
+                tempIso.getX(),
+                tempIso.getY() - 2, 100
+            );
+        } else {
+            gc.fillText(
+                (int) tileModel.getVisibleCoordinates().getX() + "" + ((int) tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1),
+                tempIso.getX(),
+                tempIso.getY() - 2, 100
+            );
+        }
+
         String building = tileModel.getBuilding();
 
         //pics must have same scale!
@@ -611,10 +639,13 @@ public class VTile {
         //wenn Buildings NICHT gleiche Scales haben, dann verschiedene cases und anpassen
 
         switch (tileModel.getState()) {
+//todo: Pfad darf keine leerzeichen haben
+            case factory -> {
+              //  String buildingName = building.replace(" ", "-");
+             //   image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
-            case building -> {
-                String buildingName = building.replace(" ", "-");
-                image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
+                Buildings b = tileModel.getBuildingOnTile();
+                image = new Image("Images/"+ b.getBuildingName() + ".png");
 
                 imageScale = widthHalf / image.getWidth();
                 imageHeight = image.getHeight() * imageScale;
@@ -624,11 +655,16 @@ public class VTile {
             }
 
             case road -> {
+
                 new VRoad(tileModel.getConnectedBuilding(), gc, tileModel.getPunkteNeu(), tileModel.getVisibleCoordinates(), tileModel.isSchraeg(), tileModel.getLevel(), tileModel.isHoch());
             }
 
             case rail -> {
+               if(tileModel.getConnectedBuilding() != null){
                 new VRail(tileModel.getConnectedBuilding(), gc, tileModel.getPunkteNeu(), tileModel.getVisibleCoordinates(), tileModel.isSchraeg(), tileModel.getLevel(), tileModel.isHoch());
+               } else {
+                   System.out.println("VTile - draw Foreground kein connected Building: " + tileModel.getIDCoordinates()) ;
+               }
             }
 
             case airport -> {
@@ -653,17 +689,7 @@ public class VTile {
 
                 gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
             }
-            case factory -> {
 
-                Buildings b = tileModel.getBuildingOnTile();
-                image = new Image("Images/"+ b.getBuildingName() + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
-
-                imageScale = widthHalf / image.getWidth();
-                imageHeight = image.getHeight() * imageScale ;
-                imageWidth = image.getWidth() * imageScale;
-
-                gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
-            }
 
            /* default -> {
                 gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);

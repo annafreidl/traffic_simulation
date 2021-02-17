@@ -46,7 +46,7 @@ public class MTargetpointList extends ArrayList<MKnotenpunkt> {
         //Wenn Zielknoten nicht erreichbar ist, dann wenn möglich auf eigenen Knoten stehen bleiben,
         if (this.isEmpty()) {
             vehicles.setWaiting(true);
-            vehicles.getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber);
+            vehicles.getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber, true);
         }
     }
 

@@ -65,7 +65,7 @@ public class SearchObject {
     }
 
     public EBuildType getCurrentNodeKind(){
-        return currentWayNode.knotenpunkt.type;
+        return currentWayNode.knotenpunkt.surfaceType;
     }
 
     public void clearZuBesuchendeWegpunkte() {
@@ -105,7 +105,7 @@ public class SearchObject {
     }
 
     public MKnotenpunkt getVorgaenger(){
-        return currentWayNode.vorgaenger;
+        return currentWayNode.getVorgaenger();
     }
 
 //    public int getWaitTime(){

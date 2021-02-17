@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class VTransportation {
+public class VTransportConnection {
     Color color;
     GraphicsContext gc;
     double westAbsolutX, westAbsolutY, westAbsolutZ;
@@ -22,10 +22,10 @@ public class VTransportation {
     boolean gehtHoch;
     boolean isHoch;
 
-    public VTransportation(Buildings roadOrRail, GraphicsContext gc, MCoordinate westVisible, Color color, ArrayList<MCoordinate> punkteNeu, boolean isSchraeg, int level, boolean isHoch) {
+    public VTransportConnection(Buildings roadOrRail, GraphicsContext gc, MCoordinate westVisible, Color color, ArrayList<MCoordinate> punkteNeu, boolean isSchraeg, int level, boolean isHoch) {
         MCoordinate westRelativ = punkteNeu.get(3); //0:0:Z
         //if (isHoch) {
-            gehtHoch = westRelativ.getZ() != level;
+        gehtHoch = westRelativ.getZ() != level;
         //}
 //        else {
 //            gehtHoch = westRelativ.getZ() == level;
@@ -89,9 +89,17 @@ public class VTransportation {
         gc.setStroke(color);
         gc.setLineWidth(3);
         List<Pair<String, String>> connectionsList = road_rail.getRoads().isEmpty() ? road_rail.getRails() : road_rail.getRoads();
+        boolean isRoad = !road_rail.getRoads().isEmpty();
+        if (isRoad) {
+            gc.setLineDashes(7.5);
+        }
+        connectionsList.forEach((pair) -> {
 
+            gc.strokeLine((absCoordMap.get(pair.getKey()).getX()), (absCoordMap.get(pair.getKey()).getY()), (absCoordMap.get(pair.getValue()).getX()), (absCoordMap.get(pair.getValue()).getY()));
 
-        connectionsList.forEach((pair) -> gc.strokeLine((absCoordMap.get(pair.getKey()).getX()), (absCoordMap.get(pair.getKey()).getY()), (absCoordMap.get(pair.getValue()).getX()), (absCoordMap.get(pair.getValue()).getY())));
+        });
+        gc.setLineDashes(0);
+
 
     }
 }

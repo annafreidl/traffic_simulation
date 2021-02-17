@@ -4,10 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
+import com.sun.javafx.image.impl.IntArgb;
 import javafx.util.Pair;
 import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
 import planverkehr.graph.MTargetpointList;
+import planverkehr.graph.MWegKnotenpunkt;
+import planverkehr.transportation.ESpecial;
+import planverkehr.transportation.MRailBlock;
+import planverkehr.verkehrslinien.MLinie;
+import planverkehr.verkehrslinien.linienConfigObject;
 
 import java.util.*;
 
@@ -26,7 +32,13 @@ public class MGame {
     ArrayList<MVehicles> vehicleTypeList;
     int vehicleId = 0;
     MTargetpointList listeDerBushaltestellen, listeDerBahnhöfe, listeDerFlughafenGebäude;
+    int linienID = 0;
     int tickNumber = 0;
+    private boolean createLine = false;
+    ArrayList<MLinie> linienList;
+    MLinie activeLinie;
+    HashMap<Integer, MRailBlock> railBlockMap;
+    int lastKnownBlockID;
 
 
     public MGame(GameConfig config) {
@@ -37,15 +49,14 @@ public class MGame {
         airportGraph = new Graph();
         visibleVehiclesArrayList = new ArrayList<>();
         vehicleTypeList = gameConfig.getVehiclesList();
+        linienList = new ArrayList<>();
+        railBlockMap = new HashMap<>();
+        railBlockMap.put(0, new MRailBlock(0));
 
         possibleBuildings = gameConfig.getBuildingsList();
         linkBuildings();
         constructedBuildings = new ArrayList<>(); //factories von Anfang an muessen rein
 
-
-        MCoordinate visible1 = new MCoordinate(1, 1, 0);
-        MCoordinate canvas2 = visible1.toCanvasCoord();
-        MCoordinate visible2 = canvas2.toVisibleCoord();
 
         listeDerBushaltestellen = new MTargetpointList();
         listeDerBahnhöfe = new MTargetpointList();
@@ -64,12 +75,12 @@ public class MGame {
         });
     }
 
-    public ArrayList<MTile> getNeighbours(MTile m1){
+    public ArrayList<MTile> getNeighbours(MTile m1) {
         ArrayList<MTile> neighbours = new ArrayList<>();
 
         for (MTile feld : getTileArray()) {
 
-            if (!m1.intersection(feld).isEmpty() && m1!=feld) {
+            if (!m1.intersection(feld).isEmpty() && m1 != feld) {
                 neighbours.add(feld);
             }
         }
@@ -92,6 +103,7 @@ public class MGame {
             }
         }
     }
+
     public ArrayList<MTile> getTileArray() {
         return tileArray;
     }
@@ -125,17 +137,34 @@ public class MGame {
             System.out.println("state: " + tile.state);
             System.out.println("KnotenpunkteArray: " + tile.knotenpunkteArray);
             System.out.println();
+
             if (selectedTileId.equals(searchId)) {
                 resetSelectedTile();
-            } else if (!selectedTileId.equals("null")) {
-                resetSelectedTile();
-                tile.changeIsSelected(true);
-                selectedTileId = searchId;
             } else {
+                if (!selectedTileId.equals("null")) {
+                    resetSelectedTile();
+                }
                 tile.changeIsSelected(true);
                 selectedTileId = searchId;
+
+                if (createLine && (tile.isStation() || tile.getState().equals(EBuildType.factory))) {
+                    boolean searching = true;
+                    MKnotenpunkt linienKnotenpunkt = null;
+                    for (int i = 0; i < tile.knotenpunkteArray.size() && searching; i++) {
+                        ESpecial targetType = tile.knotenpunkteArray.get(i).getTargetType();
+                        if (targetType != ESpecial.NOTHING) {
+                            linienKnotenpunkt = tile.knotenpunkteArray.get(i);
+                            searching = false;
+                        }
+                    }
+                    assert linienKnotenpunkt != null;
+                    activeLinie.addWegknotenpunkt(linienKnotenpunkt);
+
+                }
+
             }
             selectedTile[0] = true;
+
 
         });
         return selectedTile[0];
@@ -250,7 +279,7 @@ public class MGame {
                         tilesToBeGrouped.add(tileToCheck);
                     }
                 } else if (selectedTile.isFree() &&
-                    (dz>0 ||(dz==0 && !selectedTile.getIncline()))) {
+                    (dz > 0 || (dz == 0 && !selectedTile.getIncline()))) {
                     tilesToBeGrouped.add(selectedTile);
 
                 } else {
@@ -266,75 +295,116 @@ public class MGame {
         return tilesToBeGrouped;
     }
 
-    public void createVehicle() {
-        MTile selectedTile = getSelectedTile();
-        MVehicles temp = vehicleTypeList.get(0);
-        MTargetpointList relevantTargetPoints = null;
-
-        if (selectedTile.state == EBuildType.road || selectedTile.state == EBuildType.rail) {
-
-            if (selectedTile.state == EBuildType.road) {
-                temp = vehicleTypeList.get(0);
-                relevantTargetPoints = listeDerBushaltestellen;
-
-            } else {
-                for (MVehicles mVehicles : vehicleTypeList) {
-                    if (mVehicles.getKind().equals("engine")) {
-                        relevantTargetPoints = listeDerBahnhöfe;
-                        temp = mVehicles;
-                    }
-                }
+    public void updateBlockIds(){
+        if (lastKnownBlockID < railGraph.getBlockId()) {
+            while (lastKnownBlockID < railGraph.getBlockId()) {
+                lastKnownBlockID++;
+                railBlockMap.put(lastKnownBlockID, new MRailBlock(lastKnownBlockID));
             }
-
-
-            //todo: vehicle clone Methode
-            MVehicles truck = new MVehicles(temp.getName(), temp.getKind(), temp.getGraphic(), temp.getCargo(), temp.getSpeed());
-
-            Optional<MKnotenpunkt> knotenpunktOptional = getSelectedTile().getNodeByName("c");
-
-            knotenpunktOptional.ifPresentOrElse((truck::setCurrentKnotenpunkt), (() -> {
-                truck.setCurrentKnotenpunkt(getSelectedTile().getKnotenpunkteArray().get(0));
-            }));
-            truck.setId(vehicleId);
-
-          if(relevantTargetPoints != null) {
-              truck.findPath(relevantTargetPoints, tickNumber);
-          }
-            vehicleId++;
-            visibleVehiclesArrayList.add(truck);
-
         }
-
     }
 
 
     public void moveVehicles() {
-        visibleVehiclesArrayList.forEach((vehicle) -> {
-            if(!vehicle.isWaiting){
-            vehicle.getCurrentKnotenpunkt().getBlockedForTickList().pollFirst();
-            MTargetpointList relevantTargetpoints;
-            Graph relevantGraph;
-            //todo: explizit andere Fahrzeugtypen prüfen
-            if(vehicle.getKind().equals("engine")){
-                relevantTargetpoints = listeDerBahnhöfe;
-                relevantGraph = railGraph;
-            } else {
-                relevantTargetpoints = listeDerBushaltestellen;
-                relevantGraph = roadGraph;
-            }
-            MKnotenpunkt nextKnotenpunkt = vehicle.getNextKnotenpunktFromPath(relevantTargetpoints, tickNumber, relevantGraph);
-            nextKnotenpunkt.getBlockedForTickList().pollFirst();
-            if(vehicle.pathStack.isEmpty()){
-                vehicle.setAtGoal(true);
-            }
+        updateBlockIds();
+        for (MLinie l : linienList
+        ) {
 
-            vehicle.setCurrentKnotenpunkt(nextKnotenpunkt);}
-            else {
-                vehicle.setWaiting(false);
+            MWegKnotenpunkt w = l.getListeAllerLinienKnotenpunkte().peekFirst();
+            if (l.getType().equals(EBuildType.road)) {
+               MCoordinate next = w.getKnotenpunkt().getVisibleCoordinate();
+               MCoordinate current = l.getVehicle().getCurrentPosition();
+                boolean isLeft = next.getX() < current.getY() || next.getY() < current.getY();
+                if (w.getKnotenpunkt().isFreeFor(tickNumber + 1, isLeft)) {
+                    setNextKnotenpunkt(l, w, isLeft);
+                    l.getVehicle().setDrivesLeft(isLeft);
+                } else {
+                    l.getVehicle().setWaiting(true);
+                    if (l.getVehicle().getCurrentKnotenpunkt() != null) {
+                        l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 1, isLeft);
+                        l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 2, isLeft);
+                    }
+                }
+
+                System.out.println("vehicle: " + l.getVehicle().getName() + " , " + "nextNode: " + l.getVehicle().getCurrentKnotenpunkt().getVisibleCoordinate());
+
+            } else if (l.getType().equals(EBuildType.rail)) {
+                //Zug darf sich bewegen, wenn er in einem Block steht, der Block frei ist oder vorher schon im besetzten Block war
+                int currentBlockId = 0;
+                if (l.getVehicle() != null) {
+                    currentBlockId = l.getVehicle().getCurrentKnotenpunkt().getBlockId();
+                }
+                int nextBlockId = w.getKnotenpunkt().getBlockId();
+                if (nextBlockId != 0 && currentBlockId == nextBlockId || !railBlockMap.get(w.getKnotenpunkt().getBlockId()).isBlocked()) {
+                    if (currentBlockId != nextBlockId) {
+                        railBlockMap.get(currentBlockId).setBlocked(false);
+                        railBlockMap.get(nextBlockId).setBlocked(true);
+                    }
+                    setNextKnotenpunkt(l, w, true);
+                } else {
+                    l.getVehicle().setWaiting(true);
+                }
             }
-        });
+        }
+//        visibleVehiclesArrayList.forEach((vehicle) -> {
+//            if(!vehicle.isWaiting){
+//            vehicle.getCurrentKnotenpunkt().getBlockedForTickList().pollFirst();
+//            MTargetpointList relevantTargetpoints;
+//            Graph relevantGraph;
+//            //todo: explizit andere Fahrzeugtypen prüfen
+//            if(vehicle.getKind().equals("engine")){
+//                relevantTargetpoints = listeDerBahnhöfe;
+//                relevantGraph = railGraph;
+//            } else {
+//                relevantTargetpoints = listeDerBushaltestellen;
+//                relevantGraph = roadGraph;
+//            }
+//            MKnotenpunkt nextKnotenpunkt = vehicle.getNextKnotenpunktFromPath(relevantTargetpoints, tickNumber, relevantGraph);
+//            nextKnotenpunkt.getBlockedForTickList().pollFirst();
+//            if(vehicle.pathStack.isEmpty()){
+//                vehicle.setAtGoal(true);
+//            }
+//
+//            vehicle.setCurrentKnotenpunkt(nextKnotenpunkt);}
+//            else {
+//                vehicle.setWaiting(false);
+//            }
+//        });
 
         tickNumber++;
+    }
+
+    private void setNextKnotenpunkt(MLinie l, MWegKnotenpunkt w, boolean isLeft) {
+        l.getVehicle().setWaiting(false);
+        l.getListeAllerLinienKnotenpunkte().pollFirst();
+        w.getKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 1, isLeft);
+        w.getKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 2, isLeft);
+
+        w.getKnotenpunkt().removeAllBlockedForTicksSmallerThen(tickNumber);
+
+        l.getVehicle().setCurrentKnotenpunkt(w.getKnotenpunkt());
+        l.addWegknotenpunktToBack(w);
+    }
+
+    //todo: dynamisch klonen, damit es auch noch funktioniert wenn Attribute hinzugefügt werden (bsp combinesBuildings). Muss in die Buildingsklasse
+    public Buildings copyBuilding(Buildings building) {
+
+        String buildingName = building.getBuildingName();
+        String buildMenu = building.getBuildMenu();
+        int width = building.getWidth();
+        int depth = building.getDepth();
+        java.util.Map<String, MCoordinate> points = building.getPoints();
+        java.util.List<Pair<String, String>> roads = building.getRoads();
+        List<Pair<String, String>> rails = building.getRails();
+        List<Pair<String, String>> planes = building.getPlanes();
+        int dz = building.getDz();
+        String special = building.getSpecial();
+        int maxPlanes = building.getMaxPlanes();
+        java.util.Map<String, String> combinesStrings = building.getCombinesStrings();
+
+        List<MProductions> productions = building.getProductions();
+
+        return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combinesStrings, productions);
     }
 
     public void resetTile() {
@@ -360,7 +430,7 @@ public class MGame {
                             if (groupId.length() < 1) {
                                 groupId = k.getListOfGroupId().get(0);
                             }
-                            relevantGraph.remove(k.getGridCoordinate().toStringCoordinates());
+                            relevantGraph.remove(k.getVisibleCoordinate().toStringCoordinates());
                         }
                     }
                 }
@@ -378,5 +448,65 @@ public class MGame {
 
         // rufe Tile an der Stelle auf
         return (int) visibleCoordinate.getX() + "-" + (int) visibleCoordinate.getY();
+    }
+
+    public boolean isCreateLine() {
+        return createLine;
+    }
+
+    public void setCreateLine(boolean b) {
+        createLine = b;
+        activeLinie = new MLinie(linienID);
+        linienID++;
+    }
+
+    public void saveLinie(linienConfigObject lco) {
+        activeLinie.setName(lco.getName());
+        activeLinie.setCircle(lco.isCircle());
+        MVehicles temp = lco.getVehicle();
+        MVehicles copy = new MVehicles(temp.getName(), temp.getKind(), temp.getGraphic(), temp.getCargo(), temp.getSpeed());
+        copy.setId(vehicleId);
+        vehicleId++;
+
+        activeLinie.setVehicle(copy);
+    }
+
+    public boolean connectLinienPunkte() {
+        return activeLinie.connect();
+    }
+
+    public void addLinie() {
+        updateBlockIds();
+        MWegKnotenpunkt w = activeLinie.getListeAllerLinienKnotenpunkte().pollFirst();
+        boolean canCreateLinie = true;
+        if (activeLinie.getType().equals(EBuildType.rail)) {
+            int nextBlockID = w.getKnotenpunkt().getBlockId();
+            if (nextBlockID == 0) {
+                System.out.println("baue erst Signale um eine sichere Fahrt zu gewährleisten");
+                canCreateLinie = false;
+            } else if (railBlockMap.get(nextBlockID).isBlocked()) {
+                System.out.println("die erste Haltestelle ist zurZeit blockiert, es wird gewartet bis sie frei wird");
+                activeLinie.getListeAllerLinienKnotenpunkte().add(w);
+            } else {
+                railBlockMap.get(nextBlockID).setBlocked(true);
+                activeLinie.getVehicle().setCurrentKnotenpunkt(w.getKnotenpunkt());
+                activeLinie.addWegknotenpunktToBack(w);
+            }
+        } else if (activeLinie.getType().equals(EBuildType.road)) {
+            if (w.getKnotenpunkt().isFreeFor(tickNumber, true)) {
+
+                activeLinie.getVehicle().setCurrentKnotenpunkt(w.getKnotenpunkt());
+                activeLinie.addWegknotenpunktToBack(w);
+            } else {
+                System.out.println("die erste Haltestelle ist zurZeit blockiert, es wird gewartet bis sie frei wird");
+                activeLinie.getListeAllerLinienKnotenpunkte().add(w);
+            }
+        }
+
+        if (canCreateLinie) {
+            linienList.add(activeLinie);
+            activeLinie.getVehicle().setDrivesLeft(true);
+            visibleVehiclesArrayList.add(activeLinie.getVehicle());
+        }
     }
 }

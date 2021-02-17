@@ -1,0 +1,57 @@
+.background{
+    -fx-background-color: brown;
+}
+
+
+.button {
+    -fx-background-color: #e5e5e5;
+    -fx-text-fill: #000000;
+    -fx-border-radius: 2px;
+    -fx-cursor: hand;
+    -fx-min-width: 75px;
+    -fx-max-width: 100px;
+    -fx-pref-width: 80px;
+
+    -fx-start-margin: 10px;
+    -fx-end-margin: 10px;
+    -fx-wrap-text: true;
+}
+
+.button:hover{
+    -fx-background-color: #c6c6c6;
+}
+
+
+.linienButton{
+    -fx-background-color: transparent;
+    -fx-min-width: 150px;
+    -fx-border-style: hidden hidden solid hidden;
+    -fx-border-width: 2;
+}
+
+.menu{
+    -fx-min-width: 75px;
+    -fx-max-width: 75px;
+    -fx-pref-width: 75px;
+    -fx-background-color: #e5e5e5;
+    -fx-text-fill: #000000;
+    -fx-text-alignment: center;
+    -fx-cursor: hand;
+}
+
+.menu:hover{
+    -fx-background-color: #c6c6c6;
+    -fx-text-fill: #000000;
+}
+
+.menu:selected{
+    -fx-text-fill: #000000;
+}
+.menu-bar{
+    -fx-background-color: #e5e5e5;
+    -fx-text-fill: #000000;
+}
+
+.menu-item{
+
+}

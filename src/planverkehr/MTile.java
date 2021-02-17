@@ -6,7 +6,6 @@ import planverkehr.transportation.EDirections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -17,6 +16,7 @@ public class MTile {
     boolean hoch = true;
     double xNew, yNew, xIsoWest, yIsoWest;
     int level;
+    boolean isStation = false;
     EnumSet<EDirections> possibleConnections = EnumSet.noneOf(EDirections.class);
     MCoordinate visibleCoordinates, isoWest, isoSouth, isoNorth, isoEast, isoCenter, north, south, east, west;
     EBuildType state;
@@ -246,7 +246,7 @@ public class MTile {
         MKnotenpunkt knotenpunkt = null;
         boolean searching = true;
         for (int i = 0; i < knotenpunkteArray.size() && searching; i++) {
-            if (knotenpunkteArray.get(i).getGridCoordinate().toStringCoordinates().equals(coordsString)) {
+            if (knotenpunkteArray.get(i).getVisibleCoordinate().toStringCoordinates().equals(coordsString)) {
                 knotenpunkt = knotenpunkteArray.get(i);
                 searching = false;
             }
@@ -430,6 +430,14 @@ public class MTile {
 
     public boolean isHoch() {
         return hoch;
+    }
+
+    public boolean isStation() {
+        return isStation;
+    }
+
+    public void setStation(boolean station) {
+        isStation = station;
     }
 
     public void reset() {

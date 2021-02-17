@@ -9,65 +9,63 @@ import planverkehr.transportation.ESpecial;
 import java.util.*;
 
 public class MKnotenpunkt {
-    MCoordinate gridCoordinate;
-    MCoordinate isoCoordinate;
+    MCoordinate visibleCoordinate;
     String feldId,
         name; //nw, ns, p0 usw.
-
-    String knotenpunktId;
-    boolean edge;
+    int blockId;
+    String knotenpunktId; //type(bspw road)+ zahl
+    boolean edge; //Wenn einer der x oder y-Werte eine ganze Zahl ist
+    //todo: prüfen ob die nächsten beiden noch benötigt werden
     EDirections direction; //Himmelsrichtung im Feld in der  Knotenpunkt liegt
     Set possibleConnections; //EnumSet
     HashMap<String, MKnotenpunkt> connectedKnotenpunkte;
     ArrayList<MKnotenpunkt> connectedKnotenpunkteArray;
     ArrayList<String> groupIds; //Alle zu einem Gebäude zugehörigen Koordinaten haben dieselbe GroupId: feldID-buildingToBeBuiltID;
-  //  HashMap<String, MKnotenpunkt> groupedKnotenpunkte;
-    EBuildType type;
+    //  HashMap<String, MKnotenpunkt> groupedKnotenpunkte;
+    EBuildType surfaceType;
     ESpecial targetType;
-    final TreeSet<Integer> blockedForTickList;
+    final TreeSet<Integer> blockedForTickListLeft;
+    final TreeSet<Integer> blockedForTickListRight;
     boolean isBlocked = false;
     boolean isTempTarget = false;  //todo: prüfen ob überhaupt noch nötig
 
 
-    public MKnotenpunkt(String nodeId, String groupId, MCoordinate coords, EBuildType type, String name, String feldId, EDirections direction, boolean isEdge){
+    public MKnotenpunkt(String nodeId, String groupId, MCoordinate visibleCoords, EBuildType type, String name, String feldId, EDirections direction, boolean isEdge) {
         this.knotenpunktId = nodeId;
         groupIds = new ArrayList<>();
         groupIds.add(groupId);
 
-        this.gridCoordinate = coords;
-        this.type = type;
+        blockId = 0;
+
+        this.visibleCoordinate = visibleCoords;
+        this.surfaceType = type;
         this.name = name;
         this.feldId = feldId;
         this.edge = isEdge;
         this.direction = direction;
         connectedKnotenpunkte = new HashMap<>();
         connectedKnotenpunkteArray = new ArrayList<>();
-      //  groupedKnotenpunkte = new HashMap<>();
+        //  groupedKnotenpunkte = new HashMap<>();
         possibleConnections = EnumSet.noneOf(EDirections.class);
-        targetType = null;
-        blockedForTickList = new TreeSet<>();
+        targetType = ESpecial.NOTHING;
+        blockedForTickListLeft = new TreeSet<>();
+        blockedForTickListRight = new TreeSet<>();
     }
 
-
-
-public void addGroupId(String id){
+    public void addGroupId(String id) {
         groupIds.add(id);
-}
-
-    public void setGridCoordinate(MCoordinate gridCoordinate) {
-        this.gridCoordinate = gridCoordinate;
     }
 
-    public void setIsoCoordinate(MCoordinate isoCoordinate) {
-        this.isoCoordinate = isoCoordinate;
+    public void setVisibleCoordinate(MCoordinate visibleCoordinate) {
+        this.visibleCoordinate = visibleCoordinate;
     }
 
-    public void setType(EBuildType type) {
-        this.type = type;
+    public void setSurfaceType(EBuildType surfaceType) {
+        this.surfaceType = surfaceType;
     }
 
 
-    public void addConnectedNode (MKnotenpunkt node) {
+    public void addConnectedNode(MKnotenpunkt node) {
         if (!connectedKnotenpunkte.containsKey(node.getTileId())) {
             connectedKnotenpunkteArray.add(node);
             connectedKnotenpunkte.put(node.getTileId(), node);
@@ -99,16 +97,17 @@ public void addGroupId(String id){
     @Override
     public String toString() {
         return "MKnotenpunkt{" +
-            "gridCoordinate=" + gridCoordinate +
+            "gridCoordinate=" + visibleCoordinate +
             ", feldId='" + feldId + '\'' +
             ", name='" + name + '\'' +
+            ", targetType: " + targetType + '\'' +
             ", direction=" + direction +
             ", connectedKnotenpunkteArray=" + connectedKnotenpunkteArray.size() +
             '}';
     }
 
-    public MCoordinate getGridCoordinate() {
-        return gridCoordinate;
+    public MCoordinate getVisibleCoordinate() {
+        return visibleCoordinate;
     }
 
     public ArrayList<MKnotenpunkt> getConnectedKnotenpunkteArray() {
@@ -131,8 +130,11 @@ public void addGroupId(String id){
         return targetType;
     }
 
-    public void addEntryToBlockedForTickList(int tick) {
-        blockedForTickList.add(tick);
+    public void addEntryToBlockedForTickList(int tick, boolean isLeft) {
+      if(isLeft) {
+          blockedForTickListLeft.add(tick);
+      } else{
+      }  blockedForTickListRight.add(tick);
     }
 
     public boolean isTempTarget() {
@@ -144,23 +146,37 @@ public void addGroupId(String id){
     }
 
     //todo: muss für Verlehrsmittel geschrieben werden
-    public boolean isFreeFor(int timeBetretenUm) {
-        Integer lowerTime = blockedForTickList.higher(timeBetretenUm-1);
-        Integer upperTime = blockedForTickList.higher(timeBetretenUm + 1);
+    public boolean isFreeFor(int timeBetretenUm, boolean isLeft) {
+        TreeSet<Integer> relevantBlockedForTickListRight = isLeft ? blockedForTickListLeft : blockedForTickListRight;
+        Integer lowerTime = relevantBlockedForTickListRight.higher(timeBetretenUm - 1);
+        Integer upperTime = relevantBlockedForTickListRight.higher(timeBetretenUm + 1);
 
         if (isBlocked) {
             return false;
-        } else if ((blockedForTickList.isEmpty() || (lowerTime == null)) ) {
+        } else if ((relevantBlockedForTickListRight.isEmpty() || (lowerTime == null))) {
             return true;
         } else if ((upperTime == null)) {
             return false;
-        } else if (blockedForTickList.subSet(lowerTime, upperTime).isEmpty()) {
+        } else if (relevantBlockedForTickListRight.subSet(lowerTime, upperTime).isEmpty()) {
             return true;
         }
         return true;
     }
 
-    public TreeSet<Integer> getBlockedForTickList() {
-        return blockedForTickList;
+    public EBuildType getSurfaceType() {
+        return surfaceType;
+    }
+
+    public void removeAllBlockedForTicksSmallerThen(int tickNumber) {
+        blockedForTickListLeft.removeIf(integer -> integer < tickNumber);
+        blockedForTickListRight.removeIf(integer -> integer < tickNumber);
+    }
+
+    public Integer getBlockId() {
+        return blockId;
+    }
+
+    public void setBlockId(int blockId) {
+        this.blockId = blockId;
     }
 }

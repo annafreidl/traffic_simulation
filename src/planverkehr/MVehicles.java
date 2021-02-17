@@ -24,6 +24,8 @@ public class MVehicles {
     Path pathStack;
     boolean isWaiting = false;
     private boolean isAtGoal = true;
+    EVehicleTypes kindEnum;
+    boolean drivesLeft;
 
     public MVehicles(String name, String kind, String graphic, HashMap<String, Integer> cargo, double speed) {
         this.name = name;
@@ -33,6 +35,13 @@ public class MVehicles {
         this.speed = speed;
         wayPointList = new ArrayList<>();
         pathStack = new Path();
+
+        switch (kind) {
+            case "road vehicle" -> kindEnum = EVehicleTypes.road_vehicle;
+            case "engine" -> kindEnum = EVehicleTypes.engine;
+            case "wagon" -> kindEnum = EVehicleTypes.wagon;
+            case "plane" -> kindEnum = EVehicleTypes.plane;
+        }
     }
 
 
@@ -74,44 +83,7 @@ public class MVehicles {
 
     public void setCurrentKnotenpunkt(MKnotenpunkt roadKnotenpunkt) {
         this.currentKnotenpunkt = roadKnotenpunkt;
-        currentPosition = roadKnotenpunkt.getGridCoordinate();
-    }
-
-    public MKnotenpunkt getNextKnotenpunktFromPath(MTargetpointList relevantTargetpoints, int tick, Graph relevantGraph) {
-        if (this.pathStack.isEmpty()) {
-
-            findPath(relevantTargetpoints, tick);
-            isAtGoal = false;
-            if(this.pathStack.isEmpty()){
-                System.out.println("Fehler getNextKnotenpunktFromPath: es kann kein Pfad gefunden werden" );
-                return getNextRandomKnotenpunkt();
-            } else {
-                currentKnotenpunkt.setBlocked(false);
-            }
-        }
-        MKnotenpunkt returnKnotenpunkt = this.pathStack.pop().getKnotenpunkt();
-        if(!relevantGraph.containsKey(returnKnotenpunkt.getGridCoordinate().toStringCoordinates())){
-            pathStack.lastElement().getKnotenpunkt().setBlocked(false);
-            findPath(relevantTargetpoints, tick);
-            returnKnotenpunkt = this.pathStack.pop().getKnotenpunkt();
-        }
-        return returnKnotenpunkt;
-
-    }
-
-    public MKnotenpunkt getNextRandomKnotenpunkt() {
-        int numOfConnections = currentKnotenpunkt.getConnectedKnotenpunkteArray().size();
-        if (numOfConnections > 0) {
-            Random zufall = new Random(); // neues Random Objekt, namens zufall
-            int zufallsZahl = zufall.nextInt(currentKnotenpunkt.getConnectedKnotenpunkteArray().size() + 1);
-            zufallsZahl = zufallsZahl == numOfConnections ? zufallsZahl - 1 : zufallsZahl;
-            return currentKnotenpunkt.getConnectedKnotenpunkteArray().get(zufallsZahl);
-        } else {
-            System.out.println("keine Connections vorhanden");
-            System.out.println(currentKnotenpunkt);
-            return currentKnotenpunkt.getConnectedKnotenpunkteArray().get(0);
-        }
-
+        currentPosition = roadKnotenpunkt.getVisibleCoordinate();
     }
 
     @Override
@@ -206,42 +178,23 @@ public class MVehicles {
         isWaiting = waiting;
     }
 
-    public void findPath(MTargetpointList relevantTargetPoints, int tickNumber) {
-        MTargetpointList wayPointList = relevantTargetPoints.clone();
-        ESpecial target = wayPointList.get(0).getTargetType();
-        wayPointList.getReadyForSearch(this, tickNumber);
-
-        if (!this.isWaiting) {
-            SearchObject so = new SearchObject(this.currentKnotenpunkt, wayPointList, tickNumber);
-
-            if (so.getArrayListZuBesuchenderWegpunkte().size() == 0) {
-                System.out.println("something went wrooong");
-            }
-
-            Path path = new Path(so);
-
-            this.setPathStack(path, tickNumber);
-            //  movePlane(plane);
-        }
-    }
-
     public void setAtGoal(boolean atGoal) {
         isAtGoal = atGoal;
     }
 
-    private void setPathStack(Path path, int tick) {
-        if (path.isEmpty()) {
-            System.out.println("empty path set");
-            MWegKnotenpunkt wp = new MWegKnotenpunkt(tick, currentKnotenpunkt, currentKnotenpunkt);
-            currentKnotenpunkt.addEntryToBlockedForTickList(tick);
-            currentKnotenpunkt.addEntryToBlockedForTickList(tick + 1);
-            pathStack.push(wp);
-        } else {
-            this.pathStack = path;
-        }
+    public EVehicleTypes getKindEnum() {
+        return kindEnum;
     }
 
     public boolean isAtGoal() {
         return isAtGoal;
+    }
+
+    public void setDrivesLeft(boolean drivesLeft) {
+        this.drivesLeft = drivesLeft;
+    }
+
+    public boolean isDrivesLeft() {
+        return drivesLeft;
     }
 }
