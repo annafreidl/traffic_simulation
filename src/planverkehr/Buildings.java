@@ -30,6 +30,7 @@ public class Buildings {
     private EnumSet<EDirections> possibleConnectionsSecondTile;
     private EnumSet<EDirections> directionsSecondTile;
     private EBuildType buildType;
+    private MTile startTile;
     //todo: buildType hinzufügen
 
 
@@ -231,5 +232,11 @@ public class Buildings {
         return combinesBuildings;
     }
 
+    public void setStartTile(MTile startTile){
+        this.startTile = startTile;
+    }
 
+    public MTile getStartTile() {
+        return startTile;
+    }
 }

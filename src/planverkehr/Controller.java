@@ -358,7 +358,7 @@ public class Controller {
                         ArrayList<MTile> relevantTiles = gameModel.getTilesToBeGrouped(buildingToBeBuilt.getWidth(), buildingToBeBuilt.getDepth(), buildingToBeBuilt.getDz());
 
 
-                        if (buildingToBeBuiltType.equals(EBuildType.rail) || buildingToBeBuiltType.equals(EBuildType.road)) {
+                        if (buildingToBeBuiltType.equals(EBuildType.rail) || buildingToBeBuiltType.equals(EBuildType.road) || buildingToBeBuiltType.equals(EBuildType.airport)) {
 
                             Graph relevantGraph;
                             MTargetpointList relevantTargetpointlist;
@@ -385,16 +385,29 @@ public class Controller {
                             new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist);
 
 
-                        } else if (feld.getState().equals(EBuildType.free) && buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.airport) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building)) {
+                        }
+                        if (feld.getState().equals(EBuildType.free) && buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.airport) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building)) {
                             feld.setState(buildingToBeBuiltType);
                             feld.setBuilding(i.getText()); //damit wissen wir welches Menu Ding genau wir angeklickt haben, e.g. chemical plant
 
                             newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
                             feld.setBuildingOnTile(newBuilding);
                             feld.addConnectedBuilding(newBuilding);
-                           // createKnotenpunktBuilding()
+                            newBuilding.setStartTile(feld);
                             newBuilding.startProductionandCosumption();
                             createBuildingNodeByCenter(buildingToBeBuiltType);
+
+                            //TODO: muss auf MAiport gecoded werden, nicht im Controller bleiben
+                            if (buildingToBeBuiltType.equals(EBuildType.airport)){
+
+                                gameModel.getNeighbourTiles(newBuilding);
+
+                               // gameModel.mAirport.createOrConnectToAirport(newBuilding);
+
+                               // PlaneGenerator planes = new PlaneGenerator();
+                               // planes.spawnAirplanes();
+                            }
+
                         }
                         gameView.drawField();
                         // gameModel.railGraph.print();
@@ -523,8 +536,8 @@ public class Controller {
             finalCoords = new MCoordinate(finalPointX,finalPointY, level);
 
              MKnotenpunkt buildingPoint = createBuildingNode(finalCoords, name, buildingToBeBuiltType);
-                System.out.println(buildingPoint);
-                System.out.println("Hi");
+                //System.out.println(buildingPoint);
+                //System.out.println("Hi");
             });
 
             //IF NOT THOSE 3, SET POINT TO SOUTHWEST
@@ -574,6 +587,11 @@ public class Controller {
             return knotenpunkt;
         }
         return null;
+    }
+
+    //TODO -------------change this
+    public Buildings getCurrentBuilding() {
+        return newBuilding;
     }
 
 }

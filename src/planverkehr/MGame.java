@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import com.sun.javafx.image.impl.IntArgb;
 import javafx.util.Pair;
+import planverkehr.airport.MAirport;
+import planverkehr.airport.MAirportManager;
 import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
 import planverkehr.graph.MTargetpointList;
@@ -25,6 +27,8 @@ public class MGame {
     Graph roadGraph;
     Graph railGraph;
     Graph airportGraph;
+    MAirportManager mAirportManager;
+    MAirport mAirport;
     String selectedTileId = "null";
     HashMap<String, Buildings> possibleBuildings;
     ArrayList<Buildings> constructedBuildings;
@@ -47,6 +51,7 @@ public class MGame {
         roadGraph = new Graph();
         railGraph = new Graph();
         airportGraph = new Graph();
+        mAirportManager = new MAirportManager(this);
         visibleVehiclesArrayList = new ArrayList<>();
         vehicleTypeList = gameConfig.getVehiclesList();
         linienList = new ArrayList<>();
@@ -509,4 +514,64 @@ public class MGame {
             visibleVehiclesArrayList.add(activeLinie.getVehicle());
         }
     }
+
+    //holen uns hier alle Tiles die zu einem Building gehören
+    public List<MTile> getBuildingTiles(Buildings building){
+        List<MTile> buildingTiles = new ArrayList<>();
+
+        MTile startTile = building.getStartTile();
+        MCoordinate startCoordinates = startTile.getIDCoordinates();
+        int buildingWidth = building.getWidth();
+        int buildingDepth = building.getDepth();
+
+        int xCoord = (int) startCoordinates.getX();
+        int yCoord = (int) startCoordinates.getY();
+
+        //geht durch alle relevanten Tiles.StartTile ist links unten vom Gebäude
+        for (int x = 0; x < buildingWidth; x++) {
+            for (int y = 0; y < buildingDepth; y++) {
+                if (x + y > 0) {
+                    int tileX = xCoord + x;
+                    int tileY = yCoord + y;
+                    String tileID = tileX + "--" + tileY;
+                    MTile newTile = getTileById(tileID);
+                    buildingTiles.add(newTile); //Tile vom Gebäude
+                }
+            }
+        }
+        return buildingTiles;
+    }
+
+    //gibt Liste mit Tiles die an Gebäude angrenzen
+    public List<MTile> getNeighbourTiles(Buildings building){
+        List<MTile> neighbourTiles = new ArrayList<>();
+        List<MTile> buildingTiles = getBuildingTiles(building);
+
+        //getNeighbours Methode, aber die methode nimmt nur ein Tile
+        //d.h., wir rufen diese methode inner forschleife auf und prüfen dann für jedes tile von buildingsTiles die nachbarn
+
+        for (int i = 0; i < buildingTiles.size() ; i++) {
+            MTile currentTile = buildingTiles.get(i);
+            //wenn Tile noch NICHT vorhanden in Liste
+            neighbourTiles = getNeighbours(currentTile);
+
+            System.out.println("Neighbour Tiles: " + neighbourTiles.toString());
+        }
+
+        return neighbourTiles;
+    }
+
+
+    //prüfen die Gebäude auf den angrenzenden Tiles
+    public List<Buildings> getNeighbourBuildings(Buildings building){
+
+        List<Buildings> neighbourBuildings = new ArrayList<>();
+        List<MTile> buildingTiles = getBuildingTiles(building);
+        List<MTile> neighbourTiles = getNeighbourTiles(building);
+
+
+
+        return neighbourBuildings;
+    }
+
 }

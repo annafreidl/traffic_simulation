@@ -1,35 +1,93 @@
 package planverkehr.airport;
 
+import planverkehr.Buildings;
+import planverkehr.Controller;
+import planverkehr.EBuildType;
+import planverkehr.MGame;
+
 import java.util.*;
 
-/*
+//TODO Die Airplanes brauchen die Fluglinie -> Fluglinie kann nur dann existieren, wenn 2 Flughäfen existieren; D.H: wir brauchen den FLughafen aka ModelAirport
+
+
 
 public class PlaneGenerator {
 
-    final List<Generator> generatorAirplanes;
-    final Queue<MAirplane> planesQueue;
-    final MAirport mAirport;
-    final AirportConfig config;
-    final int maxPlanes;
+    List<Generator> generatorAirplanes;
+    Queue<MAirplane> planesQueue;
+    MAirport mAirport;
+    MGame mGame;
+    Controller controller;
+    EBuildType buildType;
+    Buildings buildings;
 
+    int initTIme;
+    int planesOnAirport;
+    int maxPlanes;
+    Buildings airportBuilding;
 
-
-    public PlaneGenerator(AirportController airportController)  {
+    //OLD
+/*    public PlaneGenerator(AirportController airportController)  {
 
         mAirport = airportController.mAirport;
-
         config = mAirport.config;
-
         planesQueue = config.getDefaultPlanesQueue();
         generatorAirplanes = config.getRandomPlanesToBeGenerated();
-
         maxPlanes = config.getMaxPlanes();
+    }*/
+
+    public PlaneGenerator() {
+
+        initTIme = 0;
+        planesOnAirport = 0;
+        maxPlanes = 0;
+
+
+        //  planesQueue = config.getDefaultPlanesQueue();
+        //  generatorAirplanes = config.getRandomPlanesToBeGenerated();
+        //  maxPlanes = config.getMaxPlanes();
+    }
+
+
+    public void spawnAirplanes() {
+
+        maxPlanes = controller.getCurrentBuilding().getMaxPlanes(); //access a bit wonky rn, change later
+        //int initTime = whenever we place Building
+
+        if (planesOnAirport <= maxPlanes){
+
+          //  MAirplane plane = new MAirplane(mAirport.getWaypointList(), 0, 1 + ((int) (Math.random() * 10)));
+
+          //  mAirport.addPlaneToView(plane); //add plane to airport
+
+           //IF NO SPACE
+            //mAirport.addAirplanetoWaitQueue(plane); //add planes to Warteschleife wenn kein spacce
+
+
+
+
+            planesOnAirport++; //every plane we spawn is counted here
+        }
+
+
     }
 
 
 
+    //TODO -------------------------------------------------------------
 
-    public void spawnDefaultAirplanes(int tickNumber) {
+    /**
+     * Spawnt die default Airplanes.
+     Die Methode nimmt dabei das letzte Objekt der DefaultPlanes Queue, welche nach initTime geoordnet ist (kleinste zum Schluss).
+     Ist die initTime des aktuell betrachteten Plane Objektes kleiner als die TickNumber UND im Airport gibt es Platz fuer neue Planes,
+     wird das Flugzeug erstellt und auf die "Warteliste" der available Airplanes gesetzt. Diese Airplanes betreten erst dann den Flughafen, wenn
+     der Platz freigeben wird (dabei werden sie im Airport Model spaeter auf die visiblePlanesList gesetzt und so in der view angezeigt).
+     Danach entfernen wir das aktuelle Flugzeugobjekt aus der Queue, da wir sonst immmer das gleiche Flugzeug spawnen.
+     */
+
+    //ALLE AIRPLANES SIND DEFAULT AIRPLANES, NO MORE CHANCES, s. unten
+
+/*    public void spawnDefaultAirplanes(int tickNumber) {
         System.out.println(tickNumber);
 
         if (!planesQueue.isEmpty()){
@@ -40,11 +98,20 @@ public class PlaneGenerator {
                 planesQueue.remove(smallestInitTimePlane);
             }
         }
-    }//end method
+    }//end method*/
 
+    /**
+     * Generieren der Generator Airplanes.
+     *
+     Die Methode iteriert ueber die GeneratorAirplane Liste, wobei fuer jedes Airplane dessen Chance gespeichert wird.
+     In der If Bedingung wird anschließend geprueft, ob diese Chance getroffen wird. Wenn ja, wird das Flugzeug erstellt
+     und auf die "Warteliste" der available Airplanes gesetzt. Diese Airplanes betreten erst dann den Flughafen, wenn
+     der Platz freigeben wird (dabei werden sie im Airport Model spaeter auf die visiblePlanesList gesetzt und so in der view angezeigt).
+     */
 
+    //ELEMENT CHANCE GIBT ES NICHT MEHR, WERDEN VOM PLANVERKEHR GESPaWNED
 
-    public void generateAirplanes(int tickNumber) {
+   /* public void generateAirplanes(int tickNumber) {
 
         //current Airplane in for loop
         for (Generator currentGenerator : generatorAirplanes) {
@@ -63,8 +130,12 @@ public class PlaneGenerator {
             }
         }
     }//end method
+    */
 
-    public void addPlanesToVisiblePlaneList(int tickNumber){
+
+    //HAS TO BE ADJUSTED TO NEW CONDITIONS
+
+ /*   public void addPlanesToVisiblePlaneList(int tickNumber){
         //Verfügbare Einflugknoten bestimmen und nur dann Flugzeug anzeigen, wenn Knoten frei sind
         TargetpointList einflugNodes = mAirport.getEinflugList().clone();
         TargetpointList waitNodes = mAirport.getWaitList().clone();
@@ -159,8 +230,8 @@ public class PlaneGenerator {
 
             else availablePlanes.poll();
         }
-    }
+    }*/
 
 }//end Class
 
-*/
+

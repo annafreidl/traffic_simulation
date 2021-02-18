@@ -6,6 +6,7 @@ import planverkehr.graph.MTargetpointList;
 import planverkehr.transportation.MTransportConnection;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 
@@ -22,19 +23,26 @@ public class MAirport {
     TargetpointList waitList;
     TargetpointList otherTargetTypeList;
 
+    List<Buildings> towers, runway, terminal, taxiway;
 
+    //TODO: wir brauchen Listen der Gebäude, da sich der Airport aus diesen zusammensetzt und wir alle Gebäude vom Typ Airport mergen müssen
+    //RN THE GOAL IS: wenn wir ein Gebäude setzen vom Typ airport, sollen die tiles drumherum automatisch geprüpft werden, und wenn
+    //sich dort ein Gebäude vom Airport befindet, mit dem es sich verknüpfen kann, soll dies zusammen später als ein Airport abgespeichert werden
 
+    //TODO: diese Airports werden dann im AirportManager gespeichert und dort verwaltet
 
+    /** Diese Klasse erstellt vollständige/funktionale Airports aus den einzelenen Gebäuden des Airports */
 
     public MAirport(MGame gameModel, VGame gameView) {
+
         ArrayList nodesList = new ArrayList<Knotenpunkt>();
         createSpecialTargetTypeLists();
         createWaypointList();
 
-        JSONParser parser = new JSONParser();
-        //nodesList = parser.
-
-
+        towers = new ArrayList<>();
+        runway = new ArrayList<>();
+        terminal = new ArrayList<>();
+        taxiway = new ArrayList<>();
     }
 
     private void createSpecialTargetTypeLists() {
@@ -65,11 +73,19 @@ public class MAirport {
     }
 
 
+    //wenn wir ein Airport-Gebäude setzen, dann soll dieses sich mit einem anderen Airport Building verknüpfen
+    //oder einen vollständigen Airport erstellen falls es das letzte gebrauchte Gebäude ist
+    public void createOrConnectToAirport(Buildings newBuilding){
+    }
+
+
+    public TargetpointList getWaypointList() {
+        return waypointList;
+    }
 }
 
 
-
-
+// AB HIER IST ALT ---------------------------------------------------
 /*
     public MAirport(AirportConfig config) {
         this.config = config;
