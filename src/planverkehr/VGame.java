@@ -6,6 +6,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -13,6 +14,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
@@ -310,6 +313,16 @@ public class VGame {
             mouseY = mouseNewY;
         });
 
+        //zeigt die Produktion der Gebäude an
+        //währenddessen auf keinen fall die maus bewegen
+        scene.setOnKeyPressed(event ->
+        {
+            if (event.getCode() == KeyCode.S) {
+                event.consume();
+                showProductions();
+            }
+        });
+
         // Label zur Anzeige der Koordinaten auf denen man sich befindet (funktioniert noch nicht bei Zoom)
         debugCoord = new Label("empty");
         debugCoord.setTranslateX(menuBar.getWidth());
@@ -352,6 +365,7 @@ public class VGame {
                 if(t.isFree()){
                     t.setState(EBuildType.factory);
                     t.setBuildingOnTile(b);
+                    b.startProductionAndConsumption();
                 }
 
             }
@@ -775,6 +789,58 @@ public class VGame {
 
     public Button getLinienButtonWeiter() {
         return linienButtonWeiter;
+    }
+
+    public void showProductions() {
+        if (gameModel.getSelectedTile() != null && gameModel.getSelectedTile().getState().equals(EBuildType.factory)) {
+            MTile mTile = gameModel.getSelectedTile();
+            Buildings buildings = new Buildings(mTile.getBuildingOnTile());
+            VBox box = new VBox();
+            group.getChildren().add(box);
+            box.setLayoutX(600);
+            box.setLayoutY(600);
+            box.setAlignment(Pos.BASELINE_CENTER);
+            box.setStyle("-fx-background-color : lightgreen;");
+
+            if (mTile.getBuildingOnTile() != null && mTile.getState().equals(EBuildType.factory)) {
+                Label factory = new Label("Factory: " + buildings.getBuildingName());
+                box.getChildren().add(factory);
+                for (int i = 0; i < buildings.getProductions().size(); i++) {
+
+                    if (!buildings.getProductions().get(i).produce.isEmpty()) {
+                        Label produce = new Label("Produce: " + buildings.getProductions().get(i).produce.toString());
+                        box.getChildren().add(produce);
+                    }
+                    if (!buildings.getProductions().get(i).consume.isEmpty()) {
+                        Label consume = new Label("Consume: " + buildings.getProductions().get(i).consume.toString());
+                        box.getChildren().add(consume);
+                    }
+                    if (!buildings.getProductions().get(i).produceStorage.isEmpty()) {
+                        Label warehouse = new Label("Warehouse: " + buildings.getProductions().get(i).produceStorage.toString());
+                        box.getChildren().add(warehouse);
+                    }
+
+                    Label duration = new Label("Duration: " + buildings.getProductions().get(i).duration);
+                    box.getChildren().add(duration);
+
+                    if (!buildings.getProductions().get(i).storage.isEmpty()) {
+                        Label storage = new Label("Storage: " + buildings.getProductions().get(i).storage.toString());
+                        box.getChildren().add(storage);
+                    }
+                    if (!buildings.getProductions().get(i).storageRAW.isEmpty()) {
+                        Label rawStorage = new Label("Raw-Storage: " + buildings.getProductions().get(i).storageRAW.toString());
+                        box.getChildren().add(rawStorage);
+                    }
+                }
+            }
+            scene.setOnKeyReleased(event ->
+            {
+                if (event.getCode() == KeyCode.S) {
+                    event.consume();
+                    box.getChildren().clear();
+                }
+            });
+        }
     }
 
 }

@@ -403,7 +403,7 @@ public class Controller {
                             feld.setBuildingOnTile(newBuilding);
                             feld.addConnectedBuilding(newBuilding);
                             newBuilding.setStartTile(feld);
-                            newBuilding.startProductionandCosumption();
+                            newBuilding.startProductionAndConsumption();
                             createBuildingNodeByCenter(buildingToBeBuiltType);
 
                             //TODO: muss auf MAiport gecoded werden, nicht im Controller bleiben

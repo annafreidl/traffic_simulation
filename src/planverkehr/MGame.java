@@ -210,7 +210,7 @@ public class MGame {
         return getTilesToBeGrouped(newBuildingWidth, newBuildingDepth, dz) != null;
     }
 
-    private MTile getSelectedTile() {
+    MTile getSelectedTile() {
         return getTileById(selectedTileId);
     }
 

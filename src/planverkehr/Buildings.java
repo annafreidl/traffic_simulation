@@ -144,7 +144,7 @@ public class Buildings {
         });
     }
     //called when building is placed
-    public void startProductionandCosumption(){
+    public void startProductionAndConsumption(){
         List<MProductions> productionsList = productions;
         if (productions!= null ) {
             for (int i = 0; i < productionsList.size(); i++) {
