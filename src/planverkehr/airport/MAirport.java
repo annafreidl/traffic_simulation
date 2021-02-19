@@ -73,12 +73,6 @@ public class MAirport {
     }
 
 
-    //wenn wir ein Airport-Gebäude setzen, dann soll dieses sich mit einem anderen Airport Building verknüpfen
-    //oder einen vollständigen Airport erstellen falls es das letzte gebrauchte Gebäude ist
-    public void createOrConnectToAirport(Buildings newBuilding){
-    }
-
-
     public TargetpointList getWaypointList() {
         return waypointList;
     }

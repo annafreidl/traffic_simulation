@@ -408,10 +408,7 @@ public class Controller {
 
                             //TODO: muss auf MAiport gecoded werden, nicht im Controller bleiben
                             if (buildingToBeBuiltType.equals(EBuildType.airport)){
-
-                                gameModel.getNeighbourTiles(newBuilding);
-
-                               // gameModel.mAirport.createOrConnectToAirport(newBuilding);
+                                gameModel.mAirportManager.createOrConnectToAirport(newBuilding);
 
                                // PlaneGenerator planes = new PlaneGenerator();
                                // planes.spawnAirplanes();

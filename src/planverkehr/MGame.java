@@ -157,6 +157,7 @@ public class MGame {
             System.out.println("id: " + tile.getId());
             System.out.println("free? " + tile.isFree());
             System.out.println("state: " + tile.state);
+            System.out.println("BuildingOnTile: " + tile.getBuildingOnTile());
             System.out.println("KnotenpunkteArray: " + tile.knotenpunkteArray);
             System.out.println();
 
@@ -515,11 +516,12 @@ public class MGame {
     }
 
     //holen uns hier alle Tiles die zu einem Building gehören
-    public List<MTile> getBuildingTiles(Buildings building) {
+    public List<MTile> getBuildingTiles(Buildings building){
         List<MTile> buildingTiles = new ArrayList<>();
 
         MTile startTile = building.getStartTile();
         MCoordinate startCoordinates = startTile.getIDCoordinates();
+        buildingTiles.add(startTile); //damit unsere Starttile da drin auch gesafed ist
         int buildingWidth = building.getWidth();
         int buildingDepth = building.getDepth();
 
@@ -533,7 +535,9 @@ public class MGame {
                     int tileX = xCoord + x;
                     int tileY = yCoord + y;
                     String tileID = tileX + "--" + tileY;
-                    MTile newTile = getTileById(tileID);
+                    MTile newTile = getTileById(tileID); //den PArt nehmen, und statt XY coord gehe ich da durch und rechne mir da sämtliche Nachbarn aus
+                    //ein tile is links unten, eins rechts oben und dann alle Tiles die dazwischen liegen
+                    //
                     buildingTiles.add(newTile); //Tile vom Gebäude
                 }
             }
@@ -541,36 +545,53 @@ public class MGame {
         return buildingTiles;
     }
 
-    //gibt Liste mit Tiles die an Gebäude angrenzen
-    public List<MTile> getNeighbourTiles(Buildings building) {
-        List<MTile> neighbourTiles = new ArrayList<>();
+    //gibt Liste mit Buildings die an Gebäude angrenzen
+    public List<Buildings> getNeighbourBuildings(Buildings building){
+        List<Buildings> neighbourBuildings = new ArrayList<>();
         List<MTile> buildingTiles = getBuildingTiles(building);
 
         //getNeighbours Methode, aber die methode nimmt nur ein Tile
         //d.h., wir rufen diese methode inner forschleife auf und prüfen dann für jedes tile von buildingsTiles die nachbarn
 
-        for (int i = 0; i < buildingTiles.size(); i++) {
+        for (int i = 0; i < buildingTiles.size() ; i++) {
             MTile currentTile = buildingTiles.get(i);
-            //wenn Tile noch NICHT vorhanden in Liste
-            neighbourTiles = getNeighbours(currentTile);
+            MCoordinate currentCoordinates = currentTile.getIDCoordinates(); //holen uns ID von current tile
+            int xCoord = (int) currentCoordinates.getX();
+            int yCoord = (int) currentCoordinates.getY();
 
-            System.out.println("Neighbour Tiles: " + neighbourTiles.toString());
-        }
+            int shiftFactor = 1; //beschreibt wie weit wir nach oben, unten, links, rechts von OG feld gehen
+            //beschreibt die Tiefe in der wir die Felder anschauen
 
-        return neighbourTiles;
+            //gehen jetzt nachbartiles durch, indem wir wir immer shiftfactor draufrechnen
+            //schauen oben, unten, links und rechts tiles an
+            for (int x = shiftFactor*(-1); x <= shiftFactor; x++) {
+                for (int y = shiftFactor*(-1); y <= shiftFactor; y++) {
+                    if (x + y != 0 && Math.abs(x + y) < 2){ //wollen nur zB 4 Felder
+                        System.out.println("HI im in forschleife rn");
+                        int newX = xCoord + x;
+                        int newY = yCoord + y;
+                        String tileID = newX + "--" + newY;
+                        MTile newTile = getTileById(tileID);
+                        if (newTile != null){ //wenn es diese ID in der Hashmap nicht gibt (e.g. Randteil), dann nehmen wir es nicht
+                            Buildings buildingOnTile = newTile.getBuildingOnTile();
+                            if(buildingOnTile!=null){ //wollen es nur einspeichern, wenn ein gebäude vorhanden ist
+                                neighbourBuildings.add(buildingOnTile);
+                            }
+                       }
+                    }
+                }
+            }
+        }//end for
+
+        //Linked Hashset ist eine Liste, in der keine Duplikate vorkommen dürfen
+        //wenn ich den kram normal in der arraylist speicher, habe ich mehrmals das gleiche nachbargebäude falls dieses an mehreren tiles angrenzt
+        LinkedHashSet<Buildings> duplicateRemover = new LinkedHashSet<>(neighbourBuildings);
+        ArrayList<Buildings> borderingBuildings = new ArrayList<>(duplicateRemover);
+        borderingBuildings.remove(building); //haben liste mit den neighbourbuildings und kicken da unser eigenes building raus
+
+        return borderingBuildings;
     }
 
-
-    //prüfen die Gebäude auf den angrenzenden Tiles
-    public List<Buildings> getNeighbourBuildings(Buildings building) {
-
-        List<Buildings> neighbourBuildings = new ArrayList<>();
-        List<MTile> buildingTiles = getBuildingTiles(building);
-        List<MTile> neighbourTiles = getNeighbourTiles(building);
-
-
-        return neighbourBuildings;
-    }
 
     public void createStation(MTile feld, Buildings buildingToBeBuilt) {
         MHaltestelle h = new MHaltestelle(haltestellenID, buildingToBeBuilt, feld);
@@ -594,7 +615,7 @@ public class MGame {
         if (depth == width && depth == 1) {
             neighbours = getNeighbours(feld);
         } else {
-            System.out.println("building too big - no station check");
+            //System.out.println("building too big - no station check");
             neighbours = new ArrayList<>();
         }
 
