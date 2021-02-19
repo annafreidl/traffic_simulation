@@ -6,33 +6,6 @@ import javafx.util.Duration;
 
 import java.util.*;
 
-//check, ob zu konsumierende gueter im storage verfuegbar sind
-//resourcesAvailable();
-//Nein -> weiterpruefen bis das der Fall ist, oder Duration abwarten
-
-//check, ob zu produzierende gueter platz im storage haben
-//spaceForResources();
-//Nein -> weiterpruefen bis das der Fall ist, oder Duration abwarten
-
-//gueter producen und consumen
-//produceAndConsume();
-
-//konsumierte gueter aus dem storage entfernen
-//deleteConsumedResourcesFromStorage();
-//produzierte gueter dem storage hinzufuegen
-//addProducedResourcesToStorage();
-
-//Duration abwarten
-//waitDuration();
-
-//repeat
-
-//Problem: Gueter koennen jederzeit z.B. von vehicles aus dem Storage entfernt werden
-//daher muessen die gueter und der platz im storage davor immer reserviert werden
-//neue erkenntniss: storage lagert nur die zu konsumierenden gueter, aber nicht die zu produzierenden...
-//wohin damit? -> produceStorage
-
-
 //known Bugs:
 //bei zwei konsumierbaren resourcen wird nur überprüft, ob die erste vorhanden ist -> konsum obwohl nur nur 1 der 2 resourcen
 //vorhanden ist
@@ -46,8 +19,7 @@ public class MProductions {
     HashMap<String, Integer> storage; //current resource and quantity
     HashMap<String, Integer> storageRAW; //original resource and quantity
     HashMap<String, Integer> produceStorage; //storage for produced goods
-    //sobald das gebäude gesetzt ist, soll die produktion beginnen
-    private boolean buildingSet;
+
 
     public MProductions(int duration, List<HashMap<String, Integer>> produce, List<HashMap<String, Integer>> consume, HashMap<String, Integer> storageRAW) {
         this.duration = duration;
@@ -56,8 +28,6 @@ public class MProductions {
         this.storageRAW = storageRAW;
         produceStorage = new HashMap<>();
         zeroStorage();
-        //initStorage(); //nur zum testen, füllt das lager mit jeweils 100 resourcen
-        //consumeAndProduce(); //zum starten der produktion auskommentieren
     }
 
     public int getDuration() {
@@ -113,13 +83,13 @@ public class MProductions {
         System.exit(-1);
     }
 
+    //nur zum testen, füllt das lager mit resourcen für jeweils 25 produktionsschritte
     private void initStorage() {
-        storage.put("sand", 100);
-        storage.put("glass", 100);
-        storage.put("silicon", 100);
-        storage.put("solar panels", 100);
-        storage.put("methyl chloride", 100);
-        storage.put("silicone", 100);
+        for (int i =0; i<getConsume().size(); i++){
+            for (Map.Entry<String, Integer> entry : getConsume().get(i).entrySet()) {
+                storage.put(entry.getKey(),entry.getValue()*25);
+            }
+        }
     }
 
     public boolean resourcesAvailable(String resource, int quantity) {
@@ -168,10 +138,12 @@ public class MProductions {
     public boolean resourcesAvailableToConsume() {
         if (getConsume().size() > 0) {
             for (int i = 0; i < getConsume().size(); i++) {
-                //hier liegt irgendwo der fehler, da immer nur die erste resource abgeprueft wird
+                //hier liegt irgendwo der fehler, da bei gefülltem lager
+                // immer nur die erste resource abgeprueft wird
+                //bei leerem lager passt es komischerweise
                 for (Map.Entry<String, Integer> entry : getConsume().get(i).entrySet()) {
-                    System.out.println("EntrySet: " + getConsume().get(i).entrySet());
-                    System.out.println("Entry: " + entry);
+                    //System.out.println("EntrySet: " + getConsume().get(i).entrySet());
+                    //System.out.println("Entry: " + entry);
                     int availableResource = storage.get(entry.getKey());
                     int quantity = entry.getValue();
                     if (quantity <= availableResource) {
@@ -186,13 +158,14 @@ public class MProductions {
 
     public void consume() {
         if (getConsume().size() > 0) {
-            System.out.println("getConsume: " + getConsume());
             for (int i = 0; i < getConsume().size(); i++) {
                 for (Map.Entry<String, Integer> entry : getConsume().get(i).entrySet()) {
                     String key = entry.getKey();
                     int value = entry.getValue();
                     if (resourcesAvailableToConsume()) {
                         int availableResource = storage.get(key);
+                        System.out.println("Duration: " + getDuration());
+                        System.out.println("getConsume: " + getConsume());
                         System.out.println("AvailableResource: " + key + " " + availableResource);
                         System.out.println("Quantity required : " + value);
                         if (!storageRAW.containsKey(key)) {
@@ -204,8 +177,6 @@ public class MProductions {
                         System.out.println("After consume: " + storage);
                         System.out.println("ProduceStorage: " + produceStorage);
                         System.out.println("\n");
-                    } else {
-                        System.out.println("No resources available to consume");
                     }
                 }
             }
@@ -215,7 +186,6 @@ public class MProductions {
 
     public void produce() {
         if (getProduce().size() > 0) {
-            System.out.println("getProduce: " + getProduce());
             for (int i = 0; i < getProduce().size(); i++) {
                 for (Map.Entry<String, Integer> entry : getProduce().get(i).entrySet()) {
                     String key = entry.getKey();
@@ -224,14 +194,14 @@ public class MProductions {
                         if (!produceStorage.containsKey(key)) {
                             produceStorage.put(key, 0);
                         }
+                        System.out.println("Duration: " + getDuration());
+                        System.out.println("getProduce: " + getProduce());
                         System.out.println("Producing Resources: " + key + " " + value);
                         System.out.println("Current Storage : " + storage);
                         System.out.println("Before add: " + produceStorage);
                         addProducedResourcesToProduceStorage(key, value);
                         System.out.println("After add: " + produceStorage);
                         System.out.println("\n");
-                    } else {
-                        System.out.println("No resources available to produce");
                     }
                 }
             }
@@ -242,12 +212,11 @@ public class MProductions {
     public void consumeAndProduce() {
         Timeline timeline = new Timeline(
             new KeyFrame(Duration.seconds(Config.tickFrequency.multiply(getDuration()).toSeconds()), e -> {
-                System.out.println(Config.tickFrequency.multiply(getDuration()).toSeconds());
+                //System.out.println(Config.tickFrequency.multiply(getDuration()).toSeconds());
                 produce();
                 consume();
             }));
         timeline.setCycleCount(Timeline.INDEFINITE);
-        //timeline.setCycleCount(30);
         timeline.play();
     }
 
