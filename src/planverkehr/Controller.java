@@ -400,7 +400,11 @@ public class Controller {
                             feld.setBuilding(i.getText()); //damit wissen wir welches Menu Ding genau wir angeklickt haben, e.g. chemical plant
 
                             newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
-                            feld.setBuildingOnTile(newBuilding);
+
+                            for (int j = 0; j < relevantTiles.size(); j++) {
+                                MTile relevantTile = relevantTiles.get(j);
+                                relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
+                            }
                             feld.addConnectedBuilding(newBuilding);
                             newBuilding.setStartTile(feld);
                             newBuilding.startProductionAndConsumption();
