@@ -360,6 +360,15 @@ public class Controller {
 
                         if (buildingToBeBuiltType.equals(EBuildType.rail) || buildingToBeBuiltType.equals(EBuildType.road) || buildingToBeBuiltType.equals(EBuildType.airport)) {
 
+                            if(buildingToBeBuilt.getSpecial().equals("busstop") || buildingToBeBuilt.getSpecial().equals("railstation") || buildingToBeBuiltType.equals(EBuildType.airport)){
+                                EStationStatus stationStatus = gameModel.checkForStation(feld, buildingToBeBuilt.getDepth(), buildingToBeBuilt.getWidth());
+                               switch (stationStatus){
+                                   case ONE -> gameModel.addBuildingToStation(feld, buildingToBeBuilt);
+                                   case NONE -> gameModel.createStation(feld, buildingToBeBuilt);
+                                   case TOOMANY -> hasSpaceForBuilding = false;
+                               }
+                            }
+
                             Graph relevantGraph;
                             MTargetpointList relevantTargetpointlist;
 

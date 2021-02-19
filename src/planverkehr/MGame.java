@@ -38,10 +38,12 @@ public class MGame {
     MTargetpointList listeDerBushaltestellen, listeDerBahnhöfe, listeDerFlughafenGebäude;
     int linienID = 0;
     int tickNumber = 0;
+    int haltestellenID = 0;
     private boolean createLine = false;
     ArrayList<MLinie> linienList;
     MLinie activeLinie;
     HashMap<Integer, MRailBlock> railBlockMap;
+    HashMap<Integer, MHaltestelle> haltestelleHashMap;
     int lastKnownBlockID;
 
 
@@ -57,6 +59,7 @@ public class MGame {
         linienList = new ArrayList<>();
         railBlockMap = new HashMap<>();
         railBlockMap.put(0, new MRailBlock(0));
+        haltestelleHashMap = new HashMap<>();
 
         possibleBuildings = gameConfig.getBuildingsList();
         linkBuildings();
@@ -83,12 +86,26 @@ public class MGame {
     public ArrayList<MTile> getNeighbours(MTile m1) {
         ArrayList<MTile> neighbours = new ArrayList<>();
 
-        for (MTile feld : getTileArray()) {
+        int x = (int) m1.getIDCoordinates().getX();
+        int y = (int) m1.getIDCoordinates().getY();
 
-            if (!m1.intersection(feld).isEmpty() && m1 != feld) {
-                neighbours.add(feld);
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+                if ((-1 < x + i && x + i < Config.worldWidth) && (-1 < y + j && y + j < Config.worldWidth)) {
+                    String idString = y+j > 0 ? x + i + "--" + (y + j) : x + i + "-" + (y + j);
+                    if(!idString.equals(m1.id)) {
+                        neighbours.add(getTileById(idString));
+                    }
+                }
             }
         }
+
+//        for (MTile feld : getTileArray()) {
+//
+//            if (!m1.intersection(feld).isEmpty() && m1 != feld) {
+//                neighbours.add(feld);
+//            }
+//        }
         return neighbours;
     }
 
@@ -246,7 +263,7 @@ public class MGame {
                         tilesToBeGrouped.add(tileToCheck);
                     }
                 } else if (selectedTile.isFree() &&
-                    (b.getDz()>0 ||(b.getDz()==0 && !selectedTile.getIncline()))) {
+                    (b.getDz() > 0 || (b.getDz() == 0 && !selectedTile.getIncline()))) {
                     tilesToBeGrouped.add(selectedTile);
 
                 } else {
@@ -262,6 +279,7 @@ public class MGame {
         return tilesToBeGrouped;
     }
 
+    //todo: Achtung, ist wahrscheinlich doppelt mit getBuildingTiles
     public ArrayList<MTile> getTilesToBeGrouped(int newBuildingWidth, int newBuildingDepth, int dz) {
         MTile selectedTile = getSelectedTile();
         MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
@@ -300,7 +318,7 @@ public class MGame {
         return tilesToBeGrouped;
     }
 
-    public void updateBlockIds(){
+    public void updateBlockIds() {
         if (lastKnownBlockID < railGraph.getBlockId()) {
             while (lastKnownBlockID < railGraph.getBlockId()) {
                 lastKnownBlockID++;
@@ -309,7 +327,7 @@ public class MGame {
         }
     }
 
-
+//todo: prüfen ob Tile noch existiert
     public void moveVehicles() {
         updateBlockIds();
         for (MLinie l : linienList
@@ -317,8 +335,8 @@ public class MGame {
 
             MWegKnotenpunkt w = l.getListeAllerLinienKnotenpunkte().peekFirst();
             if (l.getType().equals(EBuildType.road)) {
-               MCoordinate next = w.getKnotenpunkt().getVisibleCoordinate();
-               MCoordinate current = l.getVehicle().getCurrentPosition();
+                MCoordinate next = w.getKnotenpunkt().getVisibleCoordinate();
+                MCoordinate current = l.getVehicle().getCurrentPosition();
                 boolean isLeft = next.getX() < current.getY() || next.getY() < current.getY();
                 if (w.getKnotenpunkt().isFreeFor(tickNumber + 1, isLeft)) {
                     setNextKnotenpunkt(l, w, isLeft);
@@ -351,30 +369,7 @@ public class MGame {
                 }
             }
         }
-//        visibleVehiclesArrayList.forEach((vehicle) -> {
-//            if(!vehicle.isWaiting){
-//            vehicle.getCurrentKnotenpunkt().getBlockedForTickList().pollFirst();
-//            MTargetpointList relevantTargetpoints;
-//            Graph relevantGraph;
-//            //todo: explizit andere Fahrzeugtypen prüfen
-//            if(vehicle.getKind().equals("engine")){
-//                relevantTargetpoints = listeDerBahnhöfe;
-//                relevantGraph = railGraph;
-//            } else {
-//                relevantTargetpoints = listeDerBushaltestellen;
-//                relevantGraph = roadGraph;
-//            }
-//            MKnotenpunkt nextKnotenpunkt = vehicle.getNextKnotenpunktFromPath(relevantTargetpoints, tickNumber, relevantGraph);
-//            nextKnotenpunkt.getBlockedForTickList().pollFirst();
-//            if(vehicle.pathStack.isEmpty()){
-//                vehicle.setAtGoal(true);
-//            }
-//
-//            vehicle.setCurrentKnotenpunkt(nextKnotenpunkt);}
-//            else {
-//                vehicle.setWaiting(false);
-//            }
-//        });
+
 
         tickNumber++;
     }
@@ -438,6 +433,10 @@ public class MGame {
                             relevantGraph.remove(k.getVisibleCoordinate().toStringCoordinates());
                         }
                     }
+                }
+                if(mTile.isStation){
+                   MHaltestelle h = haltestelleHashMap.get(mTile.haltestellenID);
+                   h.removeFeld(mTile);
                 }
                 mTile.reset();
             }
@@ -516,7 +515,7 @@ public class MGame {
     }
 
     //holen uns hier alle Tiles die zu einem Building gehören
-    public List<MTile> getBuildingTiles(Buildings building){
+    public List<MTile> getBuildingTiles(Buildings building) {
         List<MTile> buildingTiles = new ArrayList<>();
 
         MTile startTile = building.getStartTile();
@@ -543,14 +542,14 @@ public class MGame {
     }
 
     //gibt Liste mit Tiles die an Gebäude angrenzen
-    public List<MTile> getNeighbourTiles(Buildings building){
+    public List<MTile> getNeighbourTiles(Buildings building) {
         List<MTile> neighbourTiles = new ArrayList<>();
         List<MTile> buildingTiles = getBuildingTiles(building);
 
         //getNeighbours Methode, aber die methode nimmt nur ein Tile
         //d.h., wir rufen diese methode inner forschleife auf und prüfen dann für jedes tile von buildingsTiles die nachbarn
 
-        for (int i = 0; i < buildingTiles.size() ; i++) {
+        for (int i = 0; i < buildingTiles.size(); i++) {
             MTile currentTile = buildingTiles.get(i);
             //wenn Tile noch NICHT vorhanden in Liste
             neighbourTiles = getNeighbours(currentTile);
@@ -563,15 +562,62 @@ public class MGame {
 
 
     //prüfen die Gebäude auf den angrenzenden Tiles
-    public List<Buildings> getNeighbourBuildings(Buildings building){
+    public List<Buildings> getNeighbourBuildings(Buildings building) {
 
         List<Buildings> neighbourBuildings = new ArrayList<>();
         List<MTile> buildingTiles = getBuildingTiles(building);
         List<MTile> neighbourTiles = getNeighbourTiles(building);
 
 
-
         return neighbourBuildings;
     }
 
+    public void createStation(MTile feld, Buildings buildingToBeBuilt) {
+        MHaltestelle h = new MHaltestelle(haltestellenID, buildingToBeBuilt, feld);
+        haltestelleHashMap.put(haltestellenID, h);
+        feld.setStation(haltestellenID);
+        haltestellenID++;
+
+    }
+
+    public void addBuildingToStation(MTile feld, Buildings buildingToBeBuilt) {
+        TreeSet<Integer> neighbourStationIDs = getNeighbourStationIDs(feld, buildingToBeBuilt.getDepth(), buildingToBeBuilt.getWidth());
+        if (neighbourStationIDs.size() == 1) {
+            MHaltestelle h = haltestelleHashMap.get(neighbourStationIDs.first());
+            h.addBuilding(feld, buildingToBeBuilt);
+            feld.setStation(neighbourStationIDs.first());
+        }
+    }
+
+    public TreeSet<Integer> getNeighbourStationIDs(MTile feld, int depth, int width) {
+        ArrayList<MTile> neighbours;
+        if (depth == width && depth == 1) {
+            neighbours = getNeighbours(feld);
+        } else {
+            System.out.println("building too big - no station check");
+            neighbours = new ArrayList<>();
+        }
+
+        TreeSet<Integer> neighbourStationIDs = new TreeSet<>();
+
+        neighbours.forEach(t -> {
+            if (t.isStation()) {
+                neighbourStationIDs.add(t.haltestellenID);
+            }
+        });
+
+        return neighbourStationIDs;
+    }
+
+    public EStationStatus checkForStation(MTile feld, int depth, int width) {
+        TreeSet<Integer> neighbourStations = getNeighbourStationIDs(feld, depth, width);
+
+
+        return switch (neighbourStations.size()) {
+            case 0 -> EStationStatus.NONE;
+            case 1 -> EStationStatus.ONE;
+            default -> EStationStatus.TOOMANY;
+        };
+
+    }
 }

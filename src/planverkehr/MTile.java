@@ -20,6 +20,7 @@ public class MTile {
     EnumSet<EDirections> possibleConnections = EnumSet.noneOf(EDirections.class);
     MCoordinate visibleCoordinates, isoWest, isoSouth, isoNorth, isoEast, isoCenter, north, south, east, west;
     EBuildType state;
+    int haltestellenID = -1;
     Buildings connectedBuilding, buildingOnTile;
     ArrayList<MKnotenpunkt> knotenpunkteArray;
     ArrayList<Integer> höhen = new ArrayList<>(4);
@@ -440,6 +441,11 @@ public class MTile {
         isStation = station;
     }
 
+    public void setStation(int halteStellenID) {
+        isStation = true;
+        this.haltestellenID = halteStellenID;
+    }
+
     public void reset() {
 
         isFirstTile = true;
@@ -449,6 +455,8 @@ public class MTile {
         building = null;
         connectedBuilding = null;
         buildingOnTile = null;
+        isStation = false;
+        this.haltestellenID = -1;
 
     }
 }

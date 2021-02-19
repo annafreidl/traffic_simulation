@@ -4,12 +4,14 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class GameConfig {
     JSONParser parser;
     MMap map;
     ArrayList<MVehicles> vehiclesList;
     HashMap<String, Buildings> buildingsList;
+    List<String> commoditiesList;
 
 
 
@@ -19,6 +21,7 @@ public class GameConfig {
         map = parser.getMapFromJSON();
         vehiclesList= parser.getVehiclesFromJSON();
         buildingsList = parser.getBuildingsFromJSON();
+        commoditiesList = parser.getCommoditiesFromJSON();
 
 
     }
@@ -31,4 +34,6 @@ public class GameConfig {
     public ArrayList<MVehicles> getVehiclesList() {
         return vehiclesList;
     }
+
+    public List<String> getCommodities(){ return commoditiesList;}
 }
