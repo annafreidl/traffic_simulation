@@ -851,7 +851,7 @@ public class MGame {
                 }
                 new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist);
 
-            } else if (feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.airport) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
+            } if (feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.airport) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
 
                if(hasSpaceForBuilding) {
                    feld.setState(buildingToBeBuiltType);
@@ -860,8 +860,8 @@ public class MGame {
 
                    for (int j = 0; j < relevantTiles.size(); j++) {
                        MTile relevantTile = relevantTiles.get(j);
-                       relevantTile.addConnectedBuilding(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
-                       relevantTile.setBuildingOnTile(newBuilding);
+                       relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
+                       relevantTile.addConnectedBuilding(newBuilding);
                    }
                    newBuilding.setStartTile(feld);
                    newBuilding.startProductionAndConsumption();

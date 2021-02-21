@@ -1,6 +1,7 @@
 package planverkehr;
 
 import javafx.util.Pair;
+import planverkehr.airport.MAirport;
 import planverkehr.transportation.EDirections;
 
 import java.util.*;
@@ -31,6 +32,8 @@ public class Buildings {
     private EnumSet<EDirections> directionsSecondTile;
     private EBuildType buildType;
     private MTile startTile;
+
+    MAirport associatedAirport;//Airport zu dem das Gebäude gehört
     //todo: buildType hinzufügen
 
 
@@ -53,6 +56,7 @@ public class Buildings {
         this.maxPlanes = maxPlanes;
         this.productions = productions;
         combinesBuildings = new HashMap<>();
+
         setBuildType();
         setDirections();
         setPossibleConnection();
@@ -77,6 +81,7 @@ public class Buildings {
         this.maxPlanes = building.getMaxPlanes();
         this.productions = building.getProductions();
         combinesBuildings = new HashMap<>();
+        associatedAirport = null;
         setBuildType();
         setDirections();
         setPossibleConnection();
@@ -240,5 +245,17 @@ public class Buildings {
 
     public MTile getStartTile() {
         return startTile;
+    }
+
+    public EBuildType getEbuildType(){
+        return buildType;
+    }
+
+    public void setAssociatedAirport(MAirport associatedAirport) {
+        this.associatedAirport = associatedAirport;
+    }
+
+    public MAirport getAssociatedAirport(){
+        return associatedAirport;
     }
 }

@@ -23,7 +23,8 @@ public class MAirport {
     TargetpointList waitList;
     TargetpointList otherTargetTypeList;
 
-    List<Buildings> towers, runway, terminal, taxiway;
+    Buildings tower, bigTower, runway, terminal, taxiway;
+    boolean fullyBuilt;
 
     //TODO: wir brauchen Listen der Gebäude, da sich der Airport aus diesen zusammensetzt und wir alle Gebäude vom Typ Airport mergen müssen
     //RN THE GOAL IS: wenn wir ein Gebäude setzen vom Typ airport, sollen die tiles drumherum automatisch geprüpft werden, und wenn
@@ -33,16 +34,18 @@ public class MAirport {
 
     /** Diese Klasse erstellt vollständige/funktionale Airports aus den einzelenen Gebäuden des Airports */
 
-    public MAirport(MGame gameModel, VGame gameView) {
+    public MAirport(MGame gameModel) {
 
         ArrayList nodesList = new ArrayList<Knotenpunkt>();
         createSpecialTargetTypeLists();
         createWaypointList();
 
-        towers = new ArrayList<>();
-        runway = new ArrayList<>();
-        terminal = new ArrayList<>();
-        taxiway = new ArrayList<>();
+        tower = null;
+        bigTower = null;
+        terminal = null;
+        runway = null;
+        taxiway = null;
+        fullyBuilt = false;
     }
 
     private void createSpecialTargetTypeLists() {
@@ -72,9 +75,84 @@ public class MAirport {
         }); */
     }
 
+    //jedes Mal wenn wir Gebäude adden, checken wir ob Airport functional ist (bzw. voll ist)
+    private void isFunctional(){
+        fullyBuilt = (tower != null || bigTower != null) && terminal != null && runway != null && taxiway != null; //is true wenn all das zutrifft
+    }
 
     public TargetpointList getWaypointList() {
         return waypointList;
+    }
+
+    public Buildings getTower() {
+        return tower;
+    }
+
+    public Buildings getBigTower() {
+        return bigTower;
+    }
+
+    public Buildings getTerminal() {
+        return terminal;
+    }
+
+    public Buildings getRunway() {
+        return runway;
+    }
+
+    public Buildings getTaxiway() {
+        return taxiway;
+    }
+
+    public void setTower(Buildings tower) {
+        this.tower = tower;
+        //jedes Mal wenn wir Gebäude adden, checken wir ob Airport functional ist bzw. voll ist
+        isFunctional();
+    }
+
+    public void setBigTower(Buildings bigTower) {
+        this.bigTower = bigTower;
+        isFunctional();
+    }
+
+    public void setTerminal(Buildings terminal) {
+        this.terminal = terminal;
+        isFunctional();
+    }
+
+    public void setRunway(Buildings runway) {
+        this.runway = runway;
+        isFunctional();
+    }
+
+    public void setTaxiway(Buildings taxiway) {
+        this.taxiway = taxiway;
+        isFunctional();
+    }
+
+    public void removeTower(){
+        tower = null;
+        isFunctional();
+    }
+
+    public void removeBigTower(){
+        bigTower = null;
+        isFunctional();
+    }
+
+    public void removeTerminal(){
+        terminal = null;
+        fullyBuilt = false;
+    }
+
+    public void removeRunway(){
+        runway = null;
+        fullyBuilt = false;
+    }
+
+    public void removeTaxiway(){
+        taxiway = null;
+        fullyBuilt = false;
     }
 }
 
