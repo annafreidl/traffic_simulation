@@ -10,7 +10,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 public class MTile {
-    String id, building;
+    String id;
     boolean isSelected = false;
     boolean isFirstTile = true;
     boolean hoch = true;
@@ -40,7 +40,6 @@ public class MTile {
         yNew = visibleCoordinate.getY();
 
         state = EBuildType.free;
-        building = "";
         buildingOnTile = null;
 
         isoNorth = new MCoordinate(xIsoWest + Config.tWidthHalft, yIsoWest - Config.tHeightHalft, 0);
@@ -120,29 +119,6 @@ public class MTile {
         return isSelected;
     }
 
-    public double getXIsoWest() {
-        return xIsoWest;
-    }
-
-    public double getYIsoWest() {
-        return yIsoWest;
-    }
-
-    public MCoordinate getIsoCenter() {
-        return isoCenter;
-    }
-
-    public MCoordinate getIsoEast() {
-        return isoEast;
-    }
-
-    public MCoordinate getIsoSouth() {
-        return isoSouth;
-    }
-
-    public MCoordinate getIsoNorth() {
-        return isoNorth;
-    }
 
     public MCoordinate getIsoWest() {
         return isoWest;
@@ -195,14 +171,6 @@ public class MTile {
         return connectedBuilding;
     }
 
-
-    public String getBuilding() {
-        return building;
-    }
-
-    public void setBuilding(String building) {
-        this.building = building;
-    }
 
     public void setBuildingOnTile(Buildings buildingOnTile) {
         this.buildingOnTile = buildingOnTile;
@@ -452,7 +420,6 @@ public class MTile {
         knotenpunkteArray = new ArrayList<>();
         possibleConnections = EnumSet.noneOf(EDirections.class);
         state = EBuildType.free;
-        building = null;
         connectedBuilding = null;
         buildingOnTile = null;
         isStation = false;

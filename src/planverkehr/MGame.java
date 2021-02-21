@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
-import com.sun.javafx.image.impl.IntArgb;
 import javafx.util.Pair;
 import planverkehr.airport.MAirport;
 import planverkehr.airport.MAirportManager;
@@ -14,6 +13,7 @@ import planverkehr.graph.MTargetpointList;
 import planverkehr.graph.MWegKnotenpunkt;
 import planverkehr.transportation.ESpecial;
 import planverkehr.transportation.MRailBlock;
+import planverkehr.transportation.MTransportConnection;
 import planverkehr.verkehrslinien.MLinie;
 import planverkehr.verkehrslinien.linienConfigObject;
 
@@ -45,6 +45,11 @@ public class MGame {
     HashMap<Integer, MRailBlock> railBlockMap;
     HashMap<Integer, MHaltestelle> haltestelleHashMap;
     int lastKnownBlockID;
+    boolean gameStarted = false;
+    boolean gamePaused = false;
+    boolean isBuilding = false;
+    boolean autoSaveMode = true;
+    Buildings savedBuilding;
 
 
     public MGame(GameConfig config) {
@@ -92,8 +97,8 @@ public class MGame {
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
                 if ((-1 < x + i && x + i < Config.worldWidth) && (-1 < y + j && y + j < Config.worldWidth)) {
-                    String idString = y+j > 0 ? x + i + "--" + (y + j) : x + i + "-" + (y + j);
-                    if(!idString.equals(m1.id)) {
+                    String idString = y + j > 0 ? x + i + "--" + (y + j) : x + i + "-" + (y + j);
+                    if (!idString.equals(m1.id)) {
                         neighbours.add(getTileById(idString));
                     }
                 }
@@ -159,6 +164,7 @@ public class MGame {
             System.out.println("state: " + tile.state);
             System.out.println("BuildingOnTile: " + tile.getBuildingOnTile());
             System.out.println("KnotenpunkteArray: " + tile.knotenpunkteArray);
+            System.out.println("is schief?: " + tile.getIncline());
             System.out.println();
 
             if (selectedTileId.equals(searchId)) {
@@ -181,7 +187,9 @@ public class MGame {
                         }
                     }
                     assert linienKnotenpunkt != null;
-                    activeLinie.addWegknotenpunkt(linienKnotenpunkt);
+                    if (!activeLinie.contains(linienKnotenpunkt)) {
+                        activeLinie.addWegknotenpunkt(linienKnotenpunkt);
+                    }
 
                 }
 
@@ -328,29 +336,36 @@ public class MGame {
         }
     }
 
-//todo: prüfen ob Tile noch existiert
+    //todo: prüfen ob Tile noch existiert
     public void moveVehicles() {
         updateBlockIds();
-        for (MLinie l : linienList
-        ) {
+        for (Iterator<MLinie> it = linienList.iterator(); it.hasNext(); ) {
+            //Das nächste Flugzeug wird ausgewählt
+            MLinie l = it.next();
 
             MWegKnotenpunkt w = l.getListeAllerLinienKnotenpunkte().peekFirst();
             if (l.getType().equals(EBuildType.road)) {
                 MCoordinate next = w.getKnotenpunkt().getVisibleCoordinate();
                 MCoordinate current = l.getVehicle().getCurrentPosition();
-                boolean isLeft = next.getX() < current.getY() || next.getY() < current.getY();
-                if (w.getKnotenpunkt().isFreeFor(tickNumber + 1, isLeft)) {
-                    setNextKnotenpunkt(l, w, isLeft);
-                    l.getVehicle().setDrivesLeft(isLeft);
-                } else {
-                    l.getVehicle().setWaiting(true);
-                    if (l.getVehicle().getCurrentKnotenpunkt() != null) {
-                        l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 1, isLeft);
-                        l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 2, isLeft);
+                boolean isLeft = (next.getX() > current.getX() && next.getY() == current.getY()) || (next.getY() > current.getY() && next.getX() == current.getX());
+                if (roadGraph.containsKey(next.toStringCoordinates())) {
+                    if (w.getKnotenpunkt().equals(l.getVehicle().getCurrentKnotenpunkt()) || w.getKnotenpunkt().isFreeFor(tickNumber + 1, isLeft)) {
+                        setNextKnotenpunkt(l, w, isLeft);
+                        l.getVehicle().setDrivesLeft(isLeft);
+                    } else {
+                        l.getVehicle().setWaiting(true);
+                        if (l.getVehicle().getCurrentKnotenpunkt() != null) {
+                            l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 1, isLeft);
+                            l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 2, isLeft);
+                        }
                     }
-                }
 
-                System.out.println("vehicle: " + l.getVehicle().getName() + " , " + "nextNode: " + l.getVehicle().getCurrentKnotenpunkt().getVisibleCoordinate());
+                } else {
+                    visibleVehiclesArrayList.remove(l.getVehicle());
+                    it.remove();
+
+                    System.out.println("linie removed");
+                }
 
             } else if (l.getType().equals(EBuildType.rail)) {
                 //Zug darf sich bewegen, wenn er in einem Block steht, der Block frei ist oder vorher schon im besetzten Block war
@@ -359,14 +374,19 @@ public class MGame {
                     currentBlockId = l.getVehicle().getCurrentKnotenpunkt().getBlockId();
                 }
                 int nextBlockId = w.getKnotenpunkt().getBlockId();
-                if (nextBlockId != 0 && currentBlockId == nextBlockId || !railBlockMap.get(w.getKnotenpunkt().getBlockId()).isBlocked()) {
-                    if (currentBlockId != nextBlockId) {
-                        railBlockMap.get(currentBlockId).setBlocked(false);
-                        railBlockMap.get(nextBlockId).setBlocked(true);
+                if (railGraph.containsKey(w.getKnotenpunkt().getVisibleCoordinate().toStringCoordinates())) {
+                    if (nextBlockId != 0 && currentBlockId == nextBlockId || !railBlockMap.get(w.getKnotenpunkt().getBlockId()).isBlocked()) {
+                        if (currentBlockId != nextBlockId) {
+                            railBlockMap.get(currentBlockId).setBlocked(false);
+                            railBlockMap.get(nextBlockId).setBlocked(true);
+                        }
+                        setNextKnotenpunkt(l, w, true);
+                    } else {
+                        l.getVehicle().setWaiting(true);
                     }
-                    setNextKnotenpunkt(l, w, true);
                 } else {
-                    l.getVehicle().setWaiting(true);
+                    visibleVehiclesArrayList.remove(l.getVehicle());
+                    it.remove();
                 }
             }
         }
@@ -435,9 +455,9 @@ public class MGame {
                         }
                     }
                 }
-                if(mTile.isStation){
-                   MHaltestelle h = haltestelleHashMap.get(mTile.haltestellenID);
-                   h.removeFeld(mTile);
+                if (mTile.isStation) {
+                    MHaltestelle h = haltestelleHashMap.get(mTile.haltestellenID);
+                    h.removeFeld(mTile);
                 }
                 mTile.reset();
             }
@@ -461,19 +481,37 @@ public class MGame {
 
     public void setCreateLine(boolean b) {
         createLine = b;
-        activeLinie = new MLinie(linienID);
-        linienID++;
+        if (b) {
+            activeLinie = new MLinie(linienID);
+            linienID++;
+        }
     }
 
     public void saveLinie(linienConfigObject lco) {
-        activeLinie.setName(lco.getName());
-        activeLinie.setCircle(lco.isCircle());
-        MVehicles temp = lco.getVehicle();
-        MVehicles copy = new MVehicles(temp.getName(), temp.getKind(), temp.getGraphic(), temp.getCargo(), temp.getSpeed());
-        copy.setId(vehicleId);
-        vehicleId++;
+        if (activeLinie.getID() == linienID - 1) {
+            activeLinie.setName(lco.getName());
+            activeLinie.setCircle(lco.isCircle());
+            MVehicles temp = lco.getVehicle();
+            MVehicles copy = new MVehicles(temp.getName(), temp.getKind(), temp.getGraphic(), temp.getCargo(), temp.getSpeed());
+            copy.setId(vehicleId);
+            vehicleId++;
 
-        activeLinie.setVehicle(copy);
+            activeLinie.setVehicle(copy);
+        } else {
+            if (!activeLinie.getName().equals(lco.getName())) {
+                activeLinie.setName(lco.getName());
+            }
+            if (activeLinie.isCircle() != lco.isCircle()) {
+                activeLinie.setCircle(lco.isCircle());
+            }
+            if (!activeLinie.getVehicle().getName().equals(lco.getVehicle().getName())) {
+                MVehicles temp = lco.getVehicle();
+                MVehicles copy = new MVehicles(temp.getName(), temp.getKind(), temp.getGraphic(), temp.getCargo(), temp.getSpeed());
+                copy.setId(vehicleId);
+                vehicleId++;
+                activeLinie.setVehicle(copy);
+            }
+        }
     }
 
     public boolean connectLinienPunkte() {
@@ -516,7 +554,7 @@ public class MGame {
     }
 
     //holen uns hier alle Tiles die zu einem Building gehören
-    public List<MTile> getBuildingTiles(Buildings building){
+    public List<MTile> getBuildingTiles(Buildings building) {
         List<MTile> buildingTiles = new ArrayList<>();
 
         MTile startTile = building.getStartTile();
@@ -546,14 +584,14 @@ public class MGame {
     }
 
     //gibt Liste mit Buildings die an Gebäude angrenzen
-    public List<Buildings> getNeighbourBuildings(Buildings building){
+    public List<Buildings> getNeighbourBuildings(Buildings building) {
         List<Buildings> neighbourBuildings = new ArrayList<>();
         List<MTile> buildingTiles = getBuildingTiles(building);
 
         //getNeighbours Methode, aber die methode nimmt nur ein Tile
         //d.h., wir rufen diese methode inner forschleife auf und prüfen dann für jedes tile von buildingsTiles die nachbarn
 
-        for (int i = 0; i < buildingTiles.size() ; i++) {
+        for (int i = 0; i < buildingTiles.size(); i++) {
             MTile currentTile = buildingTiles.get(i);
             MCoordinate currentCoordinates = currentTile.getIDCoordinates(); //holen uns ID von current tile
             int xCoord = (int) currentCoordinates.getX();
@@ -564,20 +602,20 @@ public class MGame {
 
             //gehen jetzt nachbartiles durch, indem wir wir immer shiftfactor draufrechnen
             //schauen oben, unten, links und rechts tiles an
-            for (int x = shiftFactor*(-1); x <= shiftFactor; x++) {
-                for (int y = shiftFactor*(-1); y <= shiftFactor; y++) {
-                    if (x + y != 0 && Math.abs(x + y) < 2){ //wollen nur zB 4 Felder
+            for (int x = shiftFactor * (-1); x <= shiftFactor; x++) {
+                for (int y = shiftFactor * (-1); y <= shiftFactor; y++) {
+                    if (x + y != 0 && Math.abs(x + y) < 2) { //wollen nur zB 4 Felder
                         System.out.println("HI im in forschleife rn");
                         int newX = xCoord + x;
                         int newY = yCoord + y;
                         String tileID = newX + "--" + newY;
                         MTile newTile = getTileById(tileID);
-                        if (newTile != null){ //wenn es diese ID in der Hashmap nicht gibt (e.g. Randteil), dann nehmen wir es nicht
+                        if (newTile != null) { //wenn es diese ID in der Hashmap nicht gibt (e.g. Randteil), dann nehmen wir es nicht
                             Buildings buildingOnTile = newTile.getBuildingOnTile();
-                            if(buildingOnTile!=null){ //wollen es nur einspeichern, wenn ein gebäude vorhanden ist
+                            if (buildingOnTile != null) { //wollen es nur einspeichern, wenn ein gebäude vorhanden ist
                                 neighbourBuildings.add(buildingOnTile);
                             }
-                       }
+                        }
                     }
                 }
             }
@@ -639,6 +677,211 @@ public class MGame {
             case 1 -> EStationStatus.ONE;
             default -> EStationStatus.TOOMANY;
         };
+
+    }
+
+    public void setStartGame() {
+        gameStarted = true;
+        for (Buildings constructedBuilding : constructedBuildings) {
+            constructedBuilding.startProductionAndConsumption();
+        }
+    }
+
+    public void togglePlayPause() {
+        gamePaused = !gamePaused;
+    }
+
+    public void toggleBuilding() {
+        isBuilding = !isBuilding;
+        autoSaveMode = true;
+        savedBuilding = null;
+    }
+
+    public void resetSpecialModes() {
+        isBuilding = false;
+        createLine = false;
+        activeLinie = null;
+        savedBuilding = null;
+
+    }
+
+    public String getSavedBuilding() {
+        if (savedBuilding != null) {
+            return savedBuilding.getBuildingName();
+        } else {
+            return "no Building Saved";
+        }
+    }
+
+    public void setSavedBuilding(String buidlingId) {
+        this.savedBuilding = getBuildingById(buidlingId);
+    }
+
+    public void toggleAutoSave() {
+        autoSaveMode = !autoSaveMode;
+        if (!autoSaveMode) {
+            savedBuilding = null;
+        }
+    }
+
+    private void createBuildingNodeByCenter(EBuildType buildingToBeBuiltType, Buildings newBuilding) {
+
+        String startPoint = getSelectedTileId(); //get Startpoint
+        MTile field = getTileById(startPoint);
+        double startPointX = field.getIDCoordinates().getX(); //get startpoint X and Y
+        double startPointY = field.getIDCoordinates().getY();
+        double centerX = startPointX + 0.5;   //PUNKT AUF SÜDWEST UNTEN LINKS
+
+      /*  double buildingX = newBuilding.getWidth(); //get Höhe und Breite des Buildings
+        double buildingY = newBuilding.getDepth();
+        double centerX = x + (buildingX/2); //calculate Building Center
+        double centerY = y + (buildingY/2);*/
+
+        String key = "centerNode";
+        double level = field.getLevel(); //checking hoehe der tile for coords
+        MCoordinate coords;
+        coords = new MCoordinate(centerX, startPointY, level);
+
+        //GOTTA ADD JSON POINTS TO AIRPORT BUILDINGS THAT HAVE THEM
+        if (newBuilding.getSpecial().equals("runway") || (newBuilding.getSpecial().equals("terminal") || (newBuilding.getSpecial().equals("taxiway")))) {
+            newBuilding.getPoints().forEach((name, point) -> {
+
+                double finalPointX = startPointX + point.getX(); //points aus JSON auf Startpoint rechnen
+                double finalPointY = startPointY + point.getY();
+
+                MCoordinate finalCoords;
+                finalCoords = new MCoordinate(finalPointX, finalPointY, level);
+
+                MKnotenpunkt buildingPoint = createBuildingNode(finalCoords, name, buildingToBeBuiltType, newBuilding);
+                //System.out.println(buildingPoint);
+                //System.out.println("Hi");
+            });
+
+            //IF NOT THOSE 3, SET POINT TO SOUTHWEST
+        } else {
+            MKnotenpunkt buildingPoint = createBuildingNode(coords, key, buildingToBeBuiltType, newBuilding);
+        }
+    }
+
+    private MKnotenpunkt createBuildingNode(MCoordinate coords, String name, EBuildType buildingToBeBuiltType, Buildings newBuilding) {
+
+        // EBuildType buildingToBeBuiltType = EBuildType.factory;
+        //EBuildType buildingType = EBuildType.factory; //we know we gonna need factory
+        //GET BUILDTYPE DYNAMIC FROM BUILDING WE BUILD
+        Graph buildingGraph = new Graph();
+
+        //node ID setzt sich zusammen aus string, building type and Nummer (reihenfolge) (ID +1)
+        String nodeId = "" + buildingToBeBuiltType + buildingGraph.getIncreasedId();
+        //System.out.println("nodeID:" + nodeId); //ID DOESNT GET INCREASED FOR SOME REASON
+
+        String selectedTileId = getSelectedTileId(); //getting the tile we selected
+
+        //Wenn selected tile NICHT null ist, dann mach den Kram
+        if (!selectedTileId.equals("null")) {
+            MTile buildingField = getTileById(selectedTileId);
+            String buildingNameID = newBuilding.getBuildingName(); //getting the Name of the copied building we placed
+            String groupId = buildingField.getId() + "-" + buildingNameID;
+
+            //speichern koordinate vom aktuellen Feld
+            MCoordinate fieldGridCoordinates = buildingField.getVisibleCoordinates();
+
+            //speichern koordinaten vom NODE nicht vom Feld
+            //feld koordinate is das geklickte feld, node coordinate ist die eigtl koordinate
+
+            // MCoordinate nodeCoordinate = new MCoordinate(fieldGridCoordinates.getX() + coords.getX(), fieldGridCoordinates.getY() - coords.getY(), buildingField.getLevel());
+            //WE GIVE HIM OUR OWN NODE ISNTEAD
+
+            MKnotenpunkt knotenpunkt;
+
+            //wenn graph kooordinaten diese koordinaten enthält, dann geben wir dem knotenpunkt diese aktuellen werte und fügen den der group ID hinzu
+            //wenn er das NICHT hat (else), dann machen wir neuen Knotenpunkt und adden den in graph
+            if (buildingGraph.containsKey(coords.toStringCoordinates())) {
+                knotenpunkt = buildingGraph.get(coords.toStringCoordinates());
+                knotenpunkt.addGroupId(groupId);
+            } else {
+                knotenpunkt = new MKnotenpunkt(nodeId, groupId, coords, buildingToBeBuiltType, name, buildingField.getId(), coords.getRoadDirection(), coords.isEdge());
+                //System.out.println("knotenpunkt:"+ knotenpunkt);
+                buildingGraph.put(coords.toStringCoordinates(), knotenpunkt);
+            }
+            return knotenpunkt;
+        }
+        return null;
+    }
+
+
+    public void build(EBuildType buildingToBeBuiltType, String newBuildingId, String buildingName) {
+        if (!selectedTileId.equals("null")) {
+            MTile feld = getTileById(selectedTileId);
+            Buildings buildingToBeBuilt = getBuildingById(newBuildingId);
+            boolean hasSpaceForBuilding = hasSpaceForBuilding(buildingToBeBuilt.getWidth(), buildingToBeBuilt.getDepth(), buildingToBeBuilt.getDz());
+            ArrayList<MTile> relevantTiles = getTilesToBeGrouped(buildingToBeBuilt.getWidth(), buildingToBeBuilt.getDepth(), buildingToBeBuilt.getDz());
+
+            if (buildingToBeBuiltType.equals(EBuildType.rail) || buildingToBeBuiltType.equals(EBuildType.road) || buildingToBeBuiltType.equals(EBuildType.airport)) {
+
+                if (buildingToBeBuilt.getSpecial().equals("busstop") || buildingToBeBuilt.getSpecial().equals("railstation") || buildingToBeBuiltType.equals(EBuildType.airport)) {
+                    EStationStatus stationStatus = checkForStation(feld, buildingToBeBuilt.getDepth(), buildingToBeBuilt.getWidth());
+                    switch (stationStatus) {
+                        case ONE -> addBuildingToStation(feld, buildingToBeBuilt);
+                        case NONE -> createStation(feld, buildingToBeBuilt);
+                        case TOOMANY -> hasSpaceForBuilding = false;
+                    }
+                }
+
+                Graph relevantGraph;
+                MTargetpointList relevantTargetpointlist;
+
+                switch (buildingToBeBuiltType) {
+                    case rail -> {
+                        relevantGraph = railGraph;
+                        relevantTargetpointlist = listeDerBahnhöfe;
+                    }
+                    case road -> {
+                        relevantGraph = roadGraph;
+                        relevantTargetpointlist = listeDerBushaltestellen;
+                    }
+                    case airport -> {
+                        relevantGraph = airportGraph;
+                        relevantTargetpointlist = listeDerFlughafenGebäude;
+                    }
+                    default -> {
+                        relevantGraph = gameGraph;
+                        relevantTargetpointlist = listeDerBushaltestellen;
+                        System.out.println("Achtung - falsche Targetpointlist ");
+                    }
+                }
+                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist);
+
+            } else if (feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.airport) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
+
+               if(hasSpaceForBuilding) {
+                   feld.setState(buildingToBeBuiltType);
+
+                   Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
+
+                   for (int j = 0; j < relevantTiles.size(); j++) {
+                       MTile relevantTile = relevantTiles.get(j);
+                       relevantTile.addConnectedBuilding(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
+                       relevantTile.setBuildingOnTile(newBuilding);
+                   }
+                   newBuilding.setStartTile(feld);
+                   newBuilding.startProductionAndConsumption();
+                   createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
+
+                   //TODO: muss auf MAiport gecoded werden, nicht im Controller bleiben
+                   if (buildingToBeBuiltType.equals(EBuildType.airport)) {
+                       mAirportManager.createOrConnectToAirport(newBuilding);
+
+                       // PlaneGenerator planes = new PlaneGenerator();
+                       // planes.spawnAirplanes();
+                   }
+               }
+
+            }
+        }
+    }
+
+    public void clearLists() {
+        constructedBuildings.clear();
 
     }
 }

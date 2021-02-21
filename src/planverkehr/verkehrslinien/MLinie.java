@@ -21,6 +21,7 @@ public class MLinie {
     Color color;
     Random rand = new Random();
     boolean circle;
+    boolean circlePath;
 
 
     public MLinie(int linienID) {
@@ -76,40 +77,72 @@ public class MLinie {
 
 
     public boolean connect() {
-        MWegKnotenpunkt last = listOfHaltestellenKnotenpunkten.peekLast();
-        MWegKnotenpunkt first = listOfHaltestellenKnotenpunkten.peek();
         boolean searching = true;
+        if (!allHaltestellenCovered() || isCircle() != circlePath) {
+            MWegKnotenpunkt last = listOfHaltestellenKnotenpunkten.peekLast();
+            MWegKnotenpunkt first = listOfHaltestellenKnotenpunkten.peek();
+            listeAllerLinienKnotenpunkte.clear();
 
 
-        for (MWegKnotenpunkt k :
-            listOfHaltestellenKnotenpunkten
-        ) {
-            if (!searching) {
-                break;
-            }
-            else if (k.equals(last)) {
-                //special treatment last
-                searching = findPath(k.getVorgaenger(), k);
+            for (MWegKnotenpunkt k :
+                listOfHaltestellenKnotenpunkten
+            ) {
+                if (!searching) {
+                    break;
+                } else if (k.equals(last)) {
+                    //special treatment last
+                    searching = findPath(k.getVorgaenger(), k);
 
-                if (isCircle()) {
-                    searching = findPath(k.getKnotenpunkt(), first);
-                } else {
-                    ArrayList<MWegKnotenpunkt> temp = new ArrayList<>(listeAllerLinienKnotenpunkte);
-                    listeAllerLinienKnotenpunkte.add(new MWegKnotenpunkt(listeAllerLinienKnotenpunkte.size(), k.getKnotenpunkt(), listeAllerLinienKnotenpunkte.getLast().getKnotenpunkt()));
-                   int size = temp.size();
-                    for (int i = size - 1; i > 0; i--) {
-                        MKnotenpunkt vorgaenger = i == size - 1 ? k.getKnotenpunkt() : temp.get(i + 1).getKnotenpunkt();
-                        MWegKnotenpunkt tempWegknoten = new MWegKnotenpunkt(size + i, temp.get(i).getKnotenpunkt(), vorgaenger);
-                        listeAllerLinienKnotenpunkte.add(tempWegknoten);
+                    if (isCircle()) {
+                        searching = findPath(k.getKnotenpunkt(), first);
+                        circlePath = true;
+                    } else {
+                        listeAllerLinienKnotenpunkte.add(new MWegKnotenpunkt(listeAllerLinienKnotenpunkte.size(), k.getKnotenpunkt(), listeAllerLinienKnotenpunkte.getLast().getKnotenpunkt()));
+
+                        revertList(listeAllerLinienKnotenpunkte, k);
+                        revertList(listOfHaltestellenKnotenpunkten, k);
+
+
+                        circlePath = false;
+
                     }
-                }
-                System.out.println("found last");
+                    System.out.println("found last");
 
-            } else if (!k.equals(first)){
-                searching = findPath(k.getVorgaenger(), k);
+                } else if (!k.equals(first)) {
+                    searching = findPath(k.getVorgaenger(), k);
+                }
             }
         }
         return searching;
+
+    }
+
+    private void revertList(Deque<MWegKnotenpunkt> knotenpunktListe, MWegKnotenpunkt lastWegKnotenpunkt) {
+        ArrayList<MWegKnotenpunkt> tempAlle = new ArrayList<>(knotenpunktListe);
+
+        int size = tempAlle.size();
+        for (int i = size - 2; i > 0; i--) {
+            MKnotenpunkt vorgaenger = tempAlle.get(i + 1).getKnotenpunkt();
+            MWegKnotenpunkt tempWegknoten = new MWegKnotenpunkt(size + i, tempAlle.get(i).getKnotenpunkt(), vorgaenger);
+            knotenpunktListe.add(tempWegknoten);
+        }
+
+        knotenpunktListe.removeLast();
+        knotenpunktListe.getFirst().setVorgaenger(knotenpunktListe.getLast().getKnotenpunkt());
+
+    }
+
+    private boolean allHaltestellenCovered() {
+        if (listeAllerLinienKnotenpunkte.size() > 0) {
+            for (MWegKnotenpunkt wp : listOfHaltestellenKnotenpunkten) {
+                if (!listeAllerLinienKnotenpunkte.contains(wp)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean findPath(MKnotenpunkt currentPoint, MWegKnotenpunkt targetNode) {
@@ -129,19 +162,9 @@ public class MLinie {
                 return false;
             } else {
 
-
-                if (listeAllerLinienKnotenpunkte.size() > 1) {
-                    //                  MWegKnotenpunkt wp = listeAllerLinienKnotenpunkte.pollLast();
-//                   System.out.println(wp);
-                    // path.firstElement().setVorgaenger(listeAllerLinienKnotenpunkte.getLast().getKnotenpunkt());
-                }
-
                 listeAllerLinienKnotenpunkte.addAll(path);
 
                 return true;
-
-
-                //  movePlane(plane);
             }
         }
     }
@@ -158,10 +181,22 @@ public class MLinie {
         return listeAllerLinienKnotenpunkte;
     }
 
+    public int getID() {
+        return ID;
+    }
+
     public void addWegknotenpunktToBack(MWegKnotenpunkt w) {
         listeAllerLinienKnotenpunkte.addLast(w);
     }
 
-    public void edit() {
+
+    public boolean contains(MKnotenpunkt linienKnotenpunkt) {
+
+        for (MWegKnotenpunkt mWegKnotenpunkt : listOfHaltestellenKnotenpunkten) {
+            if (mWegKnotenpunkt.getKnotenpunkt().equals(linienKnotenpunkt)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

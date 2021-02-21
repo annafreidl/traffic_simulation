@@ -93,6 +93,8 @@ public class Buildings {
             buildType = EBuildType.airport;
         } else if (getProductions().size() > 0){
             buildType = EBuildType.factory;
+        } else if (buildMenu.equals("nature")){
+            buildType = EBuildType.nature;
         } else {
             buildType = EBuildType.unknown;
         }

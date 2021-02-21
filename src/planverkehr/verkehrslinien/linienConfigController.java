@@ -5,11 +5,15 @@ import planverkehr.MVehicles;
 public class linienConfigController {
     linienConfigWindow view;
     linienConfigModel model;
+    MLinie activeLinie;
     final linienConfigObject[] returnObject = new linienConfigObject[1];
 
-    public linienConfigController(linienConfigWindow view, linienConfigModel model) {
+    public linienConfigController(linienConfigWindow view, linienConfigModel model, MLinie activeLinie) {
         this.view = view;
         this.model = model;
+        this.activeLinie = activeLinie;
+
+
 
         view.getFahrzeugInput().setOnAction(actionEvent -> {
             System.out.println(actionEvent);
@@ -37,6 +41,12 @@ public class linienConfigController {
 
     public linienConfigObject showConfigWindow() {
         view.display("Verkehrslinien konfiguration");
+
+        if(activeLinie.getVehicle() != null){
+            view.getLinienNameInputField().setText(activeLinie.getName());
+            view.getCircleCB().setSelected(activeLinie.isCircle());
+            model.setSelectedVehicleByString(activeLinie.getVehicle().getName());
+        }
 
         return returnObject[0];
     }

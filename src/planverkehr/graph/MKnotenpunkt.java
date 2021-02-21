@@ -147,17 +147,17 @@ public class MKnotenpunkt {
 
     //todo: muss für Verlehrsmittel geschrieben werden
     public boolean isFreeFor(int timeBetretenUm, boolean isLeft) {
-        TreeSet<Integer> relevantBlockedForTickListRight = isLeft ? blockedForTickListLeft : blockedForTickListRight;
-        Integer lowerTime = relevantBlockedForTickListRight.higher(timeBetretenUm - 1);
-        Integer upperTime = relevantBlockedForTickListRight.higher(timeBetretenUm + 1);
+        TreeSet<Integer> relevantBlockedForTickList = isLeft ? blockedForTickListLeft : blockedForTickListRight;
+        Integer lowerTime = relevantBlockedForTickList.higher(timeBetretenUm - 1);
+        Integer upperTime = relevantBlockedForTickList.higher(timeBetretenUm + 1);
 
         if (isBlocked) {
             return false;
-        } else if ((relevantBlockedForTickListRight.isEmpty() || (lowerTime == null))) {
+        } else if ((relevantBlockedForTickList.isEmpty() || (lowerTime == null))) {
             return true;
         } else if ((upperTime == null)) {
             return false;
-        } else if (relevantBlockedForTickListRight.subSet(lowerTime, upperTime).isEmpty()) {
+        } else if (relevantBlockedForTickList.subSet(lowerTime, upperTime).isEmpty()) {
             return true;
         }
         return true;

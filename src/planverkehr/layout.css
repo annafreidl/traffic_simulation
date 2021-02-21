@@ -29,26 +29,55 @@
     -fx-border-width: 2;
 }
 
+.button-icon{
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-width: 40px;
+
+    -fx-min-height: 40px;
+    -fx-max-height: 40px;
+    -fx-pref-height: 40px;
+
+    -fx-padding: 10;
+    -fx-end-margin: 10;
+}
+
+.slider .track {
+    -fx-background-color: green;
+
+
+
+    -fx-background-insets: 0 0 -1 0, 0, 1;
+    -fx-background-radius: 0.25em, 0.25em, 0.166667em; /* 3 3 2 */
+    -fx-padding: 0.25em; /* 3 */
+}
+
+.slider .thumb {
+    -fx-background-color: white;
+
+}
+
 .menu{
-    -fx-min-width: 75px;
-    -fx-max-width: 75px;
-    -fx-pref-width: 75px;
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-width: 40px;
     -fx-background-color: #e5e5e5;
     -fx-text-fill: #000000;
-    -fx-text-alignment: center;
     -fx-cursor: hand;
+    -fx-border-radius: 2px;
 }
 
 .menu:hover{
     -fx-background-color: #c6c6c6;
     -fx-text-fill: #000000;
+
 }
 
 .menu:selected{
     -fx-text-fill: #000000;
 }
 .menu-bar{
-    -fx-background-color: #e5e5e5;
+    -fx-background-color: transparent;
     -fx-text-fill: #000000;
 }
 

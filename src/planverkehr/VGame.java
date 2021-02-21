@@ -9,13 +9,15 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
@@ -23,7 +25,6 @@ import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import planverkehr.graph.Graph;
-import planverkehr.verkehrslinien.LinienInfoButton;
 import planverkehr.verkehrslinien.MLinie;
 import planverkehr.verkehrslinien.VActiveLinie;
 import planverkehr.verkehrslinien.VLinie;
@@ -33,210 +34,39 @@ import java.util.*;
 public class VGame {
     MGame gameModel;
     Stage window;
-    Group group, linienGroup;
-    Canvas canvas, canvasFront, canvasLinie;
-    GraphicsContext gc, gcFront, gcLinie;
+    Group group;
+    Canvas canvas, canvasFront;
+    GraphicsContext gc, gcFront;
     Scene scene;
     JSONParser parser;
     MenuBar menuBar;
     Label debugCoord;
-    Button tickButton, defaultRoad, removeButton, defaultRail, kartengeneratorButton, pauseButton, upButton, downButton;
-    Label linieInfoLabel;
+    Button tickButton, defaultRoad, removeButton, defaultRail, kartengeneratorButton, pauseButton, upButton, downButton, buildButton, saveBuildingButton, playButton, backButton;
+    Label linieInfoLabel, savesBuilding;
     Button linienButton, linienButtonWeiter, linienButtonAbbrechen;
-
-    MouseMode mouseMode;
-
-    public void setMouseMode(MouseMode mouseMode) {
-        this.mouseMode = mouseMode;
-    }
-
-    public MouseMode getMouseMode() {
-        return mouseMode;
-    }
-
+    BorderPane bp;
     public double mouseX, mouseY;
-    static double tWidth = Config.tWidth;
-    static double tHeight = Config.tHeight;
-    static double tHeightHalf = Config.tHeightHalft;
-    static double tWidthHalf = Config.tWidthHalft;
-    static double worldWidth = Config.worldWidth;
-    static double worldHeight = Config.worldHeight;
     Timeline tl = new Timeline();
-
-    static double increase = Config.increase;
 
 
     public VGame(MGame gameModel, Stage stage) {
         this.gameModel = gameModel;
         this.window = stage;
+
         group = new Group();
-        linienGroup = new Group();
+
 
         parser = new JSONParser();
-        canvas = new Canvas((worldWidth + 1) * tWidth, (worldHeight + 1) * tHeight);
-        canvasFront = new Canvas((worldWidth + 1) * tWidth, (worldHeight + 1) * tHeight);
+        canvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
+        canvasFront = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
         gc = canvas.getGraphicsContext2D();
         gcFront = canvasFront.getGraphicsContext2D();
         canvasFront.toFront();
-        group.getChildren().addAll(canvas, canvasFront);
+        bp = new BorderPane();
+        bp.setLayoutX(20);
+        bp.setLayoutY(20);
 
-        pauseButton = new Button("Pause");
-        group.getChildren().add(pauseButton);
-        pauseButton.setLayoutX(10);
-        pauseButton.setLayoutY(60);
-        pauseButton.setOnAction(event -> tl.pause());
-
-        upButton = new Button("up");
-        group.getChildren().add(upButton);
-        upButton.setLayoutX(10);
-        upButton.setLayoutY(90);
-        upButton.setOnAction(event -> runUp());
-
-        downButton = new Button("down");
-        group.getChildren().add(downButton);
-        downButton.setLayoutX(10);
-        downButton.setLayoutY(120);
-        downButton.setOnAction(event -> runDown());
-
-        tickButton = new Button("Tick");
-        group.getChildren().add(tickButton);
-        tickButton.setLayoutX(10);
-        tickButton.setLayoutY(30);
-
-        defaultRoad = new Button("Straßenbeispiel");
-        group.getChildren().add(defaultRoad);
-        defaultRoad.setLayoutX(510);
-        defaultRoad.setLayoutY(0);
-
-
-        defaultRail = new Button("Schienenbeispiel");
-        group.getChildren().add(defaultRail);
-        defaultRail.setLayoutX(510);
-        defaultRail.setLayoutY(60);
-
-        removeButton = new Button("Löschen");
-        group.getChildren().add(removeButton);
-        removeButton.setLayoutX(640);
-        removeButton.setLayoutY(0);
-
-        linienButton = new Button("Linie erstellen");
-        group.getChildren().add(linienButton);
-        linienButton.setLayoutX(10);
-        linienButton.setLayoutY(150);
-
-        linieInfoLabel = new Label("wähle zuerst die zur Linie gehörigen Haltestellen aus, klicke dann auf weiter um ein Fahrzeug zu bestimmen");
-        linieInfoLabel.setLayoutX(100);
-        linieInfoLabel.setLayoutY(600);
-
-        linienButtonAbbrechen = new Button("Abbrechen");
-        linienButtonAbbrechen.setLayoutX(150);
-        linienButtonAbbrechen.setLayoutY(650);
-
-        linienButtonWeiter = new Button("Weiter");
-        linienButtonWeiter.setLayoutX(250);
-        linienButtonWeiter.setLayoutY(650);
-
-        kartengeneratorButton = new Button("Karten Generator");
-        group.getChildren().add(kartengeneratorButton);
-        kartengeneratorButton.setLayoutX(600);
-        kartengeneratorButton.setLayoutY(650);
-        kartengeneratorButton.setOnAction(e -> {
-            e.consume();
-            drawGeneratedMap();
-        });
-
-
-        Slider slider = new Slider();
-        group.getChildren().add(slider);
-        slider.setMin(0.1);
-        slider.setMax(2);
-        slider.setValue(1);
-        slider.setLayoutX(0);
-        slider.setLayoutY(650);
-        slider.setMajorTickUnit(0.2);
-        slider.setMinorTickCount(0);
-        slider.setSnapToTicks(true);
-
-
-        Label tickText = new Label("Tick:");
-        group.getChildren().add(tickText);
-        tickText.setLayoutX(0);
-        tickText.setLayoutY(670);
-
-
-        Label output = new Label("Ausgabe");
-        group.getChildren().add(output);
-
-
-        output.textProperty().bind(slider.valueProperty().asString());
-
-        output.setLayoutX(25);
-        output.setLayoutY(670);
-
-        slider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-                Duration tickFrequency = Duration.seconds((double) t1);
-            }
-        });
-
-        // Baumenü Beispiel
-        Menu build = new Menu("Buildings");
-        build.setId(String.valueOf(EBuildType.building));
-        Menu airport = new Menu("Airport");
-        airport.setId(String.valueOf(EBuildType.airport));
-        Menu rail = new Menu("Rail");
-        rail.setId(String.valueOf(EBuildType.rail));
-        Menu roads = new Menu("Road");
-        roads.setId(String.valueOf(EBuildType.road));
-        Menu nature = new Menu("Nature");
-        nature.setId(String.valueOf(EBuildType.nature));
-
-        gameModel.getBuildingsList().forEach((key, b) -> {
-            String name = b.getBuildingName();
-            MenuItem m1 = new MenuItem();
-            m1.setText(name);
-            m1.setId(name);
-            Map<String, MCoordinate> directionsMap;
-            switch (b.getBuildMenu()) {
-                case "road":
-                    directionsMap = b.getPoints();
-                    VRoadMenu menuRoadImage = new VRoadMenu(directionsMap);
-                    m1.setGraphic(menuRoadImage);
-                    roads.getItems().add(m1);
-                    break;
-                case "rail":
-                    directionsMap = b.getPoints();
-                    List<Pair<String, String>> l = b.getRails();
-                    VRailMenu menuRailImage = new VRailMenu(directionsMap, l);
-                    m1.setGraphic(menuRailImage);
-                    rail.getItems().add(m1);
-                    break;
-                case "airport":
-                    airport.getItems().add(m1);
-                    break;
-                case "nature":
-                    nature.getItems().add(m1);
-                    break;
-                default:
-                    if (b.getSpecial().equals("factory")) {
-                        build.getItems().add(m1);
-                    }
-            }
-        });
-
-
-        // Größe des Items in Abhängigkeit der Seitenverhältnisse (universell für jedes Image benutzbar)
-        Image house1 = new Image("Images/building.png");
-        double scale = 20 / house1.getWidth();
-        double height = house1.getHeight() * scale;
-        double width = house1.getWidth() * scale;
-
-        menuBar = new MenuBar();
-        menuBar.getMenus().addAll(build, airport, rail, roads, nature);
-        group.getChildren().add(menuBar);
-
-        drawField();
+        group.getChildren().addAll(canvas, canvasFront, bp);
 
         scene = new Scene(group, Config.windowSize + 150, Config.windowSize, Color.rgb(153, 106, 8));
         scene.getStylesheets().add("/planverkehr/layout.css");
@@ -245,8 +75,26 @@ public class VGame {
         window.setScene(scene);
         window.show();
 
-        scene.setOnScroll(event -> {
+        StackPane center = new StackPane();
+        center.setPrefHeight(window.getHeight() - 150);
+        center.setPrefWidth(window.getWidth() - 100);
 
+        createButtons();
+        createMenu();
+
+        bp.setCenter(center);
+        bp.setTop(createEmptyTopBar());
+        bp.setBottom(createBottomBarBeforeStart());
+
+        debugCoord = new Label("empty");
+        group.getChildren().add(debugCoord);
+        debugCoord.setLayoutX(0);
+        debugCoord.setLayoutY(0);
+
+        drawField();
+        drawGeneratedMap();
+
+        scene.setOnScroll(event -> {
             event.consume();
             if (event.getDeltaY() == 0)
                 return;
@@ -290,7 +138,6 @@ public class VGame {
         // Position speichern an der die Maustaste gedrückt wurde
         scene.setOnMousePressed(event ->
         {
-            event.consume();
             mouseX = event.getX();
             mouseY = event.getY();
         });
@@ -323,17 +170,318 @@ public class VGame {
             }
         });
 
-        // Label zur Anzeige der Koordinaten auf denen man sich befindet (funktioniert noch nicht bei Zoom)
-        debugCoord = new Label("empty");
-        debugCoord.setTranslateX(menuBar.getWidth());
-        group.getChildren().
-
-            add(debugCoord);
-
 
     }
 
+    private void createButtons() {
+        removeButton = new Button();
+        Image removeIcon = new Image("Images/delete.png");
+        addImage(removeButton, removeIcon);
+
+        defaultRail = new Button();
+        defaultRoad = new Button();
+
+        upButton = new Button();
+        Image upIcon = new Image("Images/up.png");
+        addImage(upButton, upIcon);
+
+
+        downButton = new Button();
+        Image downIcon = new Image("Images/down.png");
+        addImage(downButton, downIcon);
+
+        tickButton = new Button();
+        linienButton = new Button();
+        buildButton = new Button();
+        backButton = new Button();
+        Image backIcon = new Image("Images/back.png");
+        ImageView imgViewBackIcon = new ImageView(backIcon);
+        imgViewBackIcon.setFitWidth(35);
+        imgViewBackIcon.setFitHeight(35);
+        backButton.setGraphic(imgViewBackIcon);
+        backButton.getStyleClass().add("button-icon");
+
+        saveBuildingButton = new Button();
+        Image saveIcon = new Image("Images/save.png");
+        addImage(saveBuildingButton, saveIcon);
+
+        linienButtonWeiter = new Button();
+        linienButtonAbbrechen = new Button();
+
+        menuBar = new MenuBar();
+
+    }
+
+    private void addImage(Button button, Image icon) {
+        ImageView imgViewRemoveIcon = new ImageView(icon);
+        imgViewRemoveIcon.setFitWidth(35);
+        imgViewRemoveIcon.setFitHeight(35);
+        button.setGraphic(imgViewRemoveIcon);
+        button.getStyleClass().add("button-icon");
+    }
+
+    private Node createLeft() {
+        VBox leftPane = new VBox(5);
+
+
+        Image linienIcon = new Image("Images/linie.png");
+        ImageView imgViewLinienIcon = new ImageView(linienIcon);
+        imgViewLinienIcon.setFitWidth(35);
+        imgViewLinienIcon.setFitHeight(35);
+        linienButton.setGraphic(imgViewLinienIcon);
+        linienButton.getStyleClass().add("button-icon");
+
+
+        Image buildIcon = new Image("Images/build.png");
+        ImageView imgViewBuildIcon = new ImageView(buildIcon);
+        imgViewBuildIcon.setFitWidth(30);
+        imgViewBuildIcon.setFitHeight(30);
+        buildButton.setGraphic(imgViewBuildIcon);
+        buildButton.getStyleClass().add("button-icon");
+
+        leftPane.getChildren().addAll(buildButton, linienButton);
+        leftPane.setAlignment(Pos.CENTER);
+
+        return leftPane;
+    }
+
+    private Node createLeftBuildMode() {
+        VBox leftPane = new VBox(5);
+
+        savesBuilding = new Label();
+        savesBuilding.setText(gameModel.getSavedBuilding());
+        // savesBuilding.textProperty().bind(gameModel.getSavedBuilding());
+
+
+        leftPane.getChildren().addAll(backButton, upButton, downButton, defaultRoad, defaultRail, removeButton, saveBuildingButton, savesBuilding);
+        leftPane.setAlignment(Pos.CENTER);
+        return leftPane;
+    }
+
+    private Node createLeftLinienMode() {
+        VBox leftPane = new VBox(5);
+
+        for (MLinie l : gameModel.linienList) {
+            Button b = new Button(l.getName() + "(" + l.getVehicle().getName() + ")");
+            String webFormat = String.format("#%02x%02x%02x",
+                (int) (255 * l.getColor().getRed()),
+                (int) (255 * l.getColor().getGreen()),
+                (int) (255 * l.getColor().getBlue()));
+            b.getStyleClass().add("linienButton");
+            b.setStyle(" -fx-border-color:" + webFormat);
+            leftPane.getChildren().add(b);
+
+        }
+
+        return leftPane;
+    }
+
+    private Node createBottomLinienMode() {
+        VBox bottomVPane = new VBox(5);
+        HBox bottomPane = new HBox(5);
+
+        linieInfoLabel = new Label("wähle zuerst die zur Linie gehörigen Haltestellen aus, klicke dann auf weiter um ein Fahrzeug zu bestimmen");
+        linienButtonAbbrechen.setText("Abbrechen");
+        linienButtonWeiter.setText("Weiter");
+
+        bottomPane.getChildren().addAll(linienButtonAbbrechen, linienButtonWeiter);
+        bottomVPane.getChildren().addAll(linieInfoLabel, bottomPane);
+
+        return bottomPane;
+    }
+
+
+    private Node createBottomBarBeforeStart() {
+        HBox bottomPane = new HBox(5);
+
+        kartengeneratorButton = new Button();
+        Image mapIcon = new Image("Images/map.png");
+        ImageView imgViewMapIcon = new ImageView(mapIcon);
+        imgViewMapIcon.setFitWidth(35);
+        imgViewMapIcon.setFitHeight(35);
+        kartengeneratorButton.setGraphic(imgViewMapIcon);
+        kartengeneratorButton.getStyleClass().add("button-icon");
+        kartengeneratorButton.setOnAction(e -> {
+            e.consume();
+            drawGeneratedMap();
+        });
+
+        // tickButton = new Button("Weiter");
+
+
+        playButton = new Button();
+        Image playIcon = new Image("Images/play.png");
+        ImageView imgViewPlayIcon = new ImageView(playIcon);
+        imgViewPlayIcon.setFitWidth(35);
+        imgViewPlayIcon.setFitHeight(35);
+        playButton.setGraphic(imgViewPlayIcon);
+        playButton.getStyleClass().add("button-icon");
+        playButton.getStyleClass().add("button-gameControl");
+
+
+        bottomPane.getChildren().addAll(playButton, kartengeneratorButton);
+        bottomPane.setAlignment(Pos.CENTER);
+
+        return bottomPane;
+
+    }
+
+    private Node createBottomBarForGame() {
+        HBox bottomPane = new HBox(5);
+        GridPane grid = new GridPane();
+
+        Image weiterIcon = new Image("Images/weiter.png");
+        ImageView imgViewWeiterIcon = new ImageView(weiterIcon);
+        imgViewWeiterIcon.setFitWidth(30);
+        imgViewWeiterIcon.setFitHeight(30);
+        tickButton.setGraphic(imgViewWeiterIcon);
+        tickButton.getStyleClass().add("button-icon");
+
+        pauseButton = new Button();
+        Image stopIcon = new Image("Images/stop.png");
+        ImageView imgViewStopIcon = new ImageView(stopIcon);
+        imgViewStopIcon.setFitWidth(30);
+        imgViewStopIcon.setFitHeight(30);
+        pauseButton.setGraphic(imgViewStopIcon);
+        pauseButton.getStyleClass().add("button-icon");
+
+        pauseButton.setOnAction(event -> tl.pause());
+
+        Image playIcon = new Image("Images/pause.png");
+        ImageView imgViewPlayIcon = new ImageView(playIcon);
+        imgViewPlayIcon.setFitWidth(35);
+        imgViewPlayIcon.setFitHeight(35);
+        playButton.setGraphic(imgViewPlayIcon);
+        playButton.getStyleClass().add("button-icon");
+        playButton.getStyleClass().add("button-gameControl");
+
+        Slider slider = new Slider();
+        grid.add(slider, 0, 1, 2, 1);
+        slider.setMin(0.1);
+        slider.setMax(2);
+        slider.setValue(1);
+        slider.setMajorTickUnit(0.2);
+        slider.setMinorTickCount(1);
+        slider.setBlockIncrement(0.1);
+        slider.setSnapToTicks(true);
+        slider.setShowTickLabels(true);
+
+        Label tickText = new Label("Velocity: ");
+        grid.add(tickText, 0, 0);
+
+        Label output = new Label();
+        grid.add(output, 1, 0);
+
+        output.textProperty().bind(slider.valueProperty().asString());
+
+        //todo: muss im model geändert werden
+        slider.valueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                Duration tickFrequency = Duration.seconds((double) t1);
+            }
+        });
+
+        bottomPane.getChildren().addAll(grid, playButton, tickButton, pauseButton);
+        bottomPane.setAlignment(Pos.CENTER);
+
+        return bottomPane;
+
+    }
+
+    private Node createEmptyTopBar() {
+
+        HBox emptyTop = new HBox();
+        emptyTop.setPrefHeight(40);
+        emptyTop.setPrefWidth(175);
+        return emptyTop;
+    }
+
+    private void createMenu() {
+        Menu airportMenu = new Menu();
+        Image airportImage = new Image("Images/flughafen.png");
+        ImageView airportImgView = new ImageView(airportImage);
+        airportImgView.setFitHeight(30);
+        airportImgView.setFitWidth(30);
+        airportMenu.setGraphic(airportImgView);
+        airportMenu.setId(String.valueOf(EBuildType.airport));
+
+        Menu railMenu = new Menu();
+        Image railImage = new Image("Images/schienen.png");
+        ImageView railImgView = new ImageView(railImage);
+        railImgView.setFitHeight(30);
+        railImgView.setFitWidth(30);
+        railMenu.setGraphic(railImgView);
+        railMenu.setId(String.valueOf(EBuildType.rail));
+
+        Menu roadsMenu = new Menu();
+        Image roadsImage = new Image("Images/straße.png");
+        ImageView roadImgView = new ImageView(roadsImage);
+        roadImgView.setFitHeight(30);
+        roadImgView.setFitWidth(30);
+        roadsMenu.setGraphic(roadImgView);
+        roadsMenu.setId(String.valueOf(EBuildType.road));
+        Menu nature = new Menu();
+        Image natureImage = new Image("Images/nature.png");
+        ImageView imgView = new ImageView(natureImage);
+        imgView.setFitHeight(30);
+        imgView.setFitWidth(30);
+        nature.setGraphic(imgView);
+        nature.setId(String.valueOf(EBuildType.nature));
+
+        gameModel.getBuildingsList().forEach((key, b) -> {
+            String name = b.getBuildingName();
+            MenuItem m1 = new MenuItem();
+            m1.setText(name);
+            m1.setId(name);
+            Map<String, MCoordinate> directionsMap;
+            switch (b.getBuildMenu()) {
+                case "road":
+                    directionsMap = b.getPoints();
+                    VRoadMenu menuRoadImage = new VRoadMenu(directionsMap);
+                    m1.setGraphic(menuRoadImage);
+                    roadsMenu.getItems().add(m1);
+                    break;
+                case "rail":
+                    directionsMap = b.getPoints();
+                    List<Pair<String, String>> l = b.getRails();
+                    VRailMenu menuRailImage = new VRailMenu(directionsMap, l);
+                    m1.setGraphic(menuRailImage);
+                    railMenu.getItems().add(m1);
+                    break;
+                case "airport":
+                    airportMenu.getItems().add(m1);
+                    break;
+                case "nature":
+                    nature.getItems().add(m1);
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        menuBar.getMenus().addAll(airportMenu, railMenu, roadsMenu, nature);
+
+    }
+
+    private Node createTopBar() {
+
+        HBox topPane = new HBox();
+        // Baumenü Beispiel
+
+
+        // Label zur Anzeige der Koordinaten auf denen man sich befindet (funktioniert noch nicht bei Zoom)
+
+
+        topPane.getChildren().addAll(menuBar);
+        topPane.setAlignment(Pos.CENTER);
+
+        return topPane;
+    }
+
     private void drawGeneratedMap() {
+        gameModel.clearLists();
+
 
         ebneMap();
 
@@ -343,15 +491,15 @@ public class VGame {
 
                 Graph relevantGraph = gameModel.gameGraph;
 
-                int xId = generateRandomInt(Config.worldHeight-b.getWidth());
-                int yId = generateRandomInt(Config.worldWidth-b.getDepth());
+                int xId = generateRandomInt(Config.worldHeight - b.getWidth());
+                int yId = generateRandomInt(Config.worldWidth - b.getDepth());
                 String randomId = xId + "--" + yId;
-                if(yId==0){
+                if (yId == 0) {
                     randomId = xId + "-" + yId;
                 }
 
                 MTile t = gameModel.getTileById(randomId);
-                ArrayList<MTile> mitbesetzte = gameModel.getTilesToBeGroupedFactorie(b,t);
+                ArrayList<MTile> mitbesetzte = gameModel.getTilesToBeGroupedFactorie(b, t);
 
 //                if(mitbesetzte != null){
 //
@@ -362,10 +510,11 @@ public class VGame {
 //                        }
 //                    }
 //                }
-                if(t.isFree()){
+                if (t.isFree()) {
                     t.setState(EBuildType.factory);
                     t.setBuildingOnTile(b);
-                    b.startProductionAndConsumption();
+                    t.addConnectedBuilding(b);
+                    gameModel.constructedBuildings.add(b);
                 }
 
             }
@@ -377,24 +526,23 @@ public class VGame {
             int erhöhtodervertieft = generateRandomInt(2);
             int wiehoch = generateRandomInt(3);
             //wird erhöht mit Wahrscheinlichkeit von 30%
-            if(wirdhöhenrandom<2){
+            if (wirdhöhenrandom < 2) {
 
-                if(erhöhtodervertieft == 0){
+                if (erhöhtodervertieft == 0) {
 
                     boolean nachbarlevelniedrigeralseins = true;
-                    for(MTile m : gameModel.getNeighbours(tile)){
-                        if(m.getIncline()){
+                    for (MTile m : gameModel.getNeighbours(tile)) {
+                        if (m.getIncline()) {
                             nachbarlevelniedrigeralseins = false;
                         }
                     }
-                    if(nachbarlevelniedrigeralseins){
-                        for(int i = 0; i<=wiehoch; i++){
+                    if (nachbarlevelniedrigeralseins) {
+                        for (int i = 0; i <= wiehoch; i++) {
                             setHigh(tile, true);
                         }
                     }
 
-                }
-                else {
+                } else {
                     if (wirdhöhenrandom < 1) {
                         boolean nachbarlevelniedrigeralseins = true;
                         for (MTile m : gameModel.getNeighbours(tile)) {
@@ -421,21 +569,25 @@ public class VGame {
         return random.nextInt(i);
     }
 
+    public void updateSavedBuilding() {
+        savesBuilding.setText(gameModel.getSavedBuilding());
+    }
+
     private void ebneMap() {
 
         clearField();
         gameModel.getTileArray().forEach((tile) -> {
             tile.reset();
-            for(MCoordinate m: tile.getPunkteNeu()){
+            for (MCoordinate m : tile.getPunkteNeu()) {
                 m.setZ(0);
                 tile.createCreateHoehenArray();
             }
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);
-            if (tile.getState()==EBuildType.water){
+            if (tile.getState() == EBuildType.water) {
                 tile.setState(EBuildType.free);
             }
-            });
+        });
         drawField();
 
     }
@@ -459,32 +611,31 @@ public class VGame {
 
         boolean nachbaristwasser = true;
 
-        if(t.getLevel()==0 && factor<0){
-            for(MTile nachbart: gameModel.getNeighbours(t)){
-                for(int höhe : nachbart.höhen){
-                    if(höhe>0){
+        if (t.getLevel() == 0 && factor < 0) {
+            for (MTile nachbart : gameModel.getNeighbours(t)) {
+                for (int höhe : nachbart.höhen) {
+                    if (höhe > 0) {
                         nachbaristwasser = false;
+                        break;
                     }
                 }
             }
-        }
-
-        if(t.getLevel()==0&&factor>0){
-            for(MTile nachbart: gameModel.getNeighbours(t)){
-                for(int höhe : nachbart.höhen){
-                    if(höhe<0){
+        } else if (t.getLevel() == 0 && factor > 0) {
+            for (MTile nachbart : gameModel.getNeighbours(t)) {
+                for (int höhe : nachbart.höhen) {
+                    if (höhe < 0) {
                         nachbaristwasser = false;
+                        break;
                     }
                 }
             }
-        }
-
-        if(t.getLevel()==1&&factor>0){
-            for(MTile nachbart: gameModel.getNeighbours(t)){
-                for(MTile nachbar2 : gameModel.getNeighbours(nachbart)){
-                    for(int höhe : nachbar2.höhen){
-                        if(höhe<0){
+        } else if (t.getLevel() == 1 && factor > 0) {
+            for (MTile nachbart : gameModel.getNeighbours(t)) {
+                for (MTile nachbar2 : gameModel.getNeighbours(nachbart)) {
+                    for (int höhe : nachbar2.höhen) {
+                        if (höhe < 0) {
                             nachbaristwasser = false;
+                            break;
                         }
                     }
                 }
@@ -493,11 +644,11 @@ public class VGame {
 
 
         //bei factor 1 auch level <0
-        if (!t.getIncline()&&((factor>0 && t.getLevel()<2)||factor<0 && t.getLevel()>=0)&&nachbaristwasser) {
+        if (!t.getIncline() && ((factor > 0 && t.getLevel() < 2) || factor < 0 && t.getLevel() >= 0) && nachbaristwasser) {
 
-            HashMap<MTile, ArrayList> erhöheAmEnde = new HashMap<>();
-            ArrayList<MTile> bereitserhöht = new ArrayList();
-            LinkedList<MTile> openList = new LinkedList();
+            HashMap<MTile, ArrayList<MCoordinate>> erhöheAmEnde = new HashMap<>();
+            ArrayList<MTile> bereitserhöht = new ArrayList<>();
+            LinkedList<MTile> openList = new LinkedList<>();
             openList.add(t);
 
             while (!openList.isEmpty()) {
@@ -513,7 +664,7 @@ public class VGame {
 
                 ArrayList<MTile> nachbarnsortiert = gameModel.getNeighbours(currentMittelPunkt);
 
-                Collections.sort(nachbarnsortiert, Comparator.comparingInt(nachbar -> nachbar.intersection(currentMittelPunkt).size()));
+                nachbarnsortiert.sort(Comparator.comparingInt(nachbar -> nachbar.intersection(currentMittelPunkt).size()));
                 Collections.reverse(nachbarnsortiert);
 
                 for (MTile currentNachbar : nachbarnsortiert) {
@@ -521,56 +672,15 @@ public class VGame {
                     if (!bereitserhöht.contains(currentNachbar)) {
 
                         switch (currentMittelPunkt.höhendif().stream().mapToInt(Integer::intValue).sum()) {
-                            case 2: {
+                            case 2 -> {
                                 if (currentNachbar.intersection(currentMittelPunkt).size() == 2
                                 ) {
-                                    bereitserhöht.add(currentNachbar);
-                                    ArrayList<MCoordinate> same = currentNachbar.intersection(currentMittelPunkt);
-                                    ArrayList<MCoordinate> other = entferne(currentNachbar.getPunkte(), currentNachbar.intersection(currentMittelPunkt));
-                                    for (MCoordinate o : other) {
-                                        ArrayList<MCoordinate> zuerhöhende = new ArrayList<>();
-                                        if ((factor > 0 && currentNachbar.getMeZ(o) < currentNachbar.getMeZ(same.get(0))) ||
-                                            (factor < 0 && currentNachbar.getMeZ(o) > currentNachbar.getMeZ(same.get(0)))) {
-                                            openList.add(currentNachbar);
-                                            zuerhöhende.add(o);
-                                        }
-                                        erhöheAmEnde.put(currentNachbar, same);
-                                        if (!zuerhöhende.isEmpty()) {
-                                            ArrayList<MCoordinate> merge = erhöheAmEnde.get(currentNachbar);
-                                            for (MCoordinate erhöhe : zuerhöhende) {
-                                                if (!merge.contains(erhöhe)) {
-                                                    merge.add(erhöhe);
-                                                }
-                                            }
-                                            erhöheAmEnde.put(currentNachbar, merge);
-                                        }
-                                    }
+                                    addTilesToErhöhenAmEndeArray(factor, erhöheAmEnde, bereitserhöht, openList, currentMittelPunkt, currentNachbar);
                                 }
-                                break;
                             }
-                            case 0, 1, 3: {
-                                bereitserhöht.add(currentNachbar);
-                                ArrayList<MCoordinate> same = currentNachbar.intersection(currentMittelPunkt);
-                                ArrayList<MCoordinate> other = entferne(currentNachbar.getPunkte(), currentNachbar.intersection(currentMittelPunkt));
-                                for (MCoordinate o : other) {
-                                    ArrayList<MCoordinate> zuerhöhende = new ArrayList<>();
-                                    if ((factor > 0 && currentNachbar.getMeZ(o) < currentNachbar.getMeZ(same.get(0))) ||
-                                        (factor < 0 && currentNachbar.getMeZ(o) > currentNachbar.getMeZ(same.get(0)))) {
-                                        openList.add(currentNachbar);
-                                        zuerhöhende.add(o);
-                                    }
-                                    erhöheAmEnde.put(currentNachbar, same);
-                                    if (!zuerhöhende.isEmpty()) {
-                                        ArrayList<MCoordinate> merge = erhöheAmEnde.get(currentNachbar);
-                                        for (MCoordinate erhöhe : zuerhöhende) {
-                                            if (!merge.contains(erhöhe)) {
-                                                merge.add(erhöhe);
-                                            }
-                                        }
-                                        erhöheAmEnde.put(currentNachbar, merge);
-                                    }
-                                }
-                                break;
+                            case 0, 1, 3 -> {
+                                addTilesToErhöhenAmEndeArray(factor, erhöheAmEnde, bereitserhöht, openList, currentMittelPunkt, currentNachbar);
+
                             }
                         }
                     }
@@ -600,6 +710,30 @@ public class VGame {
 
         // wenn Feld nicht eben/erhöhbar, gebe aus:
         else System.out.println("Feld ist zu schief");
+    }
+
+    private void addTilesToErhöhenAmEndeArray(int factor, HashMap<MTile, ArrayList<MCoordinate>> erhöheAmEnde, ArrayList<MTile> bereitserhöht, LinkedList<MTile> openList, MTile currentMittelPunkt, MTile currentNachbar) {
+        bereitserhöht.add(currentNachbar);
+        ArrayList<MCoordinate> same = currentNachbar.intersection(currentMittelPunkt);
+        ArrayList<MCoordinate> other = entferne(currentNachbar.getPunkte(), currentNachbar.intersection(currentMittelPunkt));
+        for (MCoordinate o : other) {
+            ArrayList<MCoordinate> zuerhöhende = new ArrayList<>();
+            if ((factor > 0 && currentNachbar.getMeZ(o) < currentNachbar.getMeZ(same.get(0))) ||
+                (factor < 0 && currentNachbar.getMeZ(o) > currentNachbar.getMeZ(same.get(0)))) {
+                openList.add(currentNachbar);
+                zuerhöhende.add(o);
+            }
+            erhöheAmEnde.put(currentNachbar, same);
+            if (!zuerhöhende.isEmpty()) {
+                ArrayList<MCoordinate> merge = erhöheAmEnde.get(currentNachbar);
+                for (MCoordinate erhöhe : zuerhöhende) {
+                    if (!merge.contains(erhöhe)) {
+                        merge.add(erhöhe);
+                    }
+                }
+                erhöheAmEnde.put(currentNachbar, merge);
+            }
+        }
     }
 
 
@@ -650,22 +784,18 @@ public class VGame {
         });
 
         if (gameModel.isCreateLine()) {
-            gameModel.activeLinie.getListOfHaltestellenKnotenpunkten().forEach(wp -> {
-                new VActiveLinie(wp, gcFront, true, gameModel.activeLinie.getColor());
-            });
+            gameModel.activeLinie.getListOfHaltestellenKnotenpunkten().forEach(wp -> new VActiveLinie(wp, gcFront, true, gameModel.activeLinie.getColor()));
 
             int i = 0;
 
-            for(MLinie l : gameModel.linienList){
+            for (MLinie l : gameModel.linienList) {
                 new VLinie(gcFront, group, l, i);
-                    i++;
+                i++;
             }
 
         }
 
-        gameModel.visibleVehiclesArrayList.forEach((vehicle) -> {
-            new VVehicle(vehicle, gcFront);
-        });
+        gameModel.visibleVehiclesArrayList.forEach((vehicle) -> new VVehicle(vehicle, gcFront));
     }
 
     public void clearField() {
@@ -674,25 +804,10 @@ public class VGame {
         gcFront.clearRect(0, 0, canvasFront.getWidth(), canvasFront.getHeight());
     }
 
-    // Kartesische Koordinaten werden zu isometrischen Koordinaten umgerechnet
-    public static double[] toIso(double x, double y) {
-
-        double i = (x - y) * tWidthHalf;
-        double j = (x + y) * tHeightHalf;
-
-        i += Config.XOffset;
-        j += Config.YOffset;
-
-        return new double[]{i, j};
-    }
-
     public MenuBar getMenuBar() {
         return menuBar;
     }
 
-    public GraphicsContext getGc() {
-        return gc;
-    }
 
     public Scene getScene() {
         return scene;
@@ -712,6 +827,10 @@ public class VGame {
         return linienButton;
     }
 
+    public Button getSaveBuildingButton() {
+        return saveBuildingButton;
+    }
+
     public Button getTickButton() {
         return tickButton;
     }
@@ -720,14 +839,6 @@ public class VGame {
         return tl;
     }
 
-
-    public void runUp() {
-        setMouseMode(MouseMode.MOVE_UP);
-    }
-
-    public void runDown() {
-        setMouseMode(MouseMode.MOVE_DOWN);
-    }
 
     private static final Duration TICK_FREQUENCY = Duration.seconds(1);
 
@@ -744,30 +855,12 @@ public class VGame {
     public void toggleLinienInfoLabel(boolean shouldShow) {
         if (shouldShow) {
 
-            int i = 0;
-            for(MLinie l : gameModel.linienList){
-                Button b = new Button(l.getName() + "(" + l.getVehicle().getName() + ")");
-                String webFormat = String.format("#%02x%02x%02x",
-                    (int) (255 * l.getColor().getRed()),
-                    (int) (255 * l.getColor().getGreen()),
-                    (int) (255 * l.getColor().getBlue()));
-                b.getStyleClass().add("linienButton");
-                b.setStyle(" -fx-border-color:" + webFormat);
-                linienGroup.getChildren().add(b);
-                b.setLayoutX(10);
-                b.setLayoutY( 30 + (60 * i));
-                b.setOnAction(event -> {
-                    gameModel.activeLinie = l;
-                });
+            bp.setLeft(createLeftLinienMode());
+            bp.setBottom(createBottomLinienMode());
 
-                i++;
-            }
-
-            group.getChildren().addAll(linieInfoLabel, linienButtonAbbrechen, linienButtonWeiter, linienGroup);
-            group.getChildren().removeAll(linienButton, tickButton, defaultRoad, removeButton, defaultRail, kartengeneratorButton, pauseButton, upButton, downButton, menuBar );
         } else {
-            group.getChildren().removeAll(linieInfoLabel, linienButtonAbbrechen, linienButtonWeiter, linienGroup);
-            group.getChildren().addAll(linienButton, tickButton, defaultRoad, removeButton, defaultRail, kartengeneratorButton, pauseButton, upButton, downButton, menuBar );
+            bp.setLeft(createLeft());
+            bp.setBottom(createBottomBarForGame());
         }
     }
 
@@ -791,10 +884,14 @@ public class VGame {
         return linienButtonWeiter;
     }
 
+    public Button getPlayButton() {
+        return playButton;
+    }
+
     public void showProductions() {
         if (gameModel.getSelectedTile() != null && gameModel.getSelectedTile().getState().equals(EBuildType.factory)) {
             MTile mTile = gameModel.getSelectedTile();
-            Buildings buildings = new Buildings(mTile.getBuildingOnTile());
+            Buildings buildings = new Buildings(mTile.getConnectedBuilding());
             VBox box = new VBox();
             group.getChildren().add(box);
             box.setLayoutX(600);
@@ -802,7 +899,7 @@ public class VGame {
             box.setAlignment(Pos.BASELINE_CENTER);
             box.setStyle("-fx-background-color : lightgreen;");
 
-            if (mTile.getBuildingOnTile() != null && mTile.getState().equals(EBuildType.factory)) {
+            if (mTile.getConnectedBuilding() != null && mTile.getState().equals(EBuildType.factory)) {
                 Label factory = new Label("Factory: " + buildings.getBuildingName());
                 box.getChildren().add(factory);
                 for (int i = 0; i < buildings.getProductions().size(); i++) {
@@ -843,5 +940,69 @@ public class VGame {
         }
     }
 
+    public Button getBuildButton() {
+        return buildButton;
+    }
+
+    public void togglePlayPause() {
+        Image playIcon;
+        if (gameModel.gamePaused) {
+            playIcon = new Image("Images/play.png");
+        } else {
+            playIcon = new Image("Images/pause.png");
+        }
+        ImageView imgViewPlayIcon = new ImageView(playIcon);
+        imgViewPlayIcon.setFitWidth(35);
+        imgViewPlayIcon.setFitHeight(35);
+        playButton.setGraphic(imgViewPlayIcon);
+
+    }
+
+    public void startGame() {
+        bp.setBottom(createBottomBarForGame());
+        bp.setLeft(createLeft());
+    }
+
+    public Button getBackButton() {
+        return backButton;
+    }
+
+    public Button getUpButton() {
+        return upButton;
+    }
+
+    public Button getDownButton() {
+        return downButton;
+    }
+
+    public void toggleBuildingMode() {
+        if (gameModel.isBuilding) {
+            bp.setTop(createTopBar());
+            bp.setLeft(createLeftBuildMode());
+        } else {
+            bp.setTop(null);
+            bp.setLeft(createLeft());
+        }
+    }
+
+    public void showNormalView() {
+        bp.setTop(createEmptyTopBar());
+        bp.setLeft(createLeft());
+        bp.setBottom(createBottomBarForGame());
+    }
+
+    public void toggleAutoSave() {
+        Image saveIcon;
+        if (gameModel.autoSaveMode) {
+            saveIcon = new Image("Images/save.png");
+        } else {
+            saveIcon = new Image("Images/notSaving.png");
+        }
+        ImageView imgViewPlayIcon = new ImageView(saveIcon);
+        imgViewPlayIcon.setFitWidth(35);
+        imgViewPlayIcon.setFitHeight(35);
+        saveBuildingButton.setGraphic(imgViewPlayIcon);
+        updateSavedBuilding();
+    }
 }
 
