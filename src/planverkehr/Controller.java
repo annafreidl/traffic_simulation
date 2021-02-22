@@ -432,6 +432,7 @@ public class Controller {
 
 
     EventHandler<MouseEvent> onLinienButtonClick = actionEvent -> {
+
         actionEvent.consume();
         gameModel.setCreateLine(true);
         gameView.toggleLinienInfoLabel(true);
