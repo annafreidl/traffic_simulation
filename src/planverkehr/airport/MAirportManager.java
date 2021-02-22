@@ -26,6 +26,7 @@ public class MAirportManager {
     public boolean createOrConnectToAirport(Buildings newBuilding) {
         List<Buildings> neighbourBuildings = model.getNeighbourBuildings(newBuilding);
         List<MAirport> neighbourAirports = getNeighbourAirports(neighbourBuildings);
+        System.out.println("NEIGHBOUR AIRPORTS:    " + neighbourAirports);
         String buildingName = newBuilding.getBuildingName();
 
         //1. Fall: es gibt noch keinen Airport, also machen wir einen neuen
@@ -54,8 +55,9 @@ public class MAirportManager {
         List<MAirport> neighbourAirports = new ArrayList<>();
 
         for (Buildings currentBuilding : neighbourBuildings) {
-            if (currentBuilding.getEbuildType().equals(EBuildType.airport) && currentBuilding.getAssociatedAirport() != null) {
+            if (currentBuilding.getAssociatedAirport() != null) {
                 MAirport currentAirport = currentBuilding.getAssociatedAirport();
+                //System.out.println(currentBuilding.getEbuildType()); //TODO interessant to know: Ebuild wird auf unknown gesetzt nachdem man das Gebäude baut lol
                 if (!neighbourAirports.contains(currentAirport)) neighbourAirports.add(currentAirport);
             }
         }

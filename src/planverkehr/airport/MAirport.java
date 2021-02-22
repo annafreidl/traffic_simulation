@@ -1,15 +1,7 @@
 package planverkehr.airport;
 
-
 import planverkehr.*;
-import planverkehr.graph.MTargetpointList;
-import planverkehr.transportation.MTransportConnection;
-
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-
-
 
 //Model des Flughafens
 public class MAirport {
@@ -24,20 +16,15 @@ public class MAirport {
     TargetpointList otherTargetTypeList;
 
     Buildings tower, bigTower, runway, terminal, taxiway;
+    int maxPlanes; //wieviele kann der Flughafen spawnen
     boolean fullyBuilt;
-
-    //TODO: wir brauchen Listen der Gebäude, da sich der Airport aus diesen zusammensetzt und wir alle Gebäude vom Typ Airport mergen müssen
-    //RN THE GOAL IS: wenn wir ein Gebäude setzen vom Typ airport, sollen die tiles drumherum automatisch geprüpft werden, und wenn
-    //sich dort ein Gebäude vom Airport befindet, mit dem es sich verknüpfen kann, soll dies zusammen später als ein Airport abgespeichert werden
-
-    //TODO: diese Airports werden dann im AirportManager gespeichert und dort verwaltet
 
     /** Diese Klasse erstellt vollständige/funktionale Airports aus den einzelenen Gebäuden des Airports */
 
     public MAirport(MGame gameModel) {
 
         ArrayList nodesList = new ArrayList<Knotenpunkt>();
-        createSpecialTargetTypeLists();
+        //createSpecialTargetTypeLists();
         createWaypointList();
 
         tower = null;
@@ -45,10 +32,11 @@ public class MAirport {
         terminal = null;
         runway = null;
         taxiway = null;
+        maxPlanes = 0;
         fullyBuilt = false;
     }
 
-    private void createSpecialTargetTypeLists() {
+/*    private void createSpecialTargetTypeLists() {
         TargetpointList einflugList = new TargetpointList();
         TargetpointList ausflugList = new TargetpointList();
         TargetpointList gateWayList = new TargetpointList();
@@ -64,7 +52,7 @@ public class MAirport {
                 default -> otherTargetTypeList.add(knotenpunkt);
             }
         }
-    }
+    }*/
 
     private void createWaypointList() {
         TargetpointList waypointList = new TargetpointList();
@@ -78,6 +66,13 @@ public class MAirport {
     //jedes Mal wenn wir Gebäude adden, checken wir ob Airport functional ist (bzw. voll ist)
     private void isFunctional(){
         fullyBuilt = (tower != null || bigTower != null) && terminal != null && runway != null && taxiway != null; //is true wenn all das zutrifft
+    }
+
+    public void updateMaxPlanes(){
+        if(fullyBuilt) {
+            if (bigTower == null) maxPlanes = tower.getMaxPlanes();
+            else maxPlanes = bigTower.getMaxPlanes();
+        }
     }
 
     public TargetpointList getWaypointList() {
@@ -108,11 +103,13 @@ public class MAirport {
         this.tower = tower;
         //jedes Mal wenn wir Gebäude adden, checken wir ob Airport functional ist bzw. voll ist
         isFunctional();
+        updateMaxPlanes();
     }
 
     public void setBigTower(Buildings bigTower) {
         this.bigTower = bigTower;
         isFunctional();
+        updateMaxPlanes();
     }
 
     public void setTerminal(Buildings terminal) {
@@ -133,11 +130,13 @@ public class MAirport {
     public void removeTower(){
         tower = null;
         isFunctional();
+        updateMaxPlanes();
     }
 
     public void removeBigTower(){
         bigTower = null;
         isFunctional();
+        updateMaxPlanes();
     }
 
     public void removeTerminal(){

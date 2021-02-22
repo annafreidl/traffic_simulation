@@ -250,6 +250,7 @@ public class MGame {
             System.out.println("free? " + tile.isFree());
             System.out.println("state: " + tile.state);
             System.out.println("BuildingOnTile: " + tile.getBuildingOnTile());
+            if(tile.getBuildingOnTile()!= null)System.out.println("associated Airport: " + tile.getBuildingOnTile().getAssociatedAirport());
             System.out.println("KnotenpunkteArray: " + tile.knotenpunkteArray);
             System.out.println("DZ "+ tile.TileDz());
             System.out.println("is schief?: " + tile.getIncline());
@@ -732,7 +733,6 @@ public class MGame {
             for (int x = shiftFactor * (-1); x <= shiftFactor; x++) {
                 for (int y = shiftFactor * (-1); y <= shiftFactor; y++) {
                     if (x + y != 0 && Math.abs(x + y) < 2) { //wollen nur zB 4 Felder
-                        System.out.println("HI im in forschleife rn");
                         int newX = xCoord + x;
                         int newY = yCoord + y;
                         String tileID = newX + "--" + newY;
@@ -976,10 +976,23 @@ public class MGame {
                         System.out.println("Achtung - falsche Targetpointlist ");
                     }
                 }
-                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist);
+                if(hasSpaceForBuilding && buildingToBeBuiltType.equals(EBuildType.airport)) { //TODO hasSpaceForBuilding muss Randteile berücksichtigen/abchecken
+                    Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
+                    newBuilding.setStartTile(feld);
+                    if(mAirportManager.createOrConnectToAirport(newBuilding)) {
 
-            } if (feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.airport) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
+                        for (int j = 0; j < relevantTiles.size(); j++) {
+                            MTile relevantTile = relevantTiles.get(j);
+                            relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
+                            relevantTile.addConnectedBuilding(newBuilding);
+                        }
+                        newBuilding.startProductionAndConsumption();
+                        createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
+                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, true, relevantTiles, relevantGraph, false, relevantTargetpointlist);
+                    } else mAirportManager.showAirportAlert();
+                } else new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist);
 
+            } else if (feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
                if(hasSpaceForBuilding) {
                    feld.setState(buildingToBeBuiltType);
 
@@ -994,13 +1007,6 @@ public class MGame {
                    newBuilding.startProductionAndConsumption();
                    createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
 
-                   //TODO: muss auf MAiport gecoded werden, nicht im Controller bleiben
-                   if (buildingToBeBuiltType.equals(EBuildType.airport)) {
-                       mAirportManager.createOrConnectToAirport(newBuilding);
-
-                       // PlaneGenerator planes = new PlaneGenerator();
-                       // planes.spawnAirplanes();
-                   }
                }
 
             }
