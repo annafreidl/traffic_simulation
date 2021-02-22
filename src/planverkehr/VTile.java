@@ -9,7 +9,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import planverkehr.transportation.VRail;
 import planverkehr.transportation.VRoad;
-
 import java.util.Collections;
 
 
@@ -644,14 +643,12 @@ public class VTile {
             Buildings b = tileModel.getConnectedBuilding();
 
             switch (tileModel.getState()) {
+//todo: Pfad darf keine leerzeichen haben
                 case factory -> {
+
                     image = new Image("Images/" + b.getBuildingName() + ".png");
 
-                    imageScale = widthHalf / image.getWidth();
-                    imageHeight = image.getHeight() * imageScale;
-                    imageWidth = image.getWidth() * imageScale;
-
-                    gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
+                    drawInCenter(image, gc);
                 }
 
                 case road -> {
@@ -667,24 +664,64 @@ public class VTile {
                     // System.out.println(buildingName);
                     image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
-                    imageScale = widthHalf / image.getWidth();
-                    imageHeight = image.getHeight() * imageScale;
-                    imageWidth = image.getWidth() * imageScale;
-
-                    gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
+                    drawInCenter(image, gc);
                 }
 
                 case nature -> {
+
+
                     image = new Image("Images/" + b.getBuildingName() + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
-                    imageScale = widthHalf / image.getWidth();
-                    imageHeight = image.getHeight() * imageScale;
-                    imageWidth = image.getWidth() * imageScale;
+                    drawInCenter(image, gc);
 
-                    gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
                 }
-            }
 
+
+           /* default -> {
+                gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), imageWidth, imageHeight);
+            }*/
+
+
+       /* switch (tileModel.getState()) {
+            case building -> {
+                Image image = new Image("Images/building.png");
+
+                double scale = widthHalf / image.getWidth();
+                double height = image.getHeight() * scale;
+                double width = image.getWidth() * scale;
+                gc.drawImage(image, (xIso + heightHalf), (yIso - widthHalf), width, height);
+
+            }
+            case road -> {
+                new VRoad(tileModel.getConnectedBuilding(), gc, tileModel.getIsoWest());
+            }
+            }*/
+
+            }
         }
     }
-}
+
+        public void drawInCenter (Image image, GraphicsContext gc){
+
+            imageScale = Config.tWidthHalft / image.getWidth();
+            imageHeight = image.getHeight() * imageScale;
+            imageWidth = image.getWidth() * imageScale;
+
+        double schraege;
+        MCoordinate westRelativ = tileModel.punkteNeu.get(3);
+        MCoordinate westVisible = tileModel.getVisibleCoordinates();
+        boolean gehtHoch = tileModel.punkteNeu.get(3).getZ() != tileModel.getLevel();
+        MCoordinate westAbsolut = new MCoordinate(westVisible.getX() + westRelativ.getX(), westVisible.getY() + westRelativ.getY(), westRelativ.getZ());
+        double westAbsolutX = westAbsolut.getX();
+        double westAbsolutY = westAbsolut.getY();
+        double westAbsolutZ = westAbsolut.getZ();
+        if (tileModel.isSchraeg()) {
+            schraege = gehtHoch ? westAbsolutZ - 0.5 : westAbsolutZ + 0.5;
+        } else {
+            schraege = westAbsolutZ;
+        }
+        MCoordinate centerCoord = new MCoordinate(0.5 + westAbsolutX, westAbsolutY - 0.5, schraege).toCanvasCoordWithoutOffset();
+
+            gc.drawImage(image, centerCoord.getX() - imageWidth / 2, centerCoord.getY() - centerCoord.getZ() - imageHeight + Config.tHeightHalft / 2, imageWidth, imageHeight);
+        }
+    }

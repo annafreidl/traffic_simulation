@@ -97,6 +97,13 @@ public class MTile {
         return höhendiff;
     }
 
+    public Integer TileDz() {
+
+        int dz = Collections.max(höhendif())-Collections.min
+            (höhendif());
+        return dz;
+    }
+
     private void createCornerPoints() {
         west = new MCoordinate(0, 0, 0);
         north = new MCoordinate(0, 1, 0);

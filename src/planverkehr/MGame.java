@@ -152,9 +152,96 @@ public class MGame {
         return gameConfig.getBuildingsList();
     }
 
+    private boolean isInTile(double px_x, double px_y, MTile tile) {
+        double w_factor = Config.tWidth / 2.0;
+        double h_factor = Config.tHeight / 2.0;
+
+        try {
+
+            double p_W_x = tile.getWest().toCanvasCoord().getX();
+            double p_W_y = tile.getWest().toCanvasCoord().getY();
+
+            double p_N_x = tile.getNorth().toCanvasCoord().getX();
+            double p_N_y = tile.getNorth().toCanvasCoord().getY();
+
+            double p_E_x = tile.getEast().toCanvasCoord().getX();
+            double p_E_y = tile.getEast().toCanvasCoord().getY();
+
+            double p_S_x = tile.getSouth().toCanvasCoord().getX();
+            double p_S_y = tile.getSouth().toCanvasCoord().getX();
+
+            double low_y = Math.min(p_N_y, Math.min(p_W_y, p_E_y));
+            double high_y = Math.max(p_S_y, Math.max(p_W_y, p_E_y));
+
+            // Check borders
+            if ((px_x > p_W_x && px_x < p_E_x) &&
+                (px_y > low_y && px_y < high_y)) {
+
+                double rel_x = px_x - p_W_x;
+                double rel_y = px_y - p_N_y;
+                // between x points and y points
+                if (rel_x > w_factor) {
+                    // right half of diamond
+                    rel_x = rel_x - w_factor;
+                    //if (rel_y > h_factor) {
+                    if (rel_y > (p_E_y - p_N_y)) {
+                        // lower half of diamond
+                        double steigung = (p_E_y - p_S_y) / (p_E_x - p_S_x);
+                        double y_bei_rel_x = p_S_y + rel_x * steigung;
+                        boolean hit = y_bei_rel_x > px_y;
+                        if (hit) {
+                            System.out.println(rel_y);
+                            System.out.println("Click (right lower) tile: (" + String.valueOf(tile.getId())+ " )");
+                        }
+                        return hit;
+
+                    } else {
+                        // upper half of diamond
+                        double steigung = (p_E_y - p_N_y) / (p_E_x - p_N_x);
+                        double y_bei_rel_x = p_N_y + rel_x * steigung;
+                        boolean hit = y_bei_rel_x < px_y;
+                        if (hit) {
+                            System.out.println("Click (right upper) tile: ("+ String.valueOf(tile.getId())+ " )");
+                        }
+                        return hit;
+                    }
+                } else {
+                    // left half of diamond#
+                    //if (rel_y > h_factor) {
+                    if (rel_y > (p_W_y - p_N_y)) {
+                        // lower half of diamond
+                        double steigung = (p_S_y - p_W_y) / (p_S_x - p_W_x);
+                        double y_bei_rel_x = p_W_y + rel_x * steigung;
+                        boolean hit = y_bei_rel_x > px_y;
+                        if (hit) {
+                            //System.out.println("Click (left lower) tile: (" + String.valueOf(tile_x) + ", " + String.valueOf(tile_y) + ")");
+                        }
+                        return hit;
+                    } else {
+                        // upper half of diamond
+                        double steigung = (p_N_y - p_W_y) / (p_N_x - p_W_x);
+                        double y_bei_rel_x = p_W_y + rel_x * steigung;
+                        boolean hit = y_bei_rel_x < px_y;
+                        if (hit) {
+                            //System.out.println("Click (left upper) tile: (" + String.valueOf(tile_x) + ", " + String.valueOf(tile_y) + ")");
+                        }
+                        return hit;
+                    }
+                }
+            }
+            return false;
+
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+    }
+
     public boolean selectTileByCoordinates(double x, double y) {
 
+        //MTile tileOptional = getTileByPixelCoordinate(x,y);
+
         String searchId = getFeldIdByCanvasCoords(x, y);
+        //String searchId = tileOptional.getId();
         Optional<MTile> tileOpt = findOptionalTileById(searchId);
         boolean[] selectedTile = new boolean[1];
         selectedTile[0] = false;
@@ -164,6 +251,7 @@ public class MGame {
             System.out.println("state: " + tile.state);
             System.out.println("BuildingOnTile: " + tile.getBuildingOnTile());
             System.out.println("KnotenpunkteArray: " + tile.knotenpunkteArray);
+            System.out.println("DZ "+ tile.TileDz());
             System.out.println("is schief?: " + tile.getIncline());
             System.out.println();
 
@@ -200,6 +288,48 @@ public class MGame {
         });
         return selectedTile[0];
     }
+
+    public MTile getTileByPixelCoordinate(double x, double y) {
+        double w_factor = Config.tWidth / 2.0;
+        double h_factor = Config.tHeight / 2.0;
+
+        // Nicht benutzt, aber tiles müssen sich in dem intervall ]x_lower, x_higher[ befinden, um in frage zu kommen
+        int x_point_lower = (int) Math.floor(x / w_factor);
+        int x_point_higher = (int) Math.ceil(y / w_factor);
+
+        // Iterate vorne nach hinten
+        int depth = Config.worldHeight;
+        int width = Config.worldWidth;
+
+        Optional<MTile> tileOpt =null;
+        String searchId = null;
+
+        int tile_x = -1;
+        int tile_y = -1;
+        for (int k = depth + width - 2; k >= 0; k--) {
+            for (int j = 0; j <= k; j++) {
+                int i = k - j;
+                if (i < width && j < depth) {
+                    tile_x = i;
+                    tile_y = (depth - 1 - j);
+                    String idpiep;
+                    if(tile_y==0){
+                        idpiep = tile_x + "-" + tile_y;
+                    }
+                    else idpiep = tile_x + "--" + tile_y;
+                    MTile piep = getTileById(idpiep);
+                    System.out.println(idpiep);
+                    if (isInTile(x, y, piep)) {
+                        System.out.println("Click at tile: (" + String.valueOf(tile_x) + ", " + String.valueOf(tile_y) + ")");
+                        return piep;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
 
     public Buildings getBuildingById(String id) {
         return gameConfig.getBuildingsList().get(id);
@@ -281,9 +411,6 @@ public class MGame {
             }
         }
 
-        if (!hasSpace) {
-            tilesToBeGrouped = null;
-        }
 
         return tilesToBeGrouped;
     }
@@ -554,7 +681,7 @@ public class MGame {
     }
 
     //holen uns hier alle Tiles die zu einem Building gehören
-    public List<MTile> getBuildingTiles(Buildings building) {
+    public List<MTile> getBuildingTiles(Buildings building){
         List<MTile> buildingTiles = new ArrayList<>();
 
         MTile startTile = building.getStartTile();
@@ -591,7 +718,7 @@ public class MGame {
         //getNeighbours Methode, aber die methode nimmt nur ein Tile
         //d.h., wir rufen diese methode inner forschleife auf und prüfen dann für jedes tile von buildingsTiles die nachbarn
 
-        for (int i = 0; i < buildingTiles.size(); i++) {
+        for (int i = 0; i < buildingTiles.size() ; i++) {
             MTile currentTile = buildingTiles.get(i);
             MCoordinate currentCoordinates = currentTile.getIDCoordinates(); //holen uns ID von current tile
             int xCoord = (int) currentCoordinates.getX();

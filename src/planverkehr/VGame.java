@@ -35,7 +35,7 @@ public class VGame {
     MGame gameModel;
     Stage window;
     Group group;
-    Canvas canvas, canvasFront;
+    Canvas canvas, canvasFront, selectionCanvas;
     GraphicsContext gc, gcFront;
     Scene scene;
     JSONParser parser;
@@ -59,6 +59,7 @@ public class VGame {
         parser = new JSONParser();
         canvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
         canvasFront = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
+        selectionCanvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
         gc = canvas.getGraphicsContext2D();
         gcFront = canvasFront.getGraphicsContext2D();
         canvasFront.toFront();
@@ -120,15 +121,17 @@ public class VGame {
             double dy = (event.getSceneY() - (group.getBoundsInParent().getHeight() / 2 + group.getBoundsInParent().getMinY()));
 
             // Neue Skalierung setzen
+            double newTranslateX = canvas.getTranslateX() - fx * dx;
+            double newTranslateY = canvas.getTranslateY() - fy * dy;
             canvas.setScaleX(scaleX);
             canvas.setScaleY(scaleY);
-            canvas.setTranslateX(canvas.getTranslateX() - fx * dx);
-            canvas.setTranslateY(canvas.getTranslateY() - fy * dy);
+            canvas.setTranslateX(newTranslateX);
+            canvas.setTranslateY(newTranslateY);
 
             canvasFront.setScaleX(scaleX);
             canvasFront.setScaleY(scaleY);
-            canvasFront.setTranslateX(canvas.getTranslateX() - fx * dx);
-            canvasFront.setTranslateY(canvas.getTranslateY() - fy * dy);
+            canvasFront.setTranslateX(newTranslateX);
+            canvasFront.setTranslateY(newTranslateY);
 
 
             //event.consume();
@@ -150,11 +153,21 @@ public class VGame {
             double mouseNewY = event.getY();
             double deltaX = mouseNewX - mouseX;
             double deltaY = mouseNewY - mouseY;
-            canvas.setTranslateX(canvas.getTranslateX() + deltaX);
-            canvas.setTranslateY(canvas.getTranslateY() + deltaY);
+            double newTranslateX = canvas.getTranslateX() + deltaX;
+            double newTranslateY = canvas.getTranslateY() + deltaY;
 
-            canvasFront.setTranslateX(canvas.getTranslateX() + deltaX);
-            canvasFront.setTranslateY(canvas.getTranslateY() + deltaY);
+            canvas.setTranslateX(newTranslateX);
+            canvas.setTranslateY(newTranslateY);
+
+
+            canvasFront.setTranslateX(newTranslateX);
+            canvasFront.setTranslateY(newTranslateY);
+//
+//            canvas.setTranslateX(canvas.getTranslateX() + deltaX);
+//            canvas.setTranslateY(canvas.getTranslateY() + deltaY);
+//
+//            canvasFront.setTranslateX(canvas.getTranslateX() + deltaX);
+//            canvasFront.setTranslateY(canvas.getTranslateY() + deltaY);
 
             mouseX = mouseNewX;
             mouseY = mouseNewY;
@@ -479,48 +492,94 @@ public class VGame {
         return topPane;
     }
 
+
     private void drawGeneratedMap() {
         gameModel.clearLists();
 
 
+        //ebne das Spielfeld
         ebneMap();
+
+        //setze die Factories auf das Spielfeld
+
+        LinkedList<Buildings> openList = new LinkedList();
 
         gameModel.getBuildingsList().forEach((key, b) -> {
 
             if (b.getSpecial().equals("factory")) {
 
-                Graph relevantGraph = gameModel.gameGraph;
-
-                int xId = generateRandomInt(Config.worldHeight - b.getWidth());
-                int yId = generateRandomInt(Config.worldWidth - b.getDepth());
-                String randomId = xId + "--" + yId;
-                if (yId == 0) {
-                    randomId = xId + "-" + yId;
-                }
-
-                MTile t = gameModel.getTileById(randomId);
-                ArrayList<MTile> mitbesetzte = gameModel.getTilesToBeGroupedFactorie(b, t);
-
-//                if(mitbesetzte != null){
-//
-//                    for(MTile mitbesetzt: mitbesetzte){
-//                        if(mitbesetzt.isFree()){
-//                            mitbesetzt.setState(EBuildType.factory);
-//                            //mitbesetzt.setBuildingOnTile(b);
-//                        }
-//                    }
-//                }
-                if (t.isFree()) {
-                    t.setState(EBuildType.factory);
-                    t.setBuildingOnTile(b);
-                    t.addConnectedBuilding(b);
-                    gameModel.constructedBuildings.add(b);
-                }
+                openList.add(b);
 
             }
         });
-        //System.out.println("Anzahl Factories: " + countfactories);
 
+        while (!openList.isEmpty()) {
+
+            Buildings b = openList.pollFirst();
+
+            int xId = generateRandomInt(Config.worldWidth - b.getWidth()) + 1;
+            int yId = generateRandomInt(Config.worldHeight - b.getDepth()) + 1;
+            String randomId = xId + "--" + yId;
+            if (yId == 0) {
+                randomId = xId + "-" + yId;
+            }
+
+            MTile t = gameModel.getTileById(randomId);
+
+            ArrayList<MTile> mitbesetzte = gameModel.getTilesToBeGroupedFactorie(b, t);
+
+            boolean allemitbesetztenfrei = true;
+            if (mitbesetzte != null) {
+
+                for (MTile mitbesetzt : mitbesetzte) {
+                    if (!mitbesetzt.isFree()) {
+                        allemitbesetztenfrei = false;
+
+                    }
+
+                    for (MTile nachbar : gameModel.getNeighbours(mitbesetzt)) {
+                        if (!nachbar.isFree()) {
+                            if (nachbar.getBuildingOnTile().getBuildType() == EBuildType.factory) {
+                                allemitbesetztenfrei = false;
+                            }
+                        }
+                    }
+                }
+                if (!t.isFree()) {
+                    allemitbesetztenfrei = false;
+                }
+            }
+
+            boolean nachbarnhabenhäuser = true;
+            for (MTile nachbar : gameModel.getNeighbours(t)) {
+                if (!nachbar.isFree()) {
+                    nachbarnhabenhäuser = false;
+                    if (nachbar.getBuildingOnTile().getBuildType() == EBuildType.factory) {
+                        nachbarnhabenhäuser = false;
+                    }
+                }
+            }
+
+            if (t.isFree() && nachbarnhabenhäuser && allemitbesetztenfrei) {
+                t.setState(EBuildType.factory);
+                t.setBuildingOnTile(b);
+                t.addConnectedBuilding(b);
+                b.startProductionAndConsumption();
+                if (mitbesetzte != null) {
+                    for (MTile mitbesetzt : mitbesetzte) {
+                        mitbesetzt.setState(EBuildType.factory);
+                        mitbesetzt.setBuildingOnTile(b);
+                        mitbesetzt.addConnectedBuilding(b);
+                    }
+                }
+            } else {
+                System.out.println("Building wird nochmal gezeichnet: " + b);
+                openList.add(b);
+            }
+
+        }
+
+        // erhöhe/erniedrige die Tiles mit einer bestimmten Wahrscheinlichkeit
         gameModel.getTileArray().forEach((tile) -> {
             int wirdhöhenrandom = generateRandomInt(40);
             int erhöhtodervertieft = generateRandomInt(2);
@@ -560,6 +619,34 @@ public class VGame {
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);
         });
+
+        gameModel.getBuildingsList().forEach((key, b) -> {
+
+            if (b.getSpecial().equals("nature")) {
+
+                int naturenumber = Math.round(Config.worldWidth*Config.worldHeight/50);
+                for (int i = 0; i<naturenumber; i++){
+
+                Graph relevantGraph = gameModel.gameGraph;
+
+                int xId = generateRandomInt(Config.worldWidth-b.getWidth());
+                int yId = generateRandomInt(Config.worldHeight-b.getDepth());
+                String randomId = xId + "--" + yId;
+                if(yId==0){
+                    randomId = xId + "-" + yId;
+                }
+
+                MTile t = gameModel.getTileById(randomId);
+
+                if(t.isFree()){
+                    t.setState(EBuildType.nature);
+                    t.setBuildingOnTile(b);
+                    t.addConnectedBuilding(b);
+                }
+            }
+
+            }
+        });
         drawField();
 
     }
@@ -584,7 +671,7 @@ public class VGame {
             }
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);
-            if (tile.getState() == EBuildType.water) {
+            if (tile.getState()!=EBuildType.free) {
                 tile.setState(EBuildType.free);
             }
         });
