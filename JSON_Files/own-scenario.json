@@ -1,0 +1,579 @@
+{
+  "commodities": ["wool", "stone", "wood", "sand", "water", "ore", "cloth", "brick", "plank", "mortar", "bell", "gate"
+  ],
+  "buildings" : {
+    "road-ne" : {
+      "buildmenu" : "road",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1]},
+      "roads":[["ne","c"]],
+      "dz" : 1,
+      "combines" : {"road-nw-se-sw":"road-ne-nw-se-sw","road-nw-se":"road-ne-nw-se","road-nw-sw":"road-ne-nw-sw","road-nw":"road-ne-nw","road-se-sw":"road-ne-se-sw","road-se":"road-ne-se","road-sw":"road-ne-sw"}
+    },
+    "road-nw" : {
+      "buildmenu" : "road",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "nw" : [0, 0.5]},
+      "roads":[["nw","c"]],
+      "dz" : 1,
+      "combines" : {"road-ne-se-sw":"road-ne-nw-se-sw","road-ne-se":"road-ne-nw-se","road-ne-sw":"road-ne-nw-sw","road-ne":"road-ne-nw","road-se-sw":"road-nw-se-sw","road-se":"road-nw-se","road-sw":"road-nw-sw"}
+    },
+    "road-se" : {
+      "buildmenu" : "road",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "se" : [1, 0.5]},
+      "roads":[["se","c"]],
+      "dz" : 1,
+      "combines" : {"road-ne-nw-sw":"road-ne-nw-se-sw","road-ne-nw":"road-ne-nw-se","road-ne-sw":"road-ne-se-sw","road-ne":"road-ne-se","road-nw-sw":"road-nw-se-sw","road-nw":"road-nw-se","road-sw":"road-se-sw"}
+    },
+    "road-sw" : {
+      "buildmenu" : "road",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "sw" : [0.5, 0]},
+      "roads":[["sw","c"]],
+      "dz" : 1,
+      "combines" : {"road-ne-nw-se":"road-ne-nw-se-sw","road-ne-nw":"road-ne-nw-sw","road-ne-se":"road-ne-se-sw","road-ne":"road-ne-sw","road-nw-se":"road-nw-se-sw","road-nw":"road-nw-sw","road-se":"road-se-sw"}
+    },
+    "road-ne-nw-se-sw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "nw" : [0, 0.5], "se" : [1, 0.5], "sw" : [0.5, 0]},
+      "roads":[["ne","c"], ["nw","c"], ["se","c"], ["sw","c"]],
+      "dz" : 0
+    },
+    "road-ne-nw-se" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "nw" : [0, 0.5], "se" : [1, 0.5]},
+      "roads":[["ne","c"], ["nw","c"], ["se","c"]],
+      "dz" : 0
+    },
+    "road-ne-nw-sw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "nw" : [0, 0.5], "sw" : [0.5, 0]},
+      "roads":[["ne","c"], ["nw","c"], ["sw","c"]],
+      "dz" : 0
+    },
+    "road-ne-nw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "nw" : [0, 0.5]},
+      "roads":[["ne","c"], ["nw","c"]],
+      "dz" : 1
+    },
+    "road-ne-se-sw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "se" : [1, 0.5], "sw" : [0.5, 0]},
+      "roads":[["ne","c"], ["se","c"], ["sw","c"]],
+      "dz" : 0
+    },
+    "road-ne-se" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "se" : [1, 0.5]},
+      "roads":[["ne","c"], ["se","c"]],
+      "dz" : 1
+    },
+    "road-ne-sw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "sw" : [0.5, 0]},
+      "roads":[["ne","c"], ["sw","c"]],
+      "dz" : 1
+    },
+    "road-nw-se-sw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "nw" : [0, 0.5], "se" : [1, 0.5], "sw" : [0.5, 0]},
+      "roads":[["nw","c"], ["se","c"], ["sw","c"]],
+      "dz" : 0
+    },
+    "road-nw-se" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "nw" : [0, 0.5], "se" : [1, 0.5]},
+      "roads":[["nw","c"], ["se","c"]],
+      "dz" : 1
+    },
+    "road-nw-sw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "nw" : [0, 0.5], "sw" : [0.5, 0]},
+      "roads":[["nw","c"], ["sw","c"]],
+      "dz" : 1
+    },
+    "road-se-sw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "se" : [1, 0.5], "sw" : [0.5, 0]},
+      "roads":[["se","c"], ["sw","c"]],
+      "dz" : 1
+    },
+    "railstation-nw-se" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"nw" : [0, 0.5], "se" : [1, 0.5]},
+      "rails":[["nw","se"]],
+      "special" : "railstation",
+      "dz" : 0
+    },
+    "railstation-ne-sw" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"ne" : [0.5, 1], "sw" : [0.5, 0]},
+      "rails":[["ne","sw"]],
+      "special" : "railstation",
+      "dz" : 0
+    },
+    "rail-nw-se" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"nw" : [0, 0.5], "se" : [1, 0.5]},
+      "rails":[["nw","se"]],
+      "combines" : {"rail-ne-sw" : "railcrossing"},
+      "dz" : 1
+    },
+    "rail-ne-sw" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"ne" : [0.5, 1], "sw" : [0.5, 0]},
+      "rails":[["ne","sw"]],
+      "combines" : {"rail-nw-se" : "railcrossing"},
+      "dz" : 1
+    },
+    "rail-nw-sw" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"nw" : [0, 0.5], "sw" : [0.5, 0]},
+      "rails":[["nw","sw"]],
+      "dz" : 1
+    },
+    "rail-ne-se" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"ne" : [0.5, 1], "se" : [1, 0.5]},
+      "rails":[["ne","se"]],
+      "dz" : 1
+    },
+    "rail-se-sw" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"se" : [1, 0.5], "sw" : [0.5, 0]},
+      "rails":[["se","sw"]],
+      "dz" : 1
+    },
+    "rail-ne-nw" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 1,
+      "points":{"ne" : [0.5, 1], "nw" : [0, 0.5]},
+      "rails":[["ne","nw"]],
+      "dz" : 1
+    },
+    "railsignal" : {
+      "buildmenu" : "rail",
+      "special" : "justcombines",
+      "combines" : {"rail-nw-se" : "railsignal-nw-se", "rail-ne-sw" : "railsignal-ne-sw"}
+    },
+    "railsignal-nw-se" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "nw" : [0, 0.5], "se" : [1, 0.5]},
+      "signals":["c"],
+      "rails":[["nw","c"], ["se","c"]],
+      "dz" : 1
+    },
+    "railsignal-ne-sw" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "sw" : [0.5, 0]},
+      "signals":["c"],
+      "rails":[["ne","c"], ["sw","c"]],
+      "dz" : 1
+    },
+    "railcurve-ne-s" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 2,
+      "points" : {"pt0" : [0.5,2], "pt1" : [0.5,1.75], "pt2" : [0.65,1], "pt3" : [1,0.5]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"]],
+      "dz" : 0
+    },
+    "railswitch-ne-s" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 2,
+      "points" : {"pt0" : [0.5,2], "pt1" : [0.5,1.75], "pt2" : [0.65,1], "pt3" : [1,0.5], "other" : [0.5,0]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"], ["pt0","other"]],
+      "dz" : 0
+    },
+    "railcurve-se-n" : {
+      "buildmenu" : "rail",
+      "width" : 2,
+      "depth" : 1,
+      "points" : {"pt0" : [2,0.5], "pt1" : [1.75,0.5], "pt2" : [1,0.65], "pt3" : [0.5,1]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"]],
+      "dz" : 0
+    },
+    "railswitch-se-n" : {
+      "buildmenu" : "rail",
+      "width" : 2,
+      "depth" : 1,
+      "points" : {"pt0" : [2,0.5], "pt1" : [1.75,0.5], "pt2" : [1,0.65], "pt3" : [0.5,1], "other" : [0,0.5]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"], ["pt0","other"]],
+      "dz" : 0
+    },
+    "railcurve-ne-w" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 2,
+      "points" : {"pt0" : [0.5,2], "pt1" : [0.5,1.75], "pt2" : [0.35,1], "pt3" : [0,0.5]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"]],
+      "dz" : 0
+    },
+    "railswitch-ne-w" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 2,
+      "points" : {"pt0" : [0.5,2], "pt1" : [0.5,1.75], "pt2" : [0.35,1], "pt3" : [0,0.5], "other" : [0.5,0]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"], ["pt0","other"]],
+      "dz" : 0
+    },
+    "railcurve-se-w" : {
+      "buildmenu" : "rail",
+      "width" : 2,
+      "depth" : 1,
+      "points" : {"pt0" : [2,0.5], "pt1" : [1.75,0.5], "pt2" : [1,0.35], "pt3" : [0.5,0]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"]],
+      "dz" : 0
+    },
+    "railswitch-se-w" : {
+      "buildmenu" : "rail",
+      "width" : 2,
+      "depth" : 1,
+      "points" : {"pt0" : [2,0.5], "pt1" : [1.75,0.5], "pt2" : [1,0.35], "pt3" : [0.5,0], "other" : [0,0.5]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"], ["pt0","other"]],
+      "dz" : 0
+    },
+    "railcurve-sw-e" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 2,
+      "points" : {"pt0" : [0.5,0], "pt1" : [0.5,0.25], "pt2" : [0.65,1], "pt3" : [1,1.5]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"]],
+      "dz" : 0
+    },
+    "railswitch-sw-e" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 2,
+      "points" : {"pt0" : [0.5,0], "pt1" : [0.5,0.25], "pt2" : [0.65,1], "pt3" : [1,1.5], "other" : [0.5,2]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"], ["pt0","other"]],
+      "dz" : 0
+    },
+    "railcurve-nw-e" : {
+      "buildmenu" : "rail",
+      "width" : 2,
+      "depth" : 1,
+      "points" : {"pt0" : [0,0.5], "pt1" : [0.25,0.5], "pt2" : [1,0.65], "pt3" : [1.5,1]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"]],
+      "dz" : 0
+    },
+    "railswitch-nw-e" : {
+      "buildmenu" : "rail",
+      "width" : 2,
+      "depth" : 1,
+      "points" : {"pt0" : [0,0.5], "pt1" : [0.25,0.5], "pt2" : [1,0.65], "pt3" : [1.5,1], "other" : [2,0.5]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"], ["pt0","other"]],
+      "dz" : 0
+    },
+    "railcurve-sw-n" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 2,
+      "points" : {"pt0" : [0.5,0], "pt1" : [0.5,0.25], "pt2" : [0.35,1], "pt3" : [0,1.5]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"]],
+      "dz" : 0
+    },
+    "railswitch-sw-n" : {
+      "buildmenu" : "rail",
+      "width" : 1,
+      "depth" : 2,
+      "points" : {"pt0" : [0.5,0], "pt1" : [0.5,0.25], "pt2" : [0.35,1], "pt3" : [0,1.5], "other" : [0.5,2]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"], ["pt0","other"]],
+      "dz" : 0
+    },
+    "railcurve-nw-s" : {
+      "buildmenu" : "rail",
+      "width" : 2,
+      "depth" : 1,
+      "points" : {"pt0" : [0,0.5], "pt1" : [0.25,0.5], "pt2" : [1,0.35], "pt3" : [1.5,0]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"]],
+      "dz" : 0
+    },
+    "railswitch-nw-s" : {
+      "buildmenu" : "rail",
+      "width" : 2,
+      "depth" : 1,
+      "points" : {"pt0" : [0,0.5], "pt1" : [0.25,0.5], "pt2" : [1,0.35], "pt3" : [1.5,0], "other" : [2,0.5]},
+      "rails" : [["pt1","pt0"], ["pt2","pt1"], ["pt3","pt2"], ["pt0","other"]],
+      "dz" : 0
+    },
+    "railcrossing" : {
+      "width" : 1,
+      "depth" : 1,
+      "points":{"c" : [0.5, 0.5], "ne" : [0.5, 1], "nw" : [0, 0.5], "se" : [1, 0.5], "sw" : [0.5, 0]},
+      "rails":[["ne","c"], ["nw","c"], ["se","c"], ["sw","c"]],
+      "dz" : 0
+    },
+    "alm": {
+      "width": 10,
+      "depth": 8,
+      "special" : "factory",
+      "productions" : {"produce":{"wool":2},"duration":15},
+      "dz": 1
+    },
+    "quarry": {
+      "width": 5,
+      "depth": 5,
+      "special" : "factory",
+      "productions" : {"produce":{"stone":5},"duration":8},
+      "dz": 3
+    },
+    "sand pit" : {
+      "width" : 5,
+      "depth" : 5,
+      "special" : "factory",
+      "productions" : {"produce":{"sand":8},"duration":15},
+      "dz" : 1
+    },
+    "sawmill" : {
+      "width": 5,
+      "depth": 5,
+      "special": "factory",
+      "productions": {"produce":  {"wood":  10}, "duration":  20},
+      "dz" : 1
+    },
+    "fountain" : {
+      "width": 2,
+      "depth": 2,
+      "special": "factory",
+      "productions": {"produce":  {"water":  5}, "duration":  3},
+      "dz" : 1
+    },
+    "mine" : {
+      "width": 3,
+      "depth": 3,
+      "special": "factory",
+      "productions": {"produce":  {"ore":  3}, "duration":  20},
+      "dz" : 1
+    },
+    "weaving mill" : {
+      "width": 5,
+      "depth": 5,
+      "special": "factory",
+      "productions": {"produce":  {"cloth":  5}, "consume":{"wool":  10, "water":  5}, "duration":  10},
+      "dz" : 1
+    },
+    "brickyard" : {
+      "width": 5,
+      "depth": 5,
+      "special": "factory",
+      "productions": {"produce":  {"brick":  5}, "consume":{"stone":  10},"duration":  10},
+      "dz" : 1
+    },
+    "carpentry": {
+      "width": 5,
+      "depth": 5,
+      "special": "factory",
+      "productions": {"produce":  {"plank":  5}, "consume":{"wood":  10},"duration":  10},
+      "dz" : 1
+    },
+    "mortar mixer": {
+      "width": 2,
+      "depth": 2,
+      "special": "factory",
+      "productions": {"produce":  {"mortar":  5}, "consume":{"sand":  10 ,"water":  10}, "duration": 10},
+      "dz" : 1
+    },
+    "iron foundry" : {
+      "width": 7,
+      "depth": 7,
+      "special": "factory",
+      "productions": {"produce":  {"bell":  1, "gate":  1}, "consume":{"ore":  5}, "duration": 30},
+      "dz" : 1
+    },
+    "cathedral-foundation" : {
+      "buildmenu" : "special buildings",
+      "width" : 10,
+      "depth" : 10,
+      "special": "cathedral",
+      "costs": {"brick":  80, "plank":  50, "mortar":  50},
+      "dz" : 1,
+      "combines" : ["cathedral-nave"]
+    },
+    "cathedral-nave"  : {
+      "buildmenu" : "special buildings",
+      "width" : 10,
+      "depth" : 10,
+      "special": "cathedral",
+      "costs": {"brick":  80, "cloth":  30, "mortar":  50},
+      "dz" : 1,
+      "combines" : ["cathedral-foundation", "cathedral-roof"]
+    },
+    "cathedral-roof"  : {
+      "buildmenu" : "special buildings",
+      "width" : 10,
+      "depth" : 10,
+      "special": "cathedral",
+      "costs": {"brick":  80, "plank":  50, "bell":  5},
+      "dz" : 1,
+      "combines" : ["cathedral-nave"]
+    },
+    "castle-foundation" : {
+      "buildmenu" : "special buildings",
+      "width" : 10,
+      "depth" : 10,
+      "special": "castle",
+      "costs": {"brick":  80, "plank":  50, "mortar":  50},
+      "dz" : 1,
+      "combines" : ["cathedral-nave"]
+    },
+    "castle-nave"  : {
+      "buildmenu" : "special buildings",
+      "width" : 10,
+      "depth" : 10,
+      "special": "castle",
+      "costs": {"brick":  80, "cloth":  30, "gate":  4},
+      "dz" : 1,
+      "combines" : ["cathedral-foundation", "cathedral-roof"]
+    },
+    "castle-roof"  : {
+      "buildmenu" : "special buildings",
+      "width" : 10,
+      "depth" : 10,
+      "special": "castle",
+      "costs": {"brick":  80, "plank":  50, "cloth":  20},
+      "dz" : 1,
+      "combines" : ["cathedral-nave"]
+    },
+    "tree" : {
+      "buildmenu" : "nature",
+      "width" : 1,
+      "depth" : 1,
+      "special" : "nature",
+      "dz" : 2
+    },
+    "stone" : {
+      "width" : 1,
+      "depth" : 1,
+      "special" : "nature",
+      "dz" : 2
+    }
+  },
+  "vehicles" : {
+    "fabric carriage" : {
+      "kind" : "road vehicle",
+      "graphic" : "carriage",
+      "cargo" : [{"wool" : 20}, {"cloth" : 20}],
+      "speed" : 1.2
+    },
+    "liquid bulk carriage" : {
+      "kind" : "road vehicle",
+      "graphic" : "carriage",
+      "cargo" : {"water" : 10},
+      "speed" : 0.6
+    },
+    "bulk carriage" : {
+      "kind" : "road vehicle",
+      "graphic" : "carriage",
+      "cargo" : [{"sand" : 40}, {"stone" : 40}, {"wood" : 40}],
+      "speed" : 1.4
+    },
+    "heavy lift carriage" : {
+      "kind" : "road vehicle",
+      "graphic" : "carriage",
+      "cargo" : [{"bell" : 1}, {"gate" : 1}],
+      "speed" : 2.0
+    },
+    "transport donkey" : {
+      "kind" : "road vehicle",
+      "graphic" : "donkey",
+      "cargo" : [{"brick" : 10}, {"plank" : 3}],
+      "speed" : 2.0
+    },
+    "mining carriage" : {
+      "kind" : "road vehicle",
+      "graphic" : "carriage",
+      "cargo" : [{"mortar" : 15}, {"plank" : 20}],
+      "speed" : 2.0
+    },
+    "engine" : {
+      "kind" : "engine",
+      "graphic" : "the_engine",
+      "speed" : 2.2
+    },
+    "dry bulk wagon" : {
+      "kind" : "wagon",
+      "graphic" : "bulk_wagon",
+      "cargo" : [{"ore" : 40}, {"stone" : 40}, {"wood" : 40}, {"sand": 40}],
+      "speed" : 2.7
+    },
+    "general cargo wagon" : {
+      "kind" : "wagon",
+      "graphic" : "general cargo wagon",
+      "cargo" : [{"planks" : 20}, {"bricks" : 25},{"cloth" : 20}],
+      "speed" : 2.0
+    },
+    "heavy lift wagon" : {
+      "kind" : "wagon",
+      "graphic" : "heavy lift wagon",
+      "cargo" : [{"bell" : 3}, {"gate" : 3}],
+      "speed" : 2.0
+    },
+    "hazmat wagon" : {
+      "kind" : "wagon",
+      "graphic" : "hazmat wagon",
+      "cargo" : [{"wool" : 35}, {"mortar" : 30}],
+      "speed" : 0.5
+    },
+    "liquid bulk wagon" : {
+      "kind" : "wagon",
+      "graphic" : "liquid bulk wagon",
+      "cargo" : {"water" : 50},
+      "speed" : 0.6
+    },
+
+    "big hot air balloon" : {
+      "kind" : "hot air balloon",
+      "graphic" : "big hot air balloon",
+      "cargo" : [{"brick" : 10}, {"stone" : 10}, {"cloth" : 10}, {"bell" : 1}, {"gate" : 1},{"brick" : 3}, {"plank" : 3},{"mortar" : 3}],
+      "speed" : 3.3
+    },
+    "small hot air balloon" : {
+      "kind" : "hot air balloon",
+      "graphic" : "small hot air balloon",
+      "cargo" : [{"water" : 30}, {"wool" : 30},{"ore" : 30}, {"sand" : 30}],
+      "speed" : 2.5
+    }
+  },
+  "map" : {
+    "mapgen" : "own-scenario",
+    "gamemode" : "own-scenario",
+    "width" : 128,
+    "depth" : 128
+  }
+}
