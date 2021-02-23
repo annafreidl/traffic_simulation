@@ -1,5 +1,11 @@
 package planverkehr.graph;
 
+import planverkehr.airport.Knotenpunkt;
+import planverkehr.airport.WegKnotenpunkt;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Stack;
 
 public class Path extends Stack<MWegKnotenpunkt> {
@@ -126,15 +132,19 @@ public class Path extends Stack<MWegKnotenpunkt> {
 
     private void addAvailableNeighbourNodes() {
         // 1. Für jeden Nachbarknoten von currentWayNode:
-        for (MKnotenpunkt k : so.getNeighboursOfCurrentWaynode()) {
+        ArrayList<MKnotenpunkt> nachbarn = new ArrayList<>(so.getNeighboursOfCurrentWaynode());
+        if (!reverse) {
+            nachbarn.addAll(so.getHaltestellenNodes());
+        }
+        for (MKnotenpunkt k : nachbarn) {
             //erstelle aus dem Knotenpunkt einen Wegpunkt, wenn er zu dem Tick betretbar ist und existiert
             if (k != null
-              //  && (reverse || k.isFreeFor(so.getCurrentNodeBetretenUm() + 1, true))
+                //  && (reverse || k.isFreeFor(so.getCurrentNodeBetretenUm() + 1, true))
             ) {
                 MWegKnotenpunkt tempWegpunkt = new MWegKnotenpunkt(so.getCurrentNodeBetretenUm() + 1, k, so.getCurrentNodeKnotenpunkt());
 
                 //  1. Prüfen ob der Knoten zu diesem Zeitpunkt (tick +1) noch nicht betrachtet wurde
-                if (!so.isZuBesuchendeWegeContaining(tempWegpunkt)) {
+                if (!so.isZuBesuchendeWegeContaining(tempWegpunkt) && (reverse || !reverse && !so.containsKontenpunkt(tempWegpunkt.getKnotenpunkt()))) {
 
                     // --> JA:
                     // ist es unser Ziel?
@@ -145,7 +155,7 @@ public class Path extends Stack<MWegKnotenpunkt> {
 
                         isSearching = false;
                         //   if (!tempWegpunkt.knotenpunkt.targetType.equals("ausflug")) {
-                       // tempWegpunkt.knotenpunkt.setBlocked(true);
+                        // tempWegpunkt.knotenpunkt.setBlocked(true);
                         //    }
                         break;
                     } else {
@@ -164,16 +174,6 @@ public class Path extends Stack<MWegKnotenpunkt> {
         Stack<MWegKnotenpunkt> wpStack = new Stack<>();
         wpStack.push(so.currentWayNode);
 
-/*
-        //fügt wartezeit hinzu wenn es sich um den Zielknoten und nicht einen verlängerten Aufenthalt handelt hinzu
-        if (!so.isTempTarget()) {
-            for (int i = 1; i <= so.getWaitTime(); i++) {
-                MWegKnotenpunkt tempWP = new MWegKnotenpunkt(so.getCurrentNodeBetretenUm() + i, so.getCurrentNodeKnotenpunkt(), so.getVorgaenger());
-                wpStack.push(tempWP);
-            }
-        }
-
- */
 
         //Knotenpunk wird dann zur finalen Wegliste hinzgefügt, wenn der Vorgänger sein Vorgänger ist. Gestartet wird beim Zielknoten.
         // Zusätzlich werden die Blockaden für alle passierten knoten hinzugefügt
@@ -186,21 +186,37 @@ public class Path extends Stack<MWegKnotenpunkt> {
             if (prevWegpunkt.betretenUm + 1 == so.getCurrentNodeBetretenUm() &&
                 (prev == so.getVorgaenger())) {
                 so.setCurrentWayNode(prevWegpunkt);
-                if (reverse) {
-                    wpStack.add(0, prevWegpunkt);
-                } else {
-                    wpStack.add(prevWegpunkt);
-                }
+
+                wpStack.add(0, prevWegpunkt);
+
 
             }
 
         }
+
+
         if (!reverse && planePosition != wpStack.firstElement().knotenpunkt || reverse && planePosition != wpStack.peek().getKnotenpunkt()) {
             wpStack.pop();
         }
 
+
         this.clear();
-        this.addAll(wpStack);
+        if (!reverse) {
+            for (MWegKnotenpunkt punkt : wpStack) {
+                //Das nächste Flugzeug wird ausgewählt
+                if (punkt.getKnotenpunkt().getHaltestelle() != null) {
+                    if (this.size() > 0 && !this.lastElement().getKnotenpunkt().getHaltestelle().equals(punkt.getKnotenpunkt().getHaltestelle())) {
+                        this.add(punkt);
+                    } else if (this.isEmpty()) {
+                        this.add(punkt);
+                    }
+
+                }
+            }
+            System.out.println(this);
+        } else {
+            this.addAll(wpStack);
+        }
     }
 
 

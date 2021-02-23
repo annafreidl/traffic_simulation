@@ -1,6 +1,7 @@
 package planverkehr.graph;
 
 import planverkehr.EBuildType;
+import planverkehr.transportation.ESpecial;
 
 import java.util.ArrayList;
 import java.util.Stack;
@@ -10,7 +11,7 @@ public class SearchObject {
     final Stack<MWegKnotenpunkt> arrayListBesuchterWegpunkte;
     MWegKnotenpunkt currentWayNode;
     final MTargetpointList wayPointList;
- //   final MTargetpointList waitList;
+    //   final MTargetpointList waitList;
 
 
     public SearchObject(MKnotenpunkt start, MTargetpointList wayPointList, int tickNumber) {
@@ -19,7 +20,7 @@ public class SearchObject {
         currentWayNode = new MWegKnotenpunkt(tickNumber, start, start);
         this.wayPointList = wayPointList;
         arrayListZuBesuchenderWegpunkte.add(currentWayNode);
-       // this.waitList = waitList;
+        // this.waitList = waitList;
     }
 
 
@@ -35,12 +36,12 @@ public class SearchObject {
         return arrayListZuBesuchenderWegpunkte;
     }
 
-    public void setLastElementZuBesuchenderToCurrentNode(){
-        setCurrentWayNode(arrayListZuBesuchenderWegpunkte.get(arrayListZuBesuchenderWegpunkte.size()-1));
+    public void setLastElementZuBesuchenderToCurrentNode() {
+        setCurrentWayNode(arrayListZuBesuchenderWegpunkte.get(arrayListZuBesuchenderWegpunkte.size() - 1));
 
     }
 
-    public void removeFirstFromZuBesuchendeWegpunkte(){
+    public void removeFirstFromZuBesuchendeWegpunkte() {
         arrayListZuBesuchenderWegpunkte.remove(0);
     }
 
@@ -48,23 +49,23 @@ public class SearchObject {
         this.currentWayNode = currentWayNode;
     }
 
-    public MWegKnotenpunkt getFirstElementZuBesuchenderWegpunkte(){
+    public MWegKnotenpunkt getFirstElementZuBesuchenderWegpunkte() {
         return arrayListZuBesuchenderWegpunkte.get(0);
     }
 
-    public MWegKnotenpunkt getFirstElementBesuchterWegpunkte(){
+    public MWegKnotenpunkt getFirstElementBesuchterWegpunkte() {
         return arrayListBesuchterWegpunkte.get(0);
     }
 
-    public void addCurrentWaynodeToBesuchterWegpunkte(){
+    public void addCurrentWaynodeToBesuchterWegpunkte() {
         arrayListBesuchterWegpunkte.add(currentWayNode);
     }
 
-    public void clearBesuchteWegpunkte(){
+    public void clearBesuchteWegpunkte() {
         arrayListBesuchterWegpunkte.clear();
     }
 
-    public EBuildType getCurrentNodeKind(){
+    public EBuildType getCurrentNodeKind() {
         return currentWayNode.knotenpunkt.surfaceType;
     }
 
@@ -72,31 +73,31 @@ public class SearchObject {
         arrayListZuBesuchenderWegpunkte.clear();
     }
 
-    public int getCurrentNodeBetretenUm(){
+    public int getCurrentNodeBetretenUm() {
         return currentWayNode.betretenUm;
     }
 
-    public MKnotenpunkt getCurrentNodeKnotenpunkt(){
+    public MKnotenpunkt getCurrentNodeKnotenpunkt() {
         return currentWayNode.knotenpunkt;
     }
 
-    public void addWaynodeToBesuchteWegpunkte(MWegKnotenpunkt wp){
+    public void addWaynodeToBesuchteWegpunkte(MWegKnotenpunkt wp) {
         arrayListBesuchterWegpunkte.add(wp);
     }
 
-    public ArrayList<MKnotenpunkt> getNeighboursOfCurrentWaynode(){
+    public ArrayList<MKnotenpunkt> getNeighboursOfCurrentWaynode() {
         return currentWayNode.getNeighbours();
     }
 
-    public boolean isZuBesuchendeWegeContaining(MWegKnotenpunkt s){
+    public boolean isZuBesuchendeWegeContaining(MWegKnotenpunkt s) {
         return arrayListZuBesuchenderWegpunkte.contains(s);
     }
 
-    public boolean isWayPointListContaining(MKnotenpunkt k){
+    public boolean isWayPointListContaining(MKnotenpunkt k) {
         return wayPointList.contains(k);
     }
 
-    public boolean isTempTarget(){
+    public boolean isTempTarget() {
         return currentWayNode.knotenpunkt.isTempTarget;
     }
 
@@ -104,7 +105,7 @@ public class SearchObject {
         arrayListZuBesuchenderWegpunkte.add(tempWegpunkt);
     }
 
-    public MKnotenpunkt getVorgaenger(){
+    public MKnotenpunkt getVorgaenger() {
         return currentWayNode.getVorgaenger();
     }
 
@@ -112,8 +113,35 @@ public class SearchObject {
 //        return currentWayNode.knotenpunkt.waitTime;
 //    }
 
-    public MWegKnotenpunkt getWegKnotenpunktAtIndex(int i){
+    public MWegKnotenpunkt getWegKnotenpunktAtIndex(int i) {
         return arrayListBesuchterWegpunkte.get(i);
+    }
+
+    public ArrayList<MKnotenpunkt> getHaltestellenNodes() {
+        ArrayList<MKnotenpunkt> haltstellenNodes = new ArrayList<>();
+        if (currentWayNode.getKnotenpunkt().getHaltestelle() != null) {
+            currentWayNode.getKnotenpunkt().getHaltestelle().getKnotenpunkteList().forEach((key, knotenpunkt) -> {
+                if (currentWayNode.getKnotenpunkt() != knotenpunkt) {
+                    haltstellenNodes.add(knotenpunkt);
+                }
+            });
+        }
+        return haltstellenNodes;
+    }
+
+    public boolean containsKontenpunkt(MKnotenpunkt knotenpunkt) {
+        for (MWegKnotenpunkt mWegKnotenpunkt : arrayListBesuchterWegpunkte) {
+            if(mWegKnotenpunkt.getKnotenpunkt().getKnotenpunktId().equals(knotenpunkt.getKnotenpunktId())){
+                return true;
+            }
+        }
+        for (MWegKnotenpunkt mWegKnotenpunkt : arrayListZuBesuchenderWegpunkte) {
+            if(mWegKnotenpunkt.getKnotenpunkt().getKnotenpunktId().equals(knotenpunkt.getKnotenpunktId())){
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

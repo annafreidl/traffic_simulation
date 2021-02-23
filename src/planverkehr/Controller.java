@@ -356,7 +356,7 @@ public class Controller {
                     //select tiles
                     boolean isTile = gameModel.selectTileByCoordinates(canvasX, canvasY);
                     if (!gameModel.selectedTileId.equals("null") && ((gameModel.autoSaveMode && gameModel.savedBuilding != null))) {
-                        gameModel.build(gameModel.savedBuilding.getBuildType(), gameModel.savedBuilding.getBuildingName(), gameModel.savedBuilding.getBuildingName());
+                        gameModel.build(gameModel.savedBuilding.getBuildType(), gameModel.savedBuilding.getBuildingName());
                     }
                     if (isTile) {
                         gameView.drawField();
@@ -387,7 +387,7 @@ public class Controller {
 
             //Wenn ein Feld ausgewählt ist, dann füge den ausgewählten Gebäudetyp zum Feld hinzu
             if (!selectedTileId.equals("null") && (!gameModel.autoSaveMode || gameModel.getSelectedTile().getState().equals(EBuildType.free))) {
-                gameModel.build(EBuildType.valueOf(m.getId()), i.getId(), i.getText());
+                gameModel.build(EBuildType.valueOf(m.getId()), i.getId());
                 System.out.println(m.getId());
                 System.out.println(i.getId());
                 System.out.println(i.getText());

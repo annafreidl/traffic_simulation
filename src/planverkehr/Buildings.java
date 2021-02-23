@@ -2,6 +2,7 @@ package planverkehr;
 
 import javafx.util.Pair;
 import planverkehr.airport.MAirport;
+import planverkehr.graph.MKnotenpunkt;
 import planverkehr.transportation.EDirections;
 
 import java.util.*;
@@ -15,6 +16,7 @@ public class Buildings {
     private int depth;
     private int maxPlanes;
     private int dz;
+    int stationID;
     //manche Datentypen sind wahrscheinlich nicht optimal, falls jemand eine bessere idee hat, bitte melden
     private java.util.Map<String, MCoordinate> points;
     private java.util.Map<String, String> combinesStrings;
@@ -23,6 +25,8 @@ public class Buildings {
     private List<Pair<String, String>> rails;
     private List<Pair<String, String>> planes;
     private List<MProductions> productions;
+
+    MKnotenpunkt knotenpunkt;
 
     private EnumSet<EDirections> possibleConnections;
     private EnumSet<EDirections> directions;
@@ -80,7 +84,7 @@ public class Buildings {
         this.special = building.getSpecial();
         this.maxPlanes = building.getMaxPlanes();
         this.productions = building.getProductions();
-        combinesBuildings = new HashMap<>();
+        combinesBuildings = building.getCombinesBuildings();
         associatedAirport = null;
         setBuildType();
         setDirections();
@@ -150,16 +154,7 @@ public class Buildings {
             }
         });
     }
-    //called when building is placed
-    public void startProductionAndConsumption(){
-        List<MProductions> productionsList = productions;
-        if (productions!= null ) {
-            for (int i = 0; i < productionsList.size(); i++) {
-                MProductions production = productionsList.get(i);
-                production.consumeAndProduce();
-            }
-        }
-    }
+
 
 
 
@@ -258,4 +253,7 @@ public class Buildings {
     public MAirport getAssociatedAirport(){
         return associatedAirport;
     }
+
+
+
 }

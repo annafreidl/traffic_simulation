@@ -1,5 +1,7 @@
 package planverkehr.airport;
 
+import planverkehr.graph.MKnotenpunkt;
+
 import java.util.ArrayList;
 
 public class TargetpointList extends ArrayList<Knotenpunkt> {

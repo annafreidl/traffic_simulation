@@ -3,6 +3,7 @@ package planverkehr.graph;
 import planverkehr.Buildings;
 import planverkehr.EBuildType;
 import planverkehr.MCoordinate;
+import planverkehr.MHaltestelle;
 import planverkehr.transportation.EDirections;
 import planverkehr.transportation.ESpecial;
 
@@ -21,11 +22,11 @@ public class MKnotenpunkt {
     HashMap<String, MKnotenpunkt> connectedKnotenpunkte;
     ArrayList<MKnotenpunkt> connectedKnotenpunkteArray;
     ArrayList<String> groupIds; //Alle zu einem Gebäude zugehörigen Koordinaten haben dieselbe GroupId: feldID-buildingToBeBuiltID;
-    //  HashMap<String, MKnotenpunkt> groupedKnotenpunkte;
     EBuildType surfaceType;
     ESpecial targetType;
     final TreeSet<Integer> blockedForTickListLeft;
     final TreeSet<Integer> blockedForTickListRight;
+    MHaltestelle haltestelle = null;
     boolean isBlocked = false;
     boolean isTempTarget = false;  //todo: prüfen ob überhaupt noch nötig
 
@@ -56,14 +57,6 @@ public class MKnotenpunkt {
         groupIds.add(id);
     }
 
-    public void setVisibleCoordinate(MCoordinate visibleCoordinate) {
-        this.visibleCoordinate = visibleCoordinate;
-    }
-
-    public void setSurfaceType(EBuildType surfaceType) {
-        this.surfaceType = surfaceType;
-    }
-
 
     public void addConnectedNode(MKnotenpunkt node) {
         if (!connectedKnotenpunkte.containsKey(node.getTileId())) {
@@ -71,11 +64,6 @@ public class MKnotenpunkt {
             connectedKnotenpunkte.put(node.getTileId(), node);
         }
 
-    }
-
-
-    public HashMap<String, MKnotenpunkt> getConnectedKnotenpunkte() {
-        return connectedKnotenpunkte;
     }
 
     public String getName() {
@@ -137,13 +125,6 @@ public class MKnotenpunkt {
       }  blockedForTickListRight.add(tick);
     }
 
-    public boolean isTempTarget() {
-        return isTempTarget;
-    }
-
-    public void setBlocked(boolean blocked) {
-        isBlocked = blocked;
-    }
 
     //todo: muss für Verlehrsmittel geschrieben werden
     public boolean isFreeFor(int timeBetretenUm, boolean isLeft) {
@@ -178,5 +159,13 @@ public class MKnotenpunkt {
 
     public void setBlockId(int blockId) {
         this.blockId = blockId;
+    }
+
+    public void setHaltestelle(MHaltestelle h) {
+        this.haltestelle = h;
+    }
+
+    public MHaltestelle getHaltestelle() {
+        return haltestelle;
     }
 }

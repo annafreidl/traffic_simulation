@@ -2,20 +2,19 @@ package planverkehr.verkehrslinien;
 
 import javafx.scene.paint.Color;
 import planverkehr.EBuildType;
+import planverkehr.MHaltestelle;
 import planverkehr.MVehicles;
 import planverkehr.graph.*;
 import planverkehr.transportation.ESpecial;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.Random;
+import java.util.*;
 
 public class MLinie {
     String name;
     int ID, haltestellenID;
     Deque<MWegKnotenpunkt> listOfHaltestellenKnotenpunkten;
     Deque<MWegKnotenpunkt> listeAllerLinienKnotenpunkte;
+    HashMap<Integer, MHaltestelle> listOfHaltestellen;
     MVehicles vehicle;
     EBuildType type;
     Color color;
@@ -27,6 +26,7 @@ public class MLinie {
     public MLinie(int linienID) {
         this.ID = linienID;
         listOfHaltestellenKnotenpunkten = new ArrayDeque<MWegKnotenpunkt>();
+        listOfHaltestellen = new HashMap<>();
         listeAllerLinienKnotenpunkte = new ArrayDeque<MWegKnotenpunkt>();
         float r = rand.nextFloat();
         float g = rand.nextFloat();
@@ -34,15 +34,18 @@ public class MLinie {
         color = Color.color(r, g, b);
     }
 
-    public void addWegknotenpunkt(MKnotenpunkt k) {
+    public void addHaltestelle(MKnotenpunkt k) {
         boolean isFirstNode = listOfHaltestellenKnotenpunkten.isEmpty();
         MKnotenpunkt vorgaenger = isFirstNode ? k : listOfHaltestellenKnotenpunkten.getLast().getKnotenpunkt();
+        int realHaltestellenID = k.getHaltestelle().getId();
         if (isFirstNode) {
             type = k.getSurfaceType();
             listOfHaltestellenKnotenpunkten.add(new MWegKnotenpunkt(haltestellenID, k, vorgaenger));
+            listOfHaltestellen.put(realHaltestellenID, k.getHaltestelle());
             haltestellenID++;
-        } else if (type.equals(k.getSurfaceType()) || k.getTargetType().equals(ESpecial.FACTORY)) {
+        } else if (type.equals(k.getSurfaceType()) || k.getTargetType().equals(ESpecial.FACTORY) && !listOfHaltestellen.containsKey(realHaltestellenID)) {
             listOfHaltestellenKnotenpunkten.add(new MWegKnotenpunkt(haltestellenID, k, vorgaenger));
+            listOfHaltestellen.put(realHaltestellenID, k.getHaltestelle());
             haltestellenID++;
         }
     }
@@ -75,7 +78,6 @@ public class MLinie {
         return color;
     }
 
-
     public boolean connect() {
         boolean searching = true;
         if (!allHaltestellenCovered() || isCircle() != circlePath) {
@@ -97,13 +99,19 @@ public class MLinie {
                         searching = findPath(k.getKnotenpunkt(), first);
                         circlePath = true;
                     } else {
-                        listeAllerLinienKnotenpunkte.add(new MWegKnotenpunkt(listeAllerLinienKnotenpunkte.size(), k.getKnotenpunkt(), listeAllerLinienKnotenpunkte.getLast().getKnotenpunkt()));
+                        if (listeAllerLinienKnotenpunkte.size() < 1) {
+                            searching = findPath(k.getVorgaenger(), k);
+                        }
+                        if (searching) {
 
-                        revertList(listeAllerLinienKnotenpunkte, k);
-                        revertList(listOfHaltestellenKnotenpunkten, k);
+                            listeAllerLinienKnotenpunkte.add(new MWegKnotenpunkt(listeAllerLinienKnotenpunkte.size(), k.getKnotenpunkt(), listeAllerLinienKnotenpunkte.getLast().getKnotenpunkt()));
+
+                            revertList(listeAllerLinienKnotenpunkte, k);
+                            revertList(listOfHaltestellenKnotenpunkten, k);
 
 
-                        circlePath = false;
+                            circlePath = false;
+                        }
 
                     }
                     System.out.println("found last");
@@ -189,6 +197,9 @@ public class MLinie {
         listeAllerLinienKnotenpunkte.addLast(w);
     }
 
+    public HashMap<Integer, MHaltestelle> getListOfHaltestellen() {
+        return listOfHaltestellen;
+    }
 
     public boolean contains(MKnotenpunkt linienKnotenpunkt) {
 

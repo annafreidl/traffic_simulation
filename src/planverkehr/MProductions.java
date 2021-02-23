@@ -16,9 +16,11 @@ public class MProductions {
     int duration;
     List<HashMap<String, Integer>> produce;
     List<HashMap<String, Integer>> consume;
+
     HashMap<String, Integer> storage; //current resource and quantity
     HashMap<String, Integer> storageRAW; //original resource and quantity
     HashMap<String, Integer> produceStorage; //storage for produced goods
+    MFactory factory;
 
 
     public MProductions(int duration, List<HashMap<String, Integer>> produce, List<HashMap<String, Integer>> consume, HashMap<String, Integer> storageRAW) {
@@ -29,6 +31,8 @@ public class MProductions {
         produceStorage = new HashMap<>();
         zeroStorage();
     }
+
+
 
     public int getDuration() {
         return duration;
@@ -85,9 +89,9 @@ public class MProductions {
 
     //nur zum testen, füllt das lager mit resourcen für jeweils 25 produktionsschritte
     private void initStorage() {
-        for (int i =0; i<getConsume().size(); i++){
+        for (int i = 0; i < getConsume().size(); i++) {
             for (Map.Entry<String, Integer> entry : getConsume().get(i).entrySet()) {
-                storage.put(entry.getKey(),entry.getValue()*25);
+                storage.put(entry.getKey(), entry.getValue() * 25);
             }
         }
     }
@@ -103,26 +107,7 @@ public class MProductions {
         }
     }
 
-    private boolean spaceForResources(HashMap<String, Integer> transfer) {
-        for (Map.Entry<String, Integer> entry : transfer.entrySet()) {
-            if (storage.containsKey(entry.getKey())) {
-                int currentQuantity = storage.get(entry.getKey());
-                int originalSpace = storageRAW.get(entry.getKey());
-                int availableSpace = originalSpace - currentQuantity;
-                if (entry.getValue() <= availableSpace) {
-                    System.out.println("Enough space");
-                    return true;
-                } else {
-                    System.out.println("Not enough space");
-                    return false;
-                }
-            } else {
-                System.out.println("Factory can not store this resource!");
-                return false;
-            }
-        }
-        return false;
-    }
+
 
     public boolean producedResourcesAvailable(String resource, int quantity) {
         int availableResource = produceStorage.get(resource);
@@ -156,7 +141,7 @@ public class MProductions {
     }
 
 
-    public void consume() {
+    public void consumeCommodities() {
         if (getConsume().size() > 0) {
             for (int i = 0; i < getConsume().size(); i++) {
                 for (Map.Entry<String, Integer> entry : getConsume().get(i).entrySet()) {
@@ -184,7 +169,7 @@ public class MProductions {
     }
 
 
-    public void produce() {
+    public void produceCommodities() {
         if (getProduce().size() > 0) {
             for (int i = 0; i < getProduce().size(); i++) {
                 for (Map.Entry<String, Integer> entry : getProduce().get(i).entrySet()) {
@@ -213,14 +198,16 @@ public class MProductions {
         Timeline timeline = new Timeline(
             new KeyFrame(Duration.seconds(Config.tickFrequency.multiply(getDuration()).toSeconds()), e -> {
                 //System.out.println(Config.tickFrequency.multiply(getDuration()).toSeconds());
-                produce();
-                consume();
+                produceCommodities();
+                consumeCommodities();
             }));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
     }
 
     private void addProducedResourcesToProduceStorage(String resource, int quantity) {
+        MCommodity commodity = new MCommodity(resource, ECommodityTypes.valueOf(resource.replace(" ", "_")), 1, factory.knotenpunkt);
+        factory.addToStorage(commodity, quantity);
         produceStorage.put(resource, produceStorage.containsKey(resource) ? produceStorage.get(resource) + quantity : quantity);
     }
 
@@ -261,11 +248,50 @@ public class MProductions {
         return taken;
     }
 
-    public void takeGoodsFromVehicle(HashMap<String, Integer> transfer) {
-        transfer.forEach((key, value) -> {
-            if (spaceForResources(transfer)) {
-                addTransportedResourcesToStorage(key, value);
+    private boolean spaceForResources(String resource, Integer quantity) {
+
+            if (storage.containsKey(resource)) {
+                int currentQuantity = storage.get(resource);
+                int originalSpace = storageRAW.get(resource);
+                int availableSpace = originalSpace - currentQuantity;
+                if (quantity <= availableSpace) {
+                    System.out.println("Enough space");
+                    return true;
+                } else {
+                    System.out.println("Not enough space");
+                    return false;
+                }
+            } else {
+                System.out.println("Factory can not store this resource!");
+                return false;
             }
-        });
+    }
+
+    public void takeGoodsFromVehicle(String resource, Integer quantity) {
+            if (spaceForResources(resource, quantity)) {
+                addTransportedResourcesToStorage(resource, quantity);
+            }
+    }
+
+    public void setFactory(MFactory factory) {
+        this.factory = factory;
+    }
+
+
+    public HashMap<String, Integer> getProduceStorage() {
+        return produceStorage;
+    }
+
+    public Buildings getFactory() {
+        return factory;
+    }
+
+    public boolean consumesResource(String resource) {
+        for (HashMap<String, Integer> consumationGood : consume) {
+            if(consumationGood.containsKey(resource)){
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -5,8 +5,6 @@ import planverkehr.transportation.ESpecial;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 public class MVehicles {
@@ -15,7 +13,8 @@ public class MVehicles {
     private String kind;
     private String graphic;
     private HashMap<String, Integer> cargo;
-    private HashMap<String, Integer> cargoCurrent;
+    private HashMap<String, Integer> cargoCurrentString;
+    private HashMap<MCommodity, Integer> cargoCurrentCommodity;
     private double speed;
     int id;
     MCoordinate currentPosition;
@@ -24,6 +23,7 @@ public class MVehicles {
     Path pathStack;
     boolean isWaiting = false;
     private boolean isAtGoal = true;
+    boolean isVisible = false;
     EVehicleTypes kindEnum;
     boolean drivesLeft;
 
@@ -35,6 +35,9 @@ public class MVehicles {
         this.speed = speed;
         wayPointList = new ArrayList<>();
         pathStack = new Path();
+
+        cargoCurrentString = new HashMap<>();
+        cargoCurrentCommodity = new HashMap<>();
 
         switch (kind) {
             case "road vehicle" -> kindEnum = EVehicleTypes.road_vehicle;
@@ -91,64 +94,68 @@ public class MVehicles {
         return "MVehicles{" +
             "id=" + id +
             ", currentKnotenpunkt=" + currentKnotenpunkt +
+            "currentCargo=" + cargoCurrentString +
             '}';
     }
 
     private void zeroStorage() {
         Set<String> keys = cargo.keySet();
-        cargoCurrent = new HashMap<>();
+        cargoCurrentString = new HashMap<>();
         for (String key : keys) {
-            cargoCurrent.put(key, 0);
+            cargoCurrentString.put(key, 0);
         }
     }
 
-    private boolean spaceForResources(HashMap<String, Integer> transfer) {
-        for (Map.Entry<String, Integer> entry : transfer.entrySet()) {
-            String resource = entry.getKey();
-            int quantity = entry.getValue();
-            if (cargo.containsKey(resource)) {
-                int currentQuantity = cargoCurrent.get(resource);
-                int originalSpace = cargo.get(resource);
-                int availableSpace = originalSpace - currentQuantity;
-                if (quantity <= availableSpace) {
-                    System.out.println("Enough space");
-                    return true;
-                } else {
-                    System.out.println("Not enough space");
-                    return false;
-                }
+    private boolean spaceForResources(String resource, int quantity) {
+        if (cargo.containsKey(resource)) {
+            int currentQuantity;
+            if (cargoCurrentString.size() > 0) {
+                currentQuantity = cargoCurrentString.get(resource);
             } else {
-                System.out.println("Vehicle can not store this resource!");
+                currentQuantity = 0;
+            }
+            int originalSpace = cargo.get(resource);
+            int availableSpace = originalSpace - currentQuantity;
+            if (quantity <= availableSpace) {
+                System.out.println("Enough space");
+                return true;
+            } else {
+                System.out.println("Not enough space");
                 return false;
             }
+        } else {
+            System.out.println("Vehicle can not store this resource!");
+            return false;
         }
-        return false;
     }
 
 
-    private void addGoodsToCurrentCargo(String resource, int quantity) {
-        cargoCurrent.put(resource, cargoCurrent.containsKey(resource) ? cargoCurrent.get(resource) + quantity : quantity);
+    private void addGoodsToCurrentCargo(MCommodity resource, int quantity) {
+        cargoCurrentString.put(resource.getName(), cargoCurrentString.containsKey(resource.getName()) ? cargoCurrentString.get(resource.getName()) + quantity : quantity);
+        cargoCurrentCommodity.put(resource, cargoCurrentCommodity.containsKey(resource) ? cargoCurrentCommodity.get(resource) + quantity : quantity);
     }
 
-    private void deleteGoodFromCurrentCargo(String resource, int quantity) {
-        cargoCurrent.put(resource, cargoCurrent.containsKey(resource) ? cargoCurrent.get(resource) - quantity : quantity);
+    private void deleteGoodFromCurrentCargo(MCommodity resource, int quantity) {
+        cargoCurrentString.put(resource.getName(), cargoCurrentString.containsKey(resource.getName()) ? cargoCurrentString.get(resource.getName()) - quantity : quantity);
+        cargoCurrentCommodity.put(resource, cargoCurrentCommodity.containsKey(resource) ? cargoCurrentCommodity.get(resource) - quantity : quantity);
+
     }
 
-    private void takeGoodsFromFactory(HashMap<String, Integer> transfer) {
-        transfer.forEach((key, value) -> {
-            if (spaceForResources(transfer)) {
-                addGoodsToCurrentCargo(key, value);
-            } else {
-                System.out.println("Not enough space for the resources!");
-            }
-        });
+    public boolean takeGoodsFromFactory(MCommodity commodity, int quantity) {
+        if (spaceForResources(commodity.getName(), quantity)) {
+            addGoodsToCurrentCargo(commodity, quantity);
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    private HashMap<String, Integer> giveGoodsToFactory(HashMap<String, Integer> transfer) {
-        transfer.forEach((key, value) -> {
-            deleteGoodFromCurrentCargo(key, value);
-        });
-        return transfer;
+
+    public void removeGoodFromVerhicle(MCommodity resource, int quantity) {
+
+        deleteGoodFromCurrentCargo(resource, quantity);
+
+
     }
 
     public MKnotenpunkt getCurrentKnotenpunkt() {
@@ -196,5 +203,21 @@ public class MVehicles {
 
     public boolean isDrivesLeft() {
         return drivesLeft;
+    }
+
+    public HashMap<String, Integer> getCargoCurrentString() {
+        return cargoCurrentString;
+    }
+
+    public HashMap<MCommodity, Integer> getCargoCurrentCommodity() {
+        return cargoCurrentCommodity;
+    }
+
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    public void setVisible(boolean visible) {
+        isVisible = visible;
     }
 }

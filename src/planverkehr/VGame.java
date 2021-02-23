@@ -25,6 +25,8 @@ import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import planverkehr.graph.Graph;
+import planverkehr.graph.MKnotenpunkt;
+import planverkehr.transportation.EDirections;
 import planverkehr.verkehrslinien.MLinie;
 import planverkehr.verkehrslinien.VActiveLinie;
 import planverkehr.verkehrslinien.VLinie;
@@ -546,7 +548,18 @@ public class VGame {
                     }
                 }
                 if (!t.isFree()) {
-                    allemitbesetztenfrei = false;
+                allemitbesetztenfrei=false;
+                t.setState(EBuildType.factory);
+                t.setBuildingOnTile(b);
+                t.addConnectedBuilding(b);
+                MCoordinate buildingCoord=new MCoordinate(xId+0.5,yId,0);
+                MKnotenpunkt buildingNode=new MKnotenpunkt(buildingCoord.toString(),b.getBuildingName(),buildingCoord,b.getBuildType(),b.getBuildingName(),randomId,EDirections.EMPTY,true);
+                t.addKnotenpunkt(buildingNode);
+                MFactory f=new MFactory(b);
+                f.setKnotenpunkt(buildingNode);
+                    f.setHaltestelle(gameModel.createFactoryStation(t,f));
+
+                gameModel.addFactoryToConstructedFactories(f);
                 }
             }
 
@@ -564,7 +577,7 @@ public class VGame {
                 t.setState(EBuildType.factory);
                 t.setBuildingOnTile(b);
                 t.addConnectedBuilding(b);
-                b.startProductionAndConsumption();
+
                 if (mitbesetzte != null) {
                     for (MTile mitbesetzt : mitbesetzte) {
                         mitbesetzt.setState(EBuildType.factory);

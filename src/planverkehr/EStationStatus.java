@@ -3,5 +3,6 @@ package planverkehr;
 public enum EStationStatus {
     ONE,
     NONE,
-    TOOMANY;
+    TOOMANY,
+    IRRELEVANT
 }
