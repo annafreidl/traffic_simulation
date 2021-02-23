@@ -8,7 +8,7 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-/*
+
 public class VAirplane {
     Rectangle rectangle;
     final double faktor;
@@ -46,20 +46,14 @@ public class VAirplane {
 
 
     public static double calcRotationAngleInDegrees(Point2D centerPt, Point2D targetPt) {
-        // berechnet den Winkel theta aus den targetPt und CenterPt Werten
-        // ausgabe in radians-Werten
-        // ausgabe in Uhrzeigersinn richtung
+
         double theta = Math.atan2((-targetPt.getY()) - (-centerPt.getY()), targetPt.getX() - centerPt.getX());
 
-
-        // rotiert theta im uhrzeigersinn um 90 grad, so dass der Punkt 0 im Norden liegt
         theta += Math.PI / 2.0;
 
 
-        // konvertiert von radians in Gradzahlen
         double angle = Math.toDegrees(theta) - 90;
 
-        // konvertiert in einen positiven Zahlenbereich
 
         if (angle < 0) {
             angle += 360;
@@ -99,4 +93,4 @@ public class VAirplane {
         group.getChildren().remove(rectangle);
     }
 }
-*/
+

@@ -1,5 +1,13 @@
 package planverkehr.airport;
 
+import javafx.animation.TranslateTransition;
+import javafx.geometry.Point2D;
+import javafx.scene.Group;
+import javafx.scene.image.Image;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -13,6 +21,10 @@ public class MAirplane implements Comparable<MAirplane> {
     final ArrayList<String> wayPointList;
     Path pathStack;
     boolean isVisible;
+    final double faktor;
+
+
+
 
 
     public MAirplane(String[] waypoints, int initTime, int id) {
@@ -22,6 +34,11 @@ public class MAirplane implements Comparable<MAirplane> {
         pathStack = new Path();
         this.id = id;
         this.initTime = initTime;
+        this.faktor=Config.scaleFactor;
+
+
+
+
     }
 
     @Override
@@ -81,4 +98,7 @@ public class MAirplane implements Comparable<MAirplane> {
     public void removeWayPoint() {
         wayPointList.remove(0);
     }
+
+
+
 }
