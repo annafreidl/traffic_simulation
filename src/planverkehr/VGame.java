@@ -59,8 +59,15 @@ public class VGame {
 
 
         parser = new JSONParser();
-        canvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
-        canvasFront = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
+
+        int requiredCanvasWidth = (int) Math.ceil((Config.worldWidth + Config.worldHeight) * Config.tWidthHalft);
+        int requiredCanvasHeight = (int) Math.ceil((Config.worldWidth + Config.worldHeight + 3) * Config.tHeightHalft);
+
+//        canvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
+//        canvasFront = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
+        canvas = new Canvas(requiredCanvasWidth, requiredCanvasHeight);
+        canvasFront = new Canvas(requiredCanvasWidth, requiredCanvasHeight);
+
         selectionCanvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
         gc = canvas.getGraphicsContext2D();
         gcFront = canvasFront.getGraphicsContext2D();
@@ -94,7 +101,7 @@ public class VGame {
         debugCoord.setLayoutX(0);
         debugCoord.setLayoutY(0);
 
-        drawField();
+        //drawField();
         drawGeneratedMap();
 
         scene.setOnScroll(event -> {
@@ -618,7 +625,7 @@ public class VGame {
                     if (wirdhöhenrandom < 1) {
                         boolean nachbarlevelniedrigeralseins = true;
                         for (MTile m : gameModel.getNeighbours(tile)) {
-                            if (m.getIncline() || tile.getLevel() > 0) {
+                            if (tile.getLevel() > 0) {
                                 nachbarlevelniedrigeralseins = false;
                             }
                         }
@@ -629,8 +636,6 @@ public class VGame {
                 }
             }
             tile.createCreateHoehenArray();
-            VTile tempTileView = new VTile(tile);
-            tempTileView.drawBackground(gc);
         });
 
         gameModel.getBuildingsList().forEach((key, b) -> {
@@ -675,20 +680,16 @@ public class VGame {
 
     private void ebneMap() {
 
-        clearField();
         gameModel.getTileArray().forEach((tile) -> {
-            tile.reset();
+
             for (MCoordinate m : tile.getPunkteNeu()) {
                 m.setZ(0);
                 tile.createCreateHoehenArray();
             }
-            VTile tempTileView = new VTile(tile);
-            tempTileView.drawBackground(gc);
-            if (tile.getState()!=EBuildType.free) {
-                tile.setState(EBuildType.free);
-            }
+            tile.reset();
+
         });
-        drawField();
+
 
     }
 
@@ -778,10 +779,7 @@ public class VGame {
                                     addTilesToErhöhenAmEndeArray(factor, erhöheAmEnde, bereitserhöht, openList, currentMittelPunkt, currentNachbar);
                                 }
                             }
-                            case 0, 1, 3 -> {
-                                addTilesToErhöhenAmEndeArray(factor, erhöheAmEnde, bereitserhöht, openList, currentMittelPunkt, currentNachbar);
-
-                            }
+                            case 0, 1, 3 -> addTilesToErhöhenAmEndeArray(factor, erhöheAmEnde, bereitserhöht, openList, currentMittelPunkt, currentNachbar);
                         }
                     }
                 }
@@ -894,6 +892,24 @@ public class VGame {
             }
 
         }
+
+        gameModel.visibleVehiclesArrayList.forEach((vehicle) -> new VVehicle(vehicle, gcFront));
+    }
+
+    public void drawChangedTiles(ArrayList<MTile> changedTiles) {
+        //clearField();
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        changedTiles.forEach((tile) -> {
+            VTile tempTileView = new VTile(tile);
+            tempTileView.drawBackground(gc);
+            if (tile.isFirstTile) {
+                tempTileView.drawForeground(gcFront);
+            }
+
+            canvas.toBack();
+
+        });
 
         gameModel.visibleVehiclesArrayList.forEach((vehicle) -> new VVehicle(vehicle, gcFront));
     }

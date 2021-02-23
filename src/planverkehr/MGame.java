@@ -52,6 +52,7 @@ public class MGame {
     boolean autoSaveMode = true;
     Buildings savedBuilding;
 
+
     public MGame(GameConfig config) {
         this.gameConfig = config;
         createTileMap();
@@ -98,7 +99,7 @@ public class MGame {
 
         for (int i = -1; i < 2; i++) {
             for (int j = -1; j < 2; j++) {
-                if ((-1 < x + i && x + i < Config.worldWidth) && (-1 < y + j && y + j < Config.worldWidth)) {
+                if ((-1 < x + i && x + i < Config.worldWidth) && (-1 < y + j && y + j < Config.worldHeight)) {
                     String idString = y + j > 0 ? x + i + "--" + (y + j) : x + i + "-" + (y + j);
                     if (!idString.equals(m1.id)) {
                         neighbours.add(getTileById(idString));
@@ -107,14 +108,41 @@ public class MGame {
             }
         }
 
-        // for (MTile feld : getTileArray()) {
-        //
-        // if (!m1.intersection(feld).isEmpty() && m1 != feld) {
-        // neighbours.add(feld);
-        // }
-        // }
+//        for (MTile feld : getTileArray()) {
+//
+//            if (!m1.intersection(feld).isEmpty() && m1 != feld) {
+//                neighbours.add(feld);
+//            }
+//        }
         return neighbours;
     }
+
+    public ArrayList<MTile> getNeighboursOfSecondOrder(MTile m1) {
+        ArrayList<MTile> neighbours = new ArrayList<>();
+
+        int x = (int) m1.getIDCoordinates().getX();
+        int y = (int) m1.getIDCoordinates().getY();
+
+        for (int i = -2; i < 3; i++) {
+            for (int j = -2; j < 3; j++) {
+                if ((-2 < x + i && x + i < Config.worldWidth) && (-2 < y + j && y + j < Config.worldHeight)) {
+                    String idString = y + j > 0 ? x + i + "--" + (y + j) : x + i + "-" + (y + j);
+                    if (!idString.equals(m1.id)) {
+                        neighbours.add(getTileById(idString));
+                    }
+                }
+            }
+        }
+
+//        for (MTile feld : getTileArray()) {
+//
+//            if (!m1.intersection(feld).isEmpty() && m1 != feld) {
+//                neighbours.add(feld);
+//            }
+//        }
+        return neighbours;
+    }
+
 
     public void createTileMap() {
         tileHashMap = new HashMap<>();
@@ -123,7 +151,7 @@ public class MGame {
             for (int y = 0; y < Config.worldHeight; y++) {
                 MCoordinate visibleCoordinates = new MCoordinate(x, y, 0);
                 MCoordinate canvasCoordinates = visibleCoordinates.toCanvasCoord();
-                String id = x + "-" + (y - Config.worldWidth + 1);
+                String id = x + "-" + (y - Config.worldHeight + 1);
                 MTile tempTileModel = new MTile(visibleCoordinates, canvasCoordinates, id);
 
                 tileArray.add(tempTileModel);
@@ -161,16 +189,16 @@ public class MGame {
         try {
 
             double p_W_x = tile.getWest().toCanvasCoord().getX();
-            double p_W_y = tile.getWest().toCanvasCoord().getY();
+            double p_W_y = tile.getWest().toCanvasCoord().getY()+tile.getWest().toCanvasCoord().getZ();
 
             double p_N_x = tile.getNorth().toCanvasCoord().getX();
-            double p_N_y = tile.getNorth().toCanvasCoord().getY();
+            double p_N_y = tile.getNorth().toCanvasCoord().getY()+tile.getNorth().toCanvasCoord().getZ();
 
             double p_E_x = tile.getEast().toCanvasCoord().getX();
-            double p_E_y = tile.getEast().toCanvasCoord().getY();
+            double p_E_y = tile.getEast().toCanvasCoord().getY()+tile.getEast().toCanvasCoord().getZ();
 
             double p_S_x = tile.getSouth().toCanvasCoord().getX();
-            double p_S_y = tile.getSouth().toCanvasCoord().getX();
+            double p_S_y = tile.getSouth().toCanvasCoord().getY()+tile.getSouth().toCanvasCoord().getZ();
 
             double low_y = Math.min(p_N_y, Math.min(p_W_y, p_E_y));
             double high_y = Math.max(p_S_y, Math.max(p_W_y, p_E_y));
@@ -256,7 +284,7 @@ public class MGame {
             if (tile.getBuildingOnTile() != null)
                 System.out.println("associated Airport: " + tile.getBuildingOnTile().getAssociatedAirport());
             System.out.println("KnotenpunkteArray: " + tile.knotenpunkteArray);
-            System.out.println("DZ " + tile.TileDz());
+            System.out.println("DZ "+ tile.TileDz());
             System.out.println("is schief?: " + tile.getIncline());
             System.out.println();
 

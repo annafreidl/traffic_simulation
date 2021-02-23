@@ -17,6 +17,8 @@ import planverkehr.verkehrslinien.linienConfigModel;
 import planverkehr.verkehrslinien.linienConfigObject;
 import planverkehr.verkehrslinien.linienConfigWindow;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 
 
 public class Controller {
@@ -28,6 +30,7 @@ public class Controller {
     public Controller(MGame gameModel, VGame gameView) {
         this.gameView = gameView;
         this.gameModel = gameModel;
+        LinkedList<MTile> selectedbefore = new LinkedList();
 
         //  initTimeline();
         gameView.getMenuBar().getMenus().forEach(m -> m.getItems().forEach(i -> i.setOnAction((event -> handleMenuClick(m, i)))));
@@ -325,13 +328,31 @@ public class Controller {
         gameView.getDownButton().addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             if(!gameModel.getSelectedTileId().equals("null")){
                 gameView.setHigh(gameModel.getSelectedTile(), false);
-                gameView.drawField();
+
+                //Hinzugefügt für Performance-Verbesserung
+                // -- zeichnet nur angehobenes Tile & alle Nachbarn bis zur 2.Ordnung
+                ArrayList<MTile> changedTiles = new ArrayList<MTile>();
+                changedTiles.addAll(gameModel.getNeighbours(gameModel.getSelectedTile()));
+                changedTiles.add(gameModel.getSelectedTile());
+                gameView.drawChangedTiles(changedTiles);
+
+                //--falls Fehler auftritt, wieder gameView.drawField() nutzen und darüberstehendes auskommentieren
+                //gameView.drawField();
             }
         });
         gameView.getUpButton().addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             if(!gameModel.getSelectedTileId().equals("null")){
                 gameView.setHigh(gameModel.getSelectedTile(), true);
-                gameView.drawField();
+
+                //Hinzugefügt für Performance-Verbesserung
+                // -- zeichnet nur angehobenes Tile & alle Nachbarn bis zur 2.Ordnung
+                ArrayList<MTile> changedTiles = new ArrayList<MTile>();
+                changedTiles.addAll(gameModel.getNeighboursOfSecondOrder(gameModel.getSelectedTile()));
+                changedTiles.add(gameModel.getSelectedTile());
+                gameView.drawChangedTiles(changedTiles);
+
+                //--falls Fehler auftritt, wieder gameView.drawField() nutzen und darüberstehendes auskommentieren
+                //gameView.drawField();
             }
         });
 
@@ -359,7 +380,31 @@ public class Controller {
                         gameModel.build(gameModel.savedBuilding.getBuildType(), gameModel.savedBuilding.getBuildingName());
                     }
                     if (isTile) {
-                        gameView.drawField();
+
+                        //Hinzugefügt für Performance-Verbesserung
+                        // -- zeichnet nur selectedTile und vorheriges selectedTile neu
+                        ArrayList<MTile> changedTiles = new ArrayList<MTile>();
+                        if(!selectedbefore.contains(gameModel.getTileById(gameModel.selectedTileId))){
+                        selectedbefore.add(gameModel.getTileById(gameModel.selectedTileId));}
+
+                        System.out.println(selectedbefore.toString());
+
+                        if(selectedbefore.size()>1){
+                            if(selectedbefore.getFirst()==null){
+                                selectedbefore.removeFirst();
+                            }
+                            else{
+                                MTile vorherausgewählt = selectedbefore.pollFirst();
+                                changedTiles.add(vorherausgewählt);
+                            }
+
+                        }
+                        changedTiles.add(gameModel.getTileById(gameModel.selectedTileId));
+                        changedTiles.removeAll(Collections.singleton(null));
+                            gameView.drawChangedTiles(changedTiles);
+
+                        //--falls Fehler auftritt, wieder gameView.drawField() nutzen und darüberstehendes auskommentieren
+                        //gameView.drawField();
                     }
                 }
             });

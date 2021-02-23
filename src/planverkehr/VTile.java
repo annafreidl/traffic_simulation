@@ -201,7 +201,6 @@ public class VTile {
                     temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
                     tempIso = temp.toCanvasCoord();
                     gc.lineTo(tempIso.getX(), tempIso.getY());
-                    ;
                     gc.setFill(schatten);
                     gc.fill();
                     gc.stroke();
@@ -454,7 +453,6 @@ public class VTile {
                     temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
                     tempIso = temp.toCanvasCoord();
                     gc.lineTo(tempIso.getX(), tempIso.getY());
-                    ;
                     gc.setFill(hell);
                     gc.fill();
                     gc.stroke();
@@ -487,7 +485,6 @@ public class VTile {
                     temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
                     tempIso = temp.toCanvasCoord();
                     gc.lineTo(tempIso.getX(), tempIso.getY());
-                    ;
                     gc.setFill(mittel);
                     gc.fill();
                     gc.stroke();
@@ -520,7 +517,6 @@ public class VTile {
                     temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
                     tempIso = temp.toCanvasCoord();
                     gc.lineTo(tempIso.getX(), tempIso.getY());
-                    ;
                     gc.setFill(hell);
                     gc.fill();
                     gc.stroke();
@@ -552,7 +548,6 @@ public class VTile {
                     temp = new MCoordinate(visibleXOriginal + tileModel.getSouth().getX(), visibleYOriginal - tileModel.getSouth().getY(), tileModel.getSouth().getZ());
                     tempIso = temp.toCanvasCoord();
                     gc.lineTo(tempIso.getX(), tempIso.getY());
-                    ;
                     gc.setFill(dunkel);
                     gc.fill();
                     gc.stroke();

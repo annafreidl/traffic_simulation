@@ -59,7 +59,7 @@ public class MCoordinate {
        double yNew = y - Config.YOffset;
 
         double xVisible = ((xNew / Config.tWidthHalft) + (yNew / Config.tHeightHalft)) / 2;
-        double yVisible = (((yNew / Config.tHeightHalft) - (xNew / Config.tWidthHalft)) / 2) - Config.worldWidth + 1;
+        double yVisible = (((yNew / Config.tHeightHalft) - (xNew / Config.tWidthHalft)) / 2) - Config.worldHeight + 1;
 
         return new MCoordinate((int) xVisible, (int) yVisible, z);
     }
