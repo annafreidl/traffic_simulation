@@ -18,6 +18,7 @@ public class MAirport {
     Buildings tower, bigTower, runway, terminal, taxiway;
     int maxPlanes; //wieviele kann der Flughafen spawnen
     boolean fullyBuilt;
+    boolean noBuildingsSet;
 
     /** Diese Klasse erstellt vollständige/funktionale Airports aus den einzelenen Gebäuden des Airports */
 
@@ -34,6 +35,7 @@ public class MAirport {
         taxiway = null;
         maxPlanes = 0;
         fullyBuilt = false;
+        noBuildingsSet = false;
     }
 
 /*    private void createSpecialTargetTypeLists() {
@@ -68,6 +70,11 @@ public class MAirport {
         fullyBuilt = (tower != null || bigTower != null) && terminal != null && runway != null && taxiway != null; //is true wenn all das zutrifft
     }
 
+    private void airportEmpty(){
+        noBuildingsSet = tower == null && bigTower == null && terminal == null && runway == null && taxiway == null; //is true wenn all das zutrifft
+    }
+
+
     public void updateMaxPlanes(){
         if(fullyBuilt) {
             if (bigTower == null) maxPlanes = tower.getMaxPlanes();
@@ -97,6 +104,10 @@ public class MAirport {
 
     public Buildings getTaxiway() {
         return taxiway;
+    }
+
+    public boolean isNoBuildingsSet() {
+        return noBuildingsSet;
     }
 
     public void setTower(Buildings tower) {
@@ -131,27 +142,32 @@ public class MAirport {
         tower = null;
         isFunctional();
         updateMaxPlanes();
+        airportEmpty();
     }
 
     public void removeBigTower(){
         bigTower = null;
         isFunctional();
         updateMaxPlanes();
+        airportEmpty();
     }
 
     public void removeTerminal(){
         terminal = null;
         fullyBuilt = false;
+        airportEmpty();
     }
 
     public void removeRunway(){
         runway = null;
         fullyBuilt = false;
+        airportEmpty();
     }
 
     public void removeTaxiway(){
         taxiway = null;
         fullyBuilt = false;
+        airportEmpty();
     }
 }
 

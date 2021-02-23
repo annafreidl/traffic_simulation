@@ -26,7 +26,6 @@ public class MAirportManager {
     public boolean createOrConnectToAirport(Buildings newBuilding) {
         List<Buildings> neighbourBuildings = model.getNeighbourBuildings(newBuilding);
         List<MAirport> neighbourAirports = getNeighbourAirports(neighbourBuildings);
-        System.out.println("NEIGHBOUR AIRPORTS:    " + neighbourAirports);
         String buildingName = newBuilding.getBuildingName();
 
         //1. Fall: es gibt noch keinen Airport, also machen wir einen neuen
@@ -77,6 +76,18 @@ public class MAirportManager {
         building.setAssociatedAirport(airport);
     }
 
+    //Gebäude löschen aus Airport
+    public void removeBuildingFromAirport(Buildings building, MAirport airport, String buildingName) {
+        switch (buildingName) {
+            case "tower" -> airport.removeTower();
+            case "big tower" -> airport.removeBigTower();
+            case "terminal" -> airport.removeTerminal();
+            case "runway" -> airport.removeRunway();
+            case "taxiway" -> airport.removeTaxiway();
+        }
+        building.setAssociatedAirport(null);
+    }
+
     //check if Building is already there in the airport
     public boolean checkForSpaceInAirport(MAirport airport, String buildingName) {
         switch (buildingName) {
@@ -99,6 +110,9 @@ public class MAirportManager {
         return false;
     }
 
+    public void removeAirportFromList(MAirport airport){
+        airports.remove(airport);
+    }
 
     public void showAirportAlert() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -108,6 +122,4 @@ public class MAirportManager {
 
         alert.showAndWait();
     }
-
-
 }

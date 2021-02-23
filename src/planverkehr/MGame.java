@@ -561,11 +561,23 @@ public class MGame {
         if (selectedTile != null &&
             selectedTile.getState() != EBuildType.free) {
             String groupId = "";
-            Graph relevantGraph = selectedTile.getState().equals(EBuildType.road) ? roadGraph : railGraph;
+
+            if (selectedTile.getState().equals(EBuildType.airport)){
+                Buildings buildingOnTile = selectedTile.getBuildingOnTile();
+                String buildingName = buildingOnTile.getBuildingName();
+                MAirport associatedAirport = buildingOnTile.getAssociatedAirport();
+                mAirportManager.removeBuildingFromAirport(buildingOnTile, associatedAirport, buildingName);
+                if(associatedAirport.isNoBuildingsSet()) mAirportManager.removeAirportFromList(associatedAirport);
+            }
+
             for (MTile mTile : getGroupedTiles(selectedTile.getConnectedBuilding().getWidth(), selectedTile.getConnectedBuilding().getDepth(),
                 selectedTile.isFirstTile)) {
-                if (mTile.getState().equals(EBuildType.rail) || mTile.getState().equals(EBuildType.road)) {
+                if (mTile.getState().equals(EBuildType.rail) || mTile.getState().equals(EBuildType.road) || mTile.getState().equals(EBuildType.airport)) {
 
+                    Graph relevantGraph;
+                    if(selectedTile.getState().equals(EBuildType.road)) relevantGraph = roadGraph;
+                    else if(selectedTile.getState().equals(EBuildType.rail)) relevantGraph = railGraph;
+                    else relevantGraph = airportGraph;
 
                     for (MKnotenpunkt k : mTile.getKnotenpunkteArray()) {
                         if (k.getListOfGroupId().size() > 1) {
@@ -589,7 +601,6 @@ public class MGame {
                 }
                 mTile.reset();
             }
-
         }
     }
 
