@@ -634,29 +634,6 @@ public class MGame {
         }
     }
 
-    // todo: dynamisch klonen, damit es auch noch funktioniert wenn Attribute
-    // hinzugefügt werden (bsp combinesBuildings). Muss in die Buildingsklasse
-    public Buildings copyBuilding(Buildings building) {
-
-        String buildingName = building.getBuildingName();
-        String buildMenu = building.getBuildMenu();
-        int width = building.getWidth();
-        int depth = building.getDepth();
-        java.util.Map<String, MCoordinate> points = building.getPoints();
-        java.util.List<Pair<String, String>> roads = building.getRoads();
-        List<Pair<String, String>> rails = building.getRails();
-        List<Pair<String, String>> planes = building.getPlanes();
-        int dz = building.getDz();
-        String special = building.getSpecial();
-        int maxPlanes = building.getMaxPlanes();
-        java.util.Map<String, String> combinesStrings = building.getCombinesStrings();
-
-        List<MProductions> productions = building.getProductions();
-
-        return new Buildings(buildingName, buildMenu, width, depth, points, roads, rails, planes, dz, special,
-            maxPlanes, combinesStrings, productions);
-    }
-
     public void resetTile() {
         MTile selectedTile = getSelectedTile();
         if (selectedTile != null && selectedTile.getState() != EBuildType.free) {
@@ -667,8 +644,8 @@ public class MGame {
                 String buildingName = buildingOnTile.getBuildingName();
                 MAirport associatedAirport = buildingOnTile.getAssociatedAirport();
                 mAirportManager.removeBuildingFromAirport(buildingOnTile, associatedAirport, buildingName);
-                if (associatedAirport.isNoBuildingsSet())
-                    mAirportManager.removeAirportFromList(associatedAirport);
+                if (associatedAirport.isNoBuildingsSet()) //wenn keine Airport Gebäude existieren von dem Airport
+                    mAirportManager.removeAirportFromList(associatedAirport); //dann soll Airport aus Liste gelöscht werden
             }
 
             for (MTile mTile : getGroupedTiles(selectedTile.getConnectedBuilding().getWidth(),
@@ -824,9 +801,7 @@ public class MGame {
                     String tileID = tileX + "--" + tileY;
                     MTile newTile = getTileById(tileID); // den PArt nehmen, und statt XY coord gehe ich da durch und
                     // rechne mir da sämtliche Nachbarn aus
-                    // ein tile is links unten, eins rechts oben und dann alle Tiles die dazwischen
-                    // liegen
-                    //
+                    // ein tile is links unten, eins rechts oben und dann alle Tiles die dazwischen liegen
                     buildingTiles.add(newTile); // Tile vom Gebäude
                 }
             }
@@ -843,8 +818,7 @@ public class MGame {
         // d.h., wir rufen diese methode inner forschleife auf und prüfen dann für jedes
         // tile von buildingsTiles die nachbarn
 
-        for (int i = 0; i < buildingTiles.size(); i++) {
-            MTile currentTile = buildingTiles.get(i);
+        for (MTile currentTile : buildingTiles) {
             MCoordinate currentCoordinates = currentTile.getIDCoordinates(); // holen uns ID von current tile
             int xCoord = (int) currentCoordinates.getX();
             int yCoord = (int) currentCoordinates.getY();
@@ -874,12 +848,10 @@ public class MGame {
         } // end for
 
         // Linked Hashset ist eine Liste, in der keine Duplikate vorkommen dürfen
-        // wenn ich den kram normal in der arraylist speicher, habe ich mehrmals das
-        // gleiche nachbargebäude falls dieses an mehreren tiles angrenzt
+        // wenn ich den kram normal in der arraylist speicher, habe ich mehrmals das gleiche nachbargebäude falls dieses an mehreren tiles angrenzt
         LinkedHashSet<Buildings> duplicateRemover = new LinkedHashSet<>(neighbourBuildings);
         ArrayList<Buildings> borderingBuildings = new ArrayList<>(duplicateRemover);
-        borderingBuildings.remove(building); // haben liste mit den neighbourbuildings und kicken da unser eigenes
-        // building raus
+        borderingBuildings.remove(building); // haben liste mit den neighbourbuildings und kicken da unser eigenes building raus
 
         return borderingBuildings;
     }
@@ -1017,13 +989,6 @@ public class MGame {
         double startPointY = field.getIDCoordinates().getY();
         double centerX = startPointX + 0.5; // PUNKT AUF SÜDWEST UNTEN LINKS
 
-        /*
-         * double buildingX = newBuilding.getWidth(); //get Höhe und Breite des
-         * Buildings double buildingY = newBuilding.getDepth(); double centerX = x +
-         * (buildingX/2); //calculate Building Center double centerY = y +
-         * (buildingY/2);
-         */
-
         String key = "centerNode";
         double level = field.getLevel(); // checking hoehe der tile for coords
         MCoordinate coords;
@@ -1041,8 +1006,6 @@ public class MGame {
                 finalCoords = new MCoordinate(finalPointX, finalPointY, level);
 
                 MKnotenpunkt buildingPoint = createBuildingNode(finalCoords, name, buildingToBeBuiltType, newBuilding);
-                // System.out.println(buildingPoint);
-                // System.out.println("Hi");
             });
 
             // IF NOT THOSE 3, SET POINT TO SOUTHWEST
@@ -1052,16 +1015,10 @@ public class MGame {
     }
 
     private MKnotenpunkt createBuildingNode(MCoordinate coords, String name, EBuildType buildingToBeBuiltType, Buildings newBuilding) {
-
-        // EBuildType buildingToBeBuiltType = EBuildType.factory;
-        //EBuildType buildingType = EBuildType.factory; //we know we gonna need factory
-        //GET BUILDTYPE DYNAMIC FROM BUILDING WE BUILD
-        Graph buildingGraph = new Graph();
+        Graph buildingGraph = new Graph(); //GET BUILDTYPE DYNAMIC FROM BUILDING WE BUILD
 
         //node ID setzt sich zusammen aus string, building type and Nummer (reihenfolge) (ID +1)
         String nodeId = "" + buildingToBeBuiltType + buildingGraph.getIncreasedId();
-        //System.out.println("nodeID:" + nodeId); //ID DOESNT GET INCREASED FOR SOME REASON
-
         String selectedTileId = getSelectedTileId(); //getting the tile we selected
 
         //Wenn selected tile NICHT null ist, dann mach den Kram
@@ -1088,7 +1045,6 @@ public class MGame {
                 knotenpunkt.addGroupId(groupId);
             } else {
                 knotenpunkt = new MKnotenpunkt(nodeId, groupId, coords, buildingToBeBuiltType, name, buildingField.getId(), coords.getRoadDirection(), coords.isEdge());
-                //System.out.println("knotenpunkt:"+ knotenpunkt);
                 buildingGraph.put(coords.toStringCoordinates(), knotenpunkt);
             }
             return knotenpunkt;
@@ -1138,9 +1094,7 @@ public class MGame {
                     Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
                     newBuilding.setStartTile(feld);
                     if (mAirportManager.createOrConnectToAirport(newBuilding)) {
-
-                        for (int j = 0; j < relevantTiles.size(); j++) {
-                            MTile relevantTile = relevantTiles.get(j);
+                        for (MTile relevantTile : relevantTiles) {
                             relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
                             relevantTile.addConnectedBuilding(newBuilding);
                         }
@@ -1150,35 +1104,28 @@ public class MGame {
                     } else mAirportManager.showAirportAlert();
                 } else {
                     new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist);
-                    if (stationStatus.equals(EStationStatus.ONE)) {
-                        addBuildingToStation(feld, buildingToBeBuilt);
-                    } else if (stationStatus.equals(EStationStatus.NONE)) {
-                        createStation(feld, buildingToBeBuilt);
-                    }
+
+                    if (stationStatus.equals(EStationStatus.ONE))  addBuildingToStation(feld, buildingToBeBuilt);
+                    else if (stationStatus.equals(EStationStatus.NONE)) createStation(feld, buildingToBeBuilt);
                 }
 
             } else if (feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
-                if (hasSpaceForBuilding) {
-                    feld.setState(buildingToBeBuiltType);
+                if (hasSpaceForBuilding) feld.setState(buildingToBeBuiltType);
 
-                }
-                if (feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.airport) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
+                if (feld.getState().equals(EBuildType.free)) {
 
                     if (hasSpaceForBuilding) {
                         feld.setState(buildingToBeBuiltType);
 
                         Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
 
-                        for (int j = 0; j < relevantTiles.size(); j++) {
-                            MTile relevantTile = relevantTiles.get(j);
+                        for (MTile relevantTile : relevantTiles) {
                             relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
                             relevantTile.addConnectedBuilding(newBuilding);
                             relevantTile.setState(buildingToBeBuiltType);
                         }
                         newBuilding.setStartTile(feld);
                         createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
-
-
                     }
 
                 }

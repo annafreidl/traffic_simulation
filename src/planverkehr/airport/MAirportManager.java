@@ -2,9 +2,7 @@ package planverkehr.airport;
 
 import javafx.scene.control.Alert;
 import planverkehr.Buildings;
-import planverkehr.EBuildType;
 import planverkehr.MGame;
-import planverkehr.MTile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +54,6 @@ public class MAirportManager {
         for (Buildings currentBuilding : neighbourBuildings) {
             if (currentBuilding.getAssociatedAirport() != null) {
                 MAirport currentAirport = currentBuilding.getAssociatedAirport();
-                //System.out.println(currentBuilding.getEbuildType()); //TODO interessant to know: Ebuild wird auf unknown gesetzt nachdem man das Gebäude baut lol
                 if (!neighbourAirports.contains(currentAirport)) neighbourAirports.add(currentAirport);
             }
         }
