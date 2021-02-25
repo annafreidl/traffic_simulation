@@ -16,9 +16,8 @@ import planverkehr.verkehrslinien.linienConfigController;
 import planverkehr.verkehrslinien.linienConfigModel;
 import planverkehr.verkehrslinien.linienConfigObject;
 import planverkehr.verkehrslinien.linienConfigWindow;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
+
+import java.util.*;
 
 
 public class Controller {
@@ -383,7 +382,7 @@ public class Controller {
 
                         //Hinzugefügt für Performance-Verbesserung
                         // -- zeichnet nur selectedTile und vorheriges selectedTile neu
-                        ArrayList<MTile> changedTiles = new ArrayList<MTile>();
+                        ArrayList<MTile> changedTiles = new ArrayList<>();
                         if(!selectedbefore.contains(gameModel.getTileById(gameModel.selectedTileId))){
                         selectedbefore.add(gameModel.getTileById(gameModel.selectedTileId));}
 
@@ -399,7 +398,7 @@ public class Controller {
                             }
 
                         }
-                        changedTiles.add(gameModel.getTileById(gameModel.selectedTileId));
+                        changedTiles.add(gameModel.getSelectedTile());
                         changedTiles.removeAll(Collections.singleton(null));
                             gameView.drawChangedTiles(changedTiles);
 
@@ -412,13 +411,54 @@ public class Controller {
         //todo: remove connected knotenpunkte
         gameView.getRemoveButton().setOnAction(e -> {
                 //   gameModel.removeKnotenpunkte();
-                gameModel.resetTile();
-                gameView.clearField();
-                gameView.drawField();
+            MTile selectedTile = gameModel.getSelectedTile();
 
+            if(selectedTile.getState() != EBuildType.factory && selectedTile.getState() != EBuildType.free
+            && selectedTile.getState() != EBuildType.water){
+
+                ArrayList<MTile> changedTiles = new ArrayList<>();
+
+                for (MTile mitbebaut : gameModel.getGroupedTiles(selectedTile.getConnectedBuilding().getWidth(), selectedTile.getConnectedBuilding().getDepth(), selectedTile.isFirstTile)) {
+                    gameView.clearTiles(mitbebaut);
+                    changedTiles.add(mitbebaut);
+                    if(selectedTile.getState()==EBuildType.road){
+                        changedTiles.addAll(gameModel.getNeighbours(mitbebaut));
+                    }
+                    else changedTiles.addAll(gameModel.getNeighboursOfSecondOrder(mitbebaut));
+                }
+
+                changedTiles.add(gameModel.getSelectedTile());
+                if(selectedTile.getState()==EBuildType.road){
+                    changedTiles.addAll(gameModel.getNeighbours(gameModel.getSelectedTile()));
+                }
+                else {
+                    changedTiles.addAll(gameModel.getNeighboursOfSecondOrder(gameModel.getSelectedTile()));
+                }
+
+                gameModel.resetTile();
+                gameView.clearTiles(selectedTile);
+                gameView.drawChangedTiles((ArrayList<MTile>) removeDuplicate(changedTiles));
+            }
 
             });
 
+    }
+
+    private ArrayList<?> removeDuplicate(ArrayList<?> list) {
+        Set<?> set = transformListIntoSet(list);
+        return transformSetIntoList(set);
+    }
+
+    public static Set<?> transformListIntoSet(ArrayList<?> list) {
+        Set<Object> set = new LinkedHashSet<>();
+        set.addAll(list);
+        return set;
+    }
+
+    public static ArrayList<?> transformSetIntoList(Set<?> set) {
+        ArrayList<Object> list = new ArrayList<>();
+        list.addAll(set);
+        return list;
     }
 
     private void handleMenuClick(Menu m, MenuItem i) {
@@ -437,7 +477,10 @@ public class Controller {
                 System.out.println(i.getId());
                 System.out.println(i.getText());
 
-                gameView.drawField();
+                gameView.drawChangedTiles(gameModel.getGroupedTiles(gameModel.getSelectedTile().getConnectedBuilding().getWidth(),
+                    gameModel.getSelectedTile().getConnectedBuilding().getDepth(),
+                    gameModel.getSelectedTile().isFirstTile));
+                //gameView.drawField();
                 // gameModel.railGraph.print();
             }
         }

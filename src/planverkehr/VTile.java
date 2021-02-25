@@ -639,7 +639,7 @@ public class VTile {
 
             switch (tileModel.getState()) {
 //todo: Pfad darf keine leerzeichen haben
-                case factory -> {
+                case factory, nature -> {
 
                     image = new Image("Images/" + b.getBuildingName() + ".png");
 
@@ -656,20 +656,14 @@ public class VTile {
 
                 case airport -> {
                     String buildingName = b.getBuildingName().replace(" ", "-");
-                    // System.out.println(buildingName);
+
                     image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
 
                     drawInCenter(image, gc);
                 }
 
-                case nature -> {
 
 
-                    image = new Image("Images/" + b.getBuildingName() + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
-
-                    drawInCenter(image, gc);
-
-                }
 
 
            /* default -> {

@@ -1109,26 +1109,20 @@ public class MGame {
                     else if (stationStatus.equals(EStationStatus.NONE)) createStation(feld, buildingToBeBuilt);
                 }
 
-            } else if (feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
-                if (hasSpaceForBuilding) feld.setState(buildingToBeBuiltType);
+            } else if (hasSpaceForBuilding && feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
 
-                if (feld.getState().equals(EBuildType.free)) {
+                    feld.setState(buildingToBeBuiltType);
 
-                    if (hasSpaceForBuilding) {
-                        feld.setState(buildingToBeBuiltType);
+                    Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
 
-                        Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
-
-                        for (MTile relevantTile : relevantTiles) {
-                            relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
-                            relevantTile.addConnectedBuilding(newBuilding);
-                            relevantTile.setState(buildingToBeBuiltType);
-                        }
-                        newBuilding.setStartTile(feld);
-                        createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
+                    for (MTile relevantTile : relevantTiles) {
+                        relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
+                        relevantTile.addConnectedBuilding(newBuilding);
+                        relevantTile.setState(buildingToBeBuiltType);
                     }
+                    newBuilding.setStartTile(feld);
+                    createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
 
-                }
             }
         }
     }

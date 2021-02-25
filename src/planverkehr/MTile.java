@@ -52,7 +52,7 @@ public class MTile {
         punkte.addAll(Arrays.asList(isoNorth, isoEast, isoSouth, isoWest));
 
         createCornerPoints();
-        createCreateHoehenArray();
+        createHöhenArray();
         getIncline();
     }
 
@@ -67,7 +67,7 @@ public class MTile {
         return incline;
     }
 
-    public ArrayList<Integer> createCreateHoehenArray() {
+    public ArrayList<Integer> createHöhenArray() {
         for (MCoordinate c: punkteNeu
              ) {
             höhen.set(punkteNeu.indexOf(c) , (int) c.getZ());
@@ -311,7 +311,7 @@ public class MTile {
                     MCoordinate currentPointRel = this.getPunkteNeu().get(index);
                     currentPointRel.setZ(currentPointRel.getZ() + factor);
                 }
-                this.createCreateHoehenArray();
+                this.createHöhenArray();
 
                 boolean isLand = true;
                 for(int m = 0; m<this.höhen.size()&& isLand; m++){

@@ -63,10 +63,16 @@ public class VGame {
         int requiredCanvasWidth = (int) Math.ceil((Config.worldWidth + Config.worldHeight) * Config.tWidthHalft);
         int requiredCanvasHeight = (int) Math.ceil((Config.worldWidth + Config.worldHeight + 3) * Config.tHeightHalft);
 
-//        canvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
-//        canvasFront = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
         canvas = new Canvas(requiredCanvasWidth, requiredCanvasHeight);
         canvasFront = new Canvas(requiredCanvasWidth, requiredCanvasHeight);
+
+        double translateX = requiredCanvasWidth/2;
+        double translateY = requiredCanvasHeight/2;
+
+        canvas.setTranslateX(canvas.getTranslateX() - translateX);
+        canvas.setTranslateY(canvas.getTranslateY()-translateY);
+        canvasFront.setTranslateX(canvasFront.getTranslateX()-translateX);
+        canvasFront.setTranslateY(canvasFront.getTranslateY()-translateY);
 
         selectionCanvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
         gc = canvas.getGraphicsContext2D();
@@ -556,17 +562,7 @@ public class VGame {
                 }
                 if (!t.isFree()) {
                 allemitbesetztenfrei=false;
-                t.setState(EBuildType.factory);
-                t.setBuildingOnTile(b);
-                t.addConnectedBuilding(b);
-                MCoordinate buildingCoord=new MCoordinate(xId+0.5,yId,0);
-                MKnotenpunkt buildingNode=new MKnotenpunkt(buildingCoord.toString(),b.getBuildingName(),buildingCoord,b.getBuildType(),b.getBuildingName(),randomId,EDirections.EMPTY,true);
-                t.addKnotenpunkt(buildingNode);
-                MFactory f=new MFactory(b);
-                f.setKnotenpunkt(buildingNode);
-                    f.setHaltestelle(gameModel.createFactoryStation(t,f));
 
-                gameModel.addFactoryToConstructedFactories(f);
                 }
             }
 
@@ -584,6 +580,14 @@ public class VGame {
                 t.setState(EBuildType.factory);
                 t.setBuildingOnTile(b);
                 t.addConnectedBuilding(b);
+                MCoordinate buildingCoord=new MCoordinate(xId+0.5,yId,0);
+                MKnotenpunkt buildingNode=new MKnotenpunkt(buildingCoord.toString(),b.getBuildingName(),buildingCoord,b.getBuildType(),b.getBuildingName(),randomId,EDirections.EMPTY,true);
+                t.addKnotenpunkt(buildingNode);
+                MFactory f=new MFactory(b);
+                f.setKnotenpunkt(buildingNode);
+                f.setHaltestelle(gameModel.createFactoryStation(t,f));
+
+                gameModel.addFactoryToConstructedFactories(f);
 
                 if (mitbesetzte != null) {
                     for (MTile mitbesetzt : mitbesetzte) {
@@ -635,7 +639,7 @@ public class VGame {
                     }
                 }
             }
-            tile.createCreateHoehenArray();
+            tile.createHöhenArray();
         });
 
         gameModel.getBuildingsList().forEach((key, b) -> {
@@ -684,7 +688,7 @@ public class VGame {
 
             for (MCoordinate m : tile.getPunkteNeu()) {
                 m.setZ(0);
-                tile.createCreateHoehenArray();
+                tile.createHöhenArray();
             }
             tile.reset();
 
@@ -798,7 +802,7 @@ public class VGame {
                 for (MTile key : erhöheAmEnde.keySet()) {
 
                     key.erhöhePunkte(erhöheAmEnde.get(key), factor);
-                    key.createCreateHoehenArray();
+                    key.createHöhenArray();
                     key.höhendif();
                     key.setHoch(richtung);
                 }
@@ -906,8 +910,9 @@ public class VGame {
             if (tile.isFirstTile) {
                 tempTileView.drawForeground(gcFront);
             }
-
-            canvas.toBack();
+            if(!tile.isFree()){
+                canvas.toBack();
+            }
 
         });
 
@@ -918,6 +923,28 @@ public class VGame {
 
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         gcFront.clearRect(0, 0, canvasFront.getWidth(), canvasFront.getHeight());
+    }
+
+    public void clearTiles(MTile tile){
+
+        double schraege;
+        MCoordinate westRelativ = tile.punkteNeu.get(3);
+        MCoordinate westVisible = tile.getVisibleCoordinates();
+        MCoordinate westAbsolut = new MCoordinate(westVisible.getX() + westRelativ.getX(), westVisible.getY() + westRelativ.getY(), westRelativ.getZ());
+        boolean gehtHoch = tile.punkteNeu.get(3).getZ() != tile.getLevel();
+        double westAbsolutX = westAbsolut.getX();
+        double westAbsolutY = westAbsolut.getY();
+        double westAbsolutZ = westAbsolut.getZ();
+
+        if (tile.isSchraeg()) {
+            schraege = gehtHoch ? westAbsolutZ - 0.5 : westAbsolutZ + 0.5;
+        } else {
+            schraege = westAbsolutZ;
+        }
+
+        MCoordinate centerCoord = new MCoordinate(westAbsolutX, westAbsolutY, schraege).toCanvasCoordWithoutOffset();
+
+        gcFront.clearRect( centerCoord.getX(), centerCoord.getY() - centerCoord.getZ() - Config.tHeightHalft-Config.tHeightHalft/2 , Config.tWidth, Config.tHeight+Config.tHeightHalft/2);
     }
 
     public MenuBar getMenuBar() {
