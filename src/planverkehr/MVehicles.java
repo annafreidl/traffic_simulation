@@ -168,6 +168,7 @@ public class MVehicles {
         nextWaypoint = switch (this.getKind()) {
             case "road vehicle" -> ESpecial.BUSSTOP;
             case "engine" -> ESpecial.RAILSTATION;
+            case "plane" -> ESpecial.AIRPORT;
             default -> ESpecial.BUSSTOP;
         };
         //     } else {

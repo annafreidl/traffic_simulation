@@ -768,7 +768,12 @@ public class MGame {
                 System.out.println("die erste Haltestelle ist zurZeit blockiert, es wird gewartet bis sie frei wird");
                 activeLinie.getListeAllerLinienKnotenpunkte().add(w);
             }
-        }
+        } else if (activeLinie.getType().equals(EBuildType.airport)) {
+              activeLinie.getVehicle().setCurrentKnotenpunkt(w.getKnotenpunkt());
+              activeLinie.getVehicle().setVisible(true);
+              activeLinie.addWegknotenpunktToBack(w);
+            }
+
 
         if (canCreateLinie) {
             linienList.add(activeLinie);

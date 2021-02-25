@@ -179,7 +179,7 @@ public class MTransportConnection {
         switch (buildingToBeBuiltType) {
             case rail -> connectionList = buildingToBeBuilt.getRails();
             case road -> connectionList = buildingToBeBuilt.getRoads();
-            case airport -> connectionList = buildingToBeBuilt.getPlanes();   /** Morgen fragen, ob getPlanes richtig **/
+            case airport -> connectionList = buildingToBeBuilt.getPlanes();
         }
 
         if (connectionList != null) {

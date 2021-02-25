@@ -40,7 +40,9 @@ public class PlaneGenerator {
 
         initTIme = 0;
         planesOnAirport = 0;
-        maxPlanes = 0;
+        maxPlanes = 6;
+
+        spawnAirplanes();
 
 
         //  planesQueue = config.getDefaultPlanesQueue();
@@ -55,6 +57,10 @@ public class PlaneGenerator {
         //int initTime = whenever we place Building
 
         if (planesOnAirport <= maxPlanes){
+
+            //MAirplane plane = new MAirplane();
+
+
 
           //  MAirplane plane = new MAirplane(mAirport.getWaypointList(), 0, 1 + ((int) (Math.random() * 10)));
 
