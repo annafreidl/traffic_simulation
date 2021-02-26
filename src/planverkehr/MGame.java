@@ -687,12 +687,16 @@ public class MGame {
     }
 
     public String getFeldIdByCanvasCoords(double canvasX, double canvasY) {
-        MCoordinate canvasCoordinate = new MCoordinate(canvasX, canvasY, 0);
-
-        MCoordinate visibleCoordinate = canvasCoordinate.toVisibleCoord();
+              MCoordinate visibleCoordinate = getVisibleCoordsByCanvasCoords(canvasX, canvasY);
 
         // rufe Tile an der Stelle auf
         return (int) visibleCoordinate.getX() + "-" + (int) visibleCoordinate.getY();
+    }
+
+    public MCoordinate getVisibleCoordsByCanvasCoords(double canvasX, double canvasY) {
+        MCoordinate canvasCoordinate = new MCoordinate(canvasX, canvasY, 0);
+
+        return canvasCoordinate.toVisibleCoord();
     }
 
     public boolean isCreateLine() {

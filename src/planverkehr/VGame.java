@@ -6,6 +6,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
@@ -873,6 +874,51 @@ public class VGame {
         clearField();
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
+        HashMap<String, MTile> edgeTiles = new HashMap<>();
+
+//        for (int i = 0; i < 4; i++) {
+//            double x = i % 2 == 0 ? 0 : window.getHeight();
+//            double y = i % 2 == 0 ? 0 : window.getWidth();
+//
+//            Point2D canvasPoint = canvas.sceneToLocal(x, y);
+//            x = canvasPoint.getX();
+//            y = canvasPoint.getY();
+//
+//            MCoordinate tileCoord = gameModel.getVisibleCoordsByCanvasCoords(x,y);
+//
+//            if(tileCoord.getX() > Config.worldWidth){
+//                tileCoord.setX(Config.worldWidth);
+//            } else if (tileCoord.getX() <0){
+//                tileCoord.setX(0);
+//            }
+//
+//            if(tileCoord.getY() > Config.worldHeight){
+//                tileCoord.setY(Config.worldHeight);
+//            } else if (tileCoord.getY() <0){
+//                tileCoord.setY(0);
+//            }
+//
+//
+//            MTile temp = gameModel.getTileById(tileCoord.toIntStringCoordinates());
+//
+//            if(temp == null){
+//                x = i % 2 == 0 ? 0 : Config.worldWidth;
+//                y = i % 2 == 0 ? 0 : Config.worldHeight;
+//                if(y == 0){
+//                    temp = gameModel.getTileById((int)x +"-" + (int)y);
+//                } else {
+//                    temp = gameModel.getTileById((int) x + "--" + (int) y);
+//                }
+//            }
+//
+//            edgeTiles.put(temp.getId(), temp);
+//        }
+
+        ArrayList<MTile> visibleTileArray = new ArrayList<>();
+
+
+
+
         gameModel.getTileArray().forEach((tile) -> {
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);

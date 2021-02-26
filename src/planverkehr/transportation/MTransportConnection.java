@@ -332,7 +332,7 @@ public class MTransportConnection {
     }
 
     private void checkIsConnection() {
-        isConnection = !feld.isFree() && buildingToBeBuilt.getCombinesStrings().size() > 0 &&
+        isConnection = !feld.isFree() && !feld.getState().equals(EBuildType.water) && buildingToBeBuilt.getCombinesStrings().size() > 0 &&
             buildingToBeBuilt.getCombinesStrings().containsKey(feld.getConnectedBuilding().getBuildingName());
     }
 

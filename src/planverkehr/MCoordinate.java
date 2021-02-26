@@ -88,6 +88,10 @@ public class MCoordinate {
         return x + "-" + y;
     }
 
+    public String toIntStringCoordinates(){
+        return (int)x + "-" + (int)y;
+    }
+
     public boolean istGleich(MCoordinate b){
         boolean p;
             if(x == b.x && y == b.y) {p = true; }
