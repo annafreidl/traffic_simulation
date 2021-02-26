@@ -11,4 +11,5 @@ public enum EBuildType {
     water,
     factory,
     unknown,
+    cathedral,
 }

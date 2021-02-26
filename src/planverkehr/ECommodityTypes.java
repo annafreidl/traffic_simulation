@@ -6,5 +6,16 @@ public enum ECommodityTypes {
     silicon,
     solar_panels,
     methyl_chloride,
-    silicone
+    silicone,
+    wool,
+    stone,
+    wood,
+    water,
+    ore,
+    cloth,
+    brick,
+    plank,
+    mortar,
+    bell,
+    gate
 }

@@ -57,12 +57,13 @@ public class MFactory extends Buildings {
     }
 
     //called when game is started
-    public void startProductionAndConsumption() {
+    public void startProductionAndConsumption(int tickNumber) {
         List<MProductions> productionsList = this.getProductions();
         if (productionsList != null) {
             for (MProductions production : productionsList) {
                 production.setFactory(this);
-                production.consumeAndProduce();
+                if (tickNumber % production.getDuration() == 0){
+                production.consumeAndProduce();}
             }
         }
     }

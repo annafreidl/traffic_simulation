@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+
 import java.io.InputStream;
 import java.util.*;
 
@@ -18,10 +19,13 @@ public class JSONParser {
 
     List<String> commodities;
 
+
     public JSONParser() throws JSONException {
         filename = (Config.jsonFile);
         is = this.getClass().getClassLoader().getResourceAsStream(filename);
         json = new JSONObject(new JSONTokener(is));
+
+
     }
 
 
@@ -67,6 +71,7 @@ public class JSONParser {
                 map = new MMap(mapGen, gameMode, width, depth);
             } catch (JSONException e) {
                 e.printStackTrace();
+                programmBeenden();
             }
         } else {
             System.out.println("No Map found");
@@ -152,6 +157,7 @@ public class JSONParser {
                 cargo.put(kind, cargoObject.getInt(kind));
             } catch (JSONException e) {
                 e.printStackTrace();
+                programmBeenden();
             }
         }
     }

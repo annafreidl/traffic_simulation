@@ -53,6 +53,10 @@ public class MKnotenpunkt {
         blockedForTickListRight = new TreeSet<>();
     }
 
+    public String getFeldId() {
+        return feldId;
+    }
+
     public void addGroupId(String id) {
         groupIds.add(id);
     }

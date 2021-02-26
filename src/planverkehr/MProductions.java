@@ -1,10 +1,9 @@
 package planverkehr;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.util.Duration;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 //known Bugs:
 //bei zwei konsumierbaren resourcen wird nur überprüft, ob die erste vorhanden ist -> konsum obwohl nur nur 1 der 2 resourcen
@@ -31,7 +30,6 @@ public class MProductions {
         produceStorage = new HashMap<>();
         zeroStorage();
     }
-
 
 
     public int getDuration() {
@@ -106,7 +104,6 @@ public class MProductions {
             return false;
         }
     }
-
 
 
     public boolean producedResourcesAvailable(String resource, int quantity) {
@@ -193,16 +190,10 @@ public class MProductions {
         }
     }
 
-
     public void consumeAndProduce() {
-        Timeline timeline = new Timeline(
-            new KeyFrame(Duration.seconds(Config.tickFrequency.multiply(getDuration()).toSeconds()), e -> {
-                //System.out.println(Config.tickFrequency.multiply(getDuration()).toSeconds());
-                produceCommodities();
-                consumeCommodities();
-            }));
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+        produceCommodities();
+        consumeCommodities();
+
     }
 
     private void addProducedResourcesToProduceStorage(String resource, int quantity) {
@@ -250,27 +241,27 @@ public class MProductions {
 
     private boolean spaceForResources(String resource, Integer quantity) {
 
-            if (storage.containsKey(resource)) {
-                int currentQuantity = storage.get(resource);
-                int originalSpace = storageRAW.get(resource);
-                int availableSpace = originalSpace - currentQuantity;
-                if (quantity <= availableSpace) {
-                    System.out.println("Enough space");
-                    return true;
-                } else {
-                    System.out.println("Not enough space");
-                    return false;
-                }
+        if (storage.containsKey(resource)) {
+            int currentQuantity = storage.get(resource);
+            int originalSpace = storageRAW.get(resource);
+            int availableSpace = originalSpace - currentQuantity;
+            if (quantity <= availableSpace) {
+                System.out.println("Enough space");
+                return true;
             } else {
-                System.out.println("Factory can not store this resource!");
+                System.out.println("Not enough space");
                 return false;
             }
+        } else {
+            System.out.println("Factory can not store this resource!");
+            return false;
+        }
     }
 
     public void takeGoodsFromVehicle(String resource, Integer quantity) {
-            if (spaceForResources(resource, quantity)) {
-                addTransportedResourcesToStorage(resource, quantity);
-            }
+        if (spaceForResources(resource, quantity)) {
+            addTransportedResourcesToStorage(resource, quantity);
+        }
     }
 
     public void setFactory(MFactory factory) {
@@ -288,7 +279,7 @@ public class MProductions {
 
     public boolean consumesResource(String resource) {
         for (HashMap<String, Integer> consumationGood : consume) {
-            if(consumationGood.containsKey(resource)){
+            if (consumationGood.containsKey(resource)) {
                 return true;
             }
         }

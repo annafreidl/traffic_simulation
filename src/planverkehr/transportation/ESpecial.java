@@ -6,5 +6,6 @@ public enum ESpecial {
     SIGNAL,
     FACTORY,
     AIRPORT,
-    NOTHING
+    NOTHING,
+    CATHEDRAL
 }

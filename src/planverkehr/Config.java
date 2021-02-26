@@ -18,6 +18,7 @@ public class Config {
         //(double)(worldWidth*(tWidth+1))/2;
     public static final double YOffset = (double)tWidth/4;
     public static final String jsonFile = "planverkehr.json";
+    public static final String gameMode = parser.getMapFromJSON().getGameMode();
     public static final Duration tickFrequency = Duration.seconds(1);
 
 

@@ -496,13 +496,19 @@ public class MGame {
         }
     }
 
-    public void moveVehicles() {
+    public ArrayList<MTile> moveVehicles() {
         updateBlockIds();
+        ArrayList<MTile> moveTiles = new ArrayList<>();
         for (Iterator<MLinie> it = linienList.iterator(); it.hasNext(); ) {
             // Das nächste Flugzeug wird ausgewählt
             MLinie l = it.next();
 
             MWegKnotenpunkt w = l.getListeAllerLinienKnotenpunkte().peekFirst();
+            System.out.println(w.getKnotenpunkt().getFeldId());
+            moveTiles.add(getTileById(w.getKnotenpunkt().getFeldId()));
+            if(l.getVehicle().isVisible()){
+                moveTiles.add(getTileById(l.getVehicle().getCurrentKnotenpunkt().getFeldId()));
+            }
             if (l.getType().equals(EBuildType.road)) {
                 MCoordinate next = w.getKnotenpunkt().getVisibleCoordinate();
                 MCoordinate current;
@@ -560,6 +566,7 @@ public class MGame {
         }
 
         tickNumber++;
+        return moveTiles;
     }
 
     private void setNextKnotenpunkt(MLinie l, MWegKnotenpunkt w, boolean isLeft) {
@@ -949,9 +956,13 @@ public class MGame {
         gameStarted = true;
         for (MFactory factory : constructedFactories) {
             factory.setListOfFactoriesNodes(constructedFactories);
-            factory.startProductionAndConsumption();
         }
     }
+
+    public void productionInTicks(int tickNumber){
+        for (MFactory factory : constructedFactories) {
+            factory.startProductionAndConsumption(tickNumber);
+    }}
 
     public void togglePlayPause() {
         gamePaused = !gamePaused;
@@ -1153,5 +1164,26 @@ public class MGame {
         }
 
         constructedFactories.add(f);
+    }
+
+
+    public void consumeAndProduce(){
+        for(Buildings factory : constructedBuildings){
+            for (MProductions productions : factory.getProductions()){
+                System.out.println(tickNumber);
+                if (tickNumber % productions.getDuration() == 0){
+                    productions.produceCommodities();
+                    productions.consumeCommodities();
+                }
+            }
+        }
+    }
+
+    public void testVehicleSpeed(){
+        int speed = 3;
+        for (int i =0; i<speed; i++){
+            System.out.println("i: "+i);
+            System.out.println("speed: "+speed);
+        }
     }
 }

@@ -24,6 +24,8 @@ public class Controller {
     MGame gameModel;
     VGame gameView;
     Buildings newBuilding;
+    int tickNumber = 0;
+    Timeline timeline = new Timeline();
 
 
     public Controller(MGame gameModel, VGame gameView) {
@@ -31,7 +33,7 @@ public class Controller {
         this.gameModel = gameModel;
         LinkedList<MTile> selectedbefore = new LinkedList();
 
-        //  initTimeline();
+        initTimeline();
         gameView.getMenuBar().getMenus().forEach(m -> m.getItems().forEach(i -> i.setOnAction((event -> handleMenuClick(m, i)))));
 
         gameView.getLinienButton().addEventHandler(MouseEvent.MOUSE_CLICKED, onLinienButtonClick);
@@ -295,17 +297,18 @@ public class Controller {
             });
         gameView.getTickButton().addEventHandler(MouseEvent.MOUSE_CLICKED, e ->{
                 e.consume();
-                gameModel.moveVehicles();
-                gameView.drawField();
+                runTick();
             });
         gameView.getPlayButton().addEventHandler(MouseEvent.MOUSE_CLICKED, e ->{
                 e.consume();
                 if (gameModel.gameStarted) {
                     gameModel.togglePlayPause();
                     gameView.togglePlayPause();
+                    gameView.getTl().stop();
                 } else {
                     gameModel.setStartGame();
                     gameView.startGame();
+                    gameView.getTl().play();
                 }
 
             });
@@ -330,8 +333,7 @@ public class Controller {
 
                 //Hinzugefügt für Performance-Verbesserung
                 // -- zeichnet nur angehobenes Tile & alle Nachbarn bis zur 2.Ordnung
-                ArrayList<MTile> changedTiles = new ArrayList<MTile>();
-                changedTiles.addAll(gameModel.getNeighbours(gameModel.getSelectedTile()));
+                TreeSet<MTile> changedTiles = new TreeSet<>();
                 changedTiles.add(gameModel.getSelectedTile());
                 gameView.drawChangedTiles(changedTiles);
 
@@ -345,8 +347,7 @@ public class Controller {
 
                 //Hinzugefügt für Performance-Verbesserung
                 // -- zeichnet nur angehobenes Tile & alle Nachbarn bis zur 2.Ordnung
-                ArrayList<MTile> changedTiles = new ArrayList<MTile>();
-                changedTiles.addAll(gameModel.getNeighboursOfSecondOrder(gameModel.getSelectedTile()));
+                TreeSet<MTile> changedTiles = new TreeSet<>();
                 changedTiles.add(gameModel.getSelectedTile());
                 gameView.drawChangedTiles(changedTiles);
 
@@ -382,7 +383,7 @@ public class Controller {
 
                         //Hinzugefügt für Performance-Verbesserung
                         // -- zeichnet nur selectedTile und vorheriges selectedTile neu
-                        ArrayList<MTile> changedTiles = new ArrayList<>();
+                        TreeSet<MTile> changedTiles = new TreeSet<>();
                         if(!selectedbefore.contains(gameModel.getTileById(gameModel.selectedTileId))){
                         selectedbefore.add(gameModel.getTileById(gameModel.selectedTileId));}
 
@@ -398,8 +399,10 @@ public class Controller {
                             }
 
                         }
-                        changedTiles.add(gameModel.getSelectedTile());
-                        changedTiles.removeAll(Collections.singleton(null));
+                        if(gameModel.getSelectedTile()!=null){
+                            changedTiles.add(gameModel.getSelectedTile());
+                        }
+                       // changedTiles.removeAll(Collections.singleton(null));
                             gameView.drawChangedTiles(changedTiles);
 
                         //--falls Fehler auftritt, wieder gameView.drawField() nutzen und darüberstehendes auskommentieren
@@ -416,28 +419,22 @@ public class Controller {
             if(selectedTile.getState() != EBuildType.factory && selectedTile.getState() != EBuildType.free
             && selectedTile.getState() != EBuildType.water){
 
-                ArrayList<MTile> changedTiles = new ArrayList<>();
+                TreeSet<MTile> changedTiles = new TreeSet<>();
 
                 for (MTile mitbebaut : gameModel.getGroupedTiles(selectedTile.getConnectedBuilding().getWidth(), selectedTile.getConnectedBuilding().getDepth(), selectedTile.isFirstTile)) {
                     gameView.clearTiles(mitbebaut);
                     changedTiles.add(mitbebaut);
-                    if(selectedTile.getState()==EBuildType.road){
-                        changedTiles.addAll(gameModel.getNeighbours(mitbebaut));
-                    }
-                    else changedTiles.addAll(gameModel.getNeighboursOfSecondOrder(mitbebaut));
+
+
                 }
 
                 changedTiles.add(gameModel.getSelectedTile());
-                if(selectedTile.getState()==EBuildType.road){
-                    changedTiles.addAll(gameModel.getNeighbours(gameModel.getSelectedTile()));
-                }
-                else {
-                    changedTiles.addAll(gameModel.getNeighboursOfSecondOrder(gameModel.getSelectedTile()));
-                }
+
+
 
                 gameModel.resetTile();
                 gameView.clearTiles(selectedTile);
-                gameView.drawChangedTiles((ArrayList<MTile>) removeDuplicate(changedTiles));
+                gameView.drawChangedTiles(changedTiles);
             }
 
             });
@@ -477,9 +474,11 @@ public class Controller {
                 System.out.println(i.getId());
                 System.out.println(i.getText());
 
-                gameView.drawChangedTiles(gameModel.getGroupedTiles(gameModel.getSelectedTile().getConnectedBuilding().getWidth(),
+                TreeSet<MTile> changedTiles = new TreeSet<>(gameModel.getGroupedTiles(gameModel.getSelectedTile().getConnectedBuilding().getWidth(),
                     gameModel.getSelectedTile().getConnectedBuilding().getDepth(),
                     gameModel.getSelectedTile().isFirstTile));
+
+                gameView.drawChangedTiles(changedTiles);
                 //gameView.drawField();
                 // gameModel.railGraph.print();
             }
@@ -508,14 +507,10 @@ public class Controller {
         KeyFrame keyframe = new KeyFrame(Config.tickFrequency, handler);
         gameView.getTl().getKeyFrames().addAll(keyframe);
         gameView.getTl().setCycleCount(Timeline.INDEFINITE);
-
-
-        gameView.getTl().play();
     }
 
     final EventHandler<ActionEvent> handler = event -> {
-        gameModel.moveVehicles();
-        gameView.drawField();
+        runTick();
     };
 
 
@@ -526,7 +521,7 @@ public class Controller {
         gameView.toggleLinienInfoLabel(true);
 
         // gameModel.createVehicle();
-        gameView.drawField();
+        //gameView.drawField();
     };
 
     EventHandler<MouseEvent> onLinienButtonWeiterClick = mouseEvent -> {
@@ -550,7 +545,7 @@ public class Controller {
                 gameModel.setCreateLine(false);
 
             }
-            gameView.drawField();
+
         }
 
 
@@ -562,6 +557,29 @@ public class Controller {
         gameView.toggleLinienInfoLabel(false);
     };
 
+
+    private void runTick(){
+
+        //gameModel.moveVehicles();
+
+//        ArrayList<MTile> changedTiles = new ArrayList<>();
+//        gameModel.getTileArray().forEach((tile) -> {
+//            if(tile.getState()==EBuildType.road){
+//                changedTiles.add(tile);
+//                //changedTiles.addAll(gameModel.getNeighbours(tile));
+//                gameView.clearTiles(tile);
+//
+//            }
+//        });
+        TreeSet<MTile> changedTiles = new TreeSet<>(gameModel.moveVehicles());
+        for(MTile toClear : changedTiles){
+            gameView.clearTiles(toClear);
+        }
+        gameView.drawChangedTiles(changedTiles);
+        gameModel.productionInTicks(tickNumber+1);
+        tickNumber++;
+        System.out.println("Tick: " + tickNumber);
+    }
 
     //TODO -------------change this
     public Buildings getCurrentBuilding() {

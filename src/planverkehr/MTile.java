@@ -3,13 +3,9 @@ package planverkehr;
 import planverkehr.graph.MKnotenpunkt;
 import planverkehr.transportation.EDirections;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Optional;
+import java.util.*;
 
-public class MTile {
+public class MTile implements Comparable<MTile> {
     String id;
     boolean isSelected = false;
     boolean isFirstTile = true;
@@ -27,7 +23,7 @@ public class MTile {
     ArrayList<MCoordinate> punkte = new ArrayList();
     ArrayList<MCoordinate> punkteNeu = new ArrayList();
 
-    public MTile(MCoordinate visibleCoordinate, MCoordinate canvasCoordinates, String id) {
+    public MTile(MCoordinate visibleCoordinate, MCoordinate canvasCoordinates, String id)  {
         this.id = id;
         höhen.addAll(Arrays.asList(0,0,0,0));
         level = 0;
@@ -54,6 +50,34 @@ public class MTile {
         createCornerPoints();
         createHöhenArray();
         getIncline();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MTile tile = (MTile) o;
+        MCoordinate visibleCoordsToCompare = tile.getVisibleCoordinates();
+        return Double.compare(visibleCoordsToCompare.getX(), visibleCoordinates.getX()) == 0 && Double.compare(visibleCoordsToCompare.getY(), visibleCoordinates.getY()) == 0 &&
+            Objects.equals(id, tile.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(MTile tile) {
+        int fistCoordCompare = Double.compare(this.getVisibleCoordinates().getY(), tile.getVisibleCoordinates().getY()); //
+       // the value 0 if d1 is numerically equal to d2; a value less than 0 if d1 is numerically less than d2; and a value greater than 0 if d1 is numerically greater than d2.
+        int secondCompare = Double.compare(this.getVisibleCoordinates().getX(), tile.getVisibleCoordinates().getX());
+
+        if(fistCoordCompare < 0 && secondCompare < 0){
+            return -1;
+        } else if (fistCoordCompare > 0 && secondCompare > 0){
+            return 1;
+        } else return Integer.compare(fistCoordCompare, secondCompare);
     }
 
     // Tile schräg? falls ja: true, falls nein: false

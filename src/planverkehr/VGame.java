@@ -50,6 +50,7 @@ public class VGame {
     BorderPane bp;
     public double mouseX, mouseY;
     Timeline tl = new Timeline();
+    Color color;
 
 
     public VGame(MGame gameModel, Stage stage) {
@@ -60,6 +61,7 @@ public class VGame {
 
 
         parser = new JSONParser();
+        String gameMode = parser.getMapFromJSON().getGameMode();
 
         int requiredCanvasWidth = (int) Math.ceil((Config.worldWidth + Config.worldHeight) * Config.tWidthHalft);
         int requiredCanvasHeight = (int) Math.ceil((Config.worldWidth + Config.worldHeight + 3) * Config.tHeightHalft);
@@ -67,13 +69,13 @@ public class VGame {
         canvas = new Canvas(requiredCanvasWidth, requiredCanvasHeight);
         canvasFront = new Canvas(requiredCanvasWidth, requiredCanvasHeight);
 
-        double translateX = requiredCanvasWidth/2;
-        double translateY = requiredCanvasHeight/2;
+        double translateX = requiredCanvasWidth / 2;
+        double translateY = requiredCanvasHeight / 2;
 
         canvas.setTranslateX(canvas.getTranslateX() - translateX);
-        canvas.setTranslateY(canvas.getTranslateY()-translateY);
-        canvasFront.setTranslateX(canvasFront.getTranslateX()-translateX);
-        canvasFront.setTranslateY(canvasFront.getTranslateY()-translateY);
+        canvas.setTranslateY(canvas.getTranslateY() - translateY);
+        canvasFront.setTranslateX(canvasFront.getTranslateX() - translateX);
+        canvasFront.setTranslateY(canvasFront.getTranslateY() - translateY);
 
         selectionCanvas = new Canvas((Config.worldWidth + 1) * Config.tWidth, (Config.worldHeight + 1) * Config.tHeight);
         gc = canvas.getGraphicsContext2D();
@@ -85,7 +87,21 @@ public class VGame {
 
         group.getChildren().addAll(canvas, canvasFront, bp);
 
-        scene = new Scene(group, Config.windowSize + 150, Config.windowSize, Color.rgb(153, 106, 8));
+
+        switch (gameMode) {
+            case "planverkehr":
+                color = Color.rgb(153, 106, 8);
+                break;
+            case "own-scenario":
+                color = Color.rgb(24, 106, 255);
+                break;
+            default:
+                color = Color.rgb(255, 255, 255);
+                break;
+        }
+
+
+        scene = new Scene(group, Config.windowSize + 150, Config.windowSize, color);
         scene.getStylesheets().add("/planverkehr/layout.css");
 
         window.setTitle("Planverkehr");
@@ -191,7 +207,7 @@ public class VGame {
 
         //zeigt die Produktion der Gebäude an
         //währenddessen auf keinen fall die maus bewegen
-        scene.setOnKeyPressed(event ->
+        scene.setOnKeyReleased(event ->
         {
             if (event.getCode() == KeyCode.S) {
                 event.consume();
@@ -562,7 +578,7 @@ public class VGame {
                     }
                 }
                 if (!t.isFree()) {
-                allemitbesetztenfrei=false;
+                    allemitbesetztenfrei = false;
 
                 }
             }
@@ -581,12 +597,12 @@ public class VGame {
                 t.setState(EBuildType.factory);
                 t.setBuildingOnTile(b);
                 t.addConnectedBuilding(b);
-                MCoordinate buildingCoord=new MCoordinate(xId+0.5,yId,0);
-                MKnotenpunkt buildingNode=new MKnotenpunkt(buildingCoord.toString(),b.getBuildingName(),buildingCoord,b.getBuildType(),b.getBuildingName(),randomId,EDirections.EMPTY,true);
+                MCoordinate buildingCoord = new MCoordinate(xId + 0.5, yId, 0);
+                MKnotenpunkt buildingNode = new MKnotenpunkt(buildingCoord.toString(), b.getBuildingName(), buildingCoord, b.getBuildType(), b.getBuildingName(), randomId, EDirections.EMPTY, true);
                 t.addKnotenpunkt(buildingNode);
-                MFactory f=new MFactory(b);
+                MFactory f = new MFactory(b);
                 f.setKnotenpunkt(buildingNode);
-                f.setHaltestelle(gameModel.createFactoryStation(t,f));
+                f.setHaltestelle(gameModel.createFactoryStation(t, f));
 
                 gameModel.addFactoryToConstructedFactories(f);
 
@@ -647,26 +663,26 @@ public class VGame {
 
             if (b.getSpecial().equals("nature")) {
 
-                int naturenumber = Math.round(Config.worldWidth*Config.worldHeight/50);
-                for (int i = 0; i<naturenumber; i++){
+                int naturenumber = Math.round(Config.worldWidth * Config.worldHeight / 50);
+                for (int i = 0; i < naturenumber; i++) {
 
-                Graph relevantGraph = gameModel.gameGraph;
+                    Graph relevantGraph = gameModel.gameGraph;
 
-                int xId = generateRandomInt(Config.worldWidth-b.getWidth());
-                int yId = generateRandomInt(Config.worldHeight-b.getDepth());
-                String randomId = xId + "--" + yId;
-                if(yId==0){
-                    randomId = xId + "-" + yId;
+                    int xId = generateRandomInt(Config.worldWidth - b.getWidth());
+                    int yId = generateRandomInt(Config.worldHeight - b.getDepth());
+                    String randomId = xId + "--" + yId;
+                    if (yId == 0) {
+                        randomId = xId + "-" + yId;
+                    }
+
+                    MTile t = gameModel.getTileById(randomId);
+
+                    if (t.isFree()) {
+                        t.setState(EBuildType.nature);
+                        t.setBuildingOnTile(b);
+                        t.addConnectedBuilding(b);
+                    }
                 }
-
-                MTile t = gameModel.getTileById(randomId);
-
-                if(t.isFree()){
-                    t.setState(EBuildType.nature);
-                    t.setBuildingOnTile(b);
-                    t.addConnectedBuilding(b);
-                }
-            }
 
             }
         });
@@ -805,6 +821,9 @@ public class VGame {
                     key.erhöhePunkte(erhöheAmEnde.get(key), factor);
                     key.createHöhenArray();
                     key.höhendif();
+                    if(key.getLevel()>=0&&key.getState()==EBuildType.water){
+                        key.setState(EBuildType.free);
+                    }
                     key.setHoch(richtung);
                 }
             }
@@ -917,8 +936,6 @@ public class VGame {
         ArrayList<MTile> visibleTileArray = new ArrayList<>();
 
 
-
-
         gameModel.getTileArray().forEach((tile) -> {
             VTile tempTileView = new VTile(tile);
             tempTileView.drawBackground(gc);
@@ -946,8 +963,16 @@ public class VGame {
         gameModel.visibleVehiclesArrayList.forEach((vehicle) -> new VVehicle(vehicle, gcFront));
     }
 
-    public void drawChangedTiles(ArrayList<MTile> changedTiles) {
+    public void drawChangedTiles(TreeSet<MTile> changedTiles) {
+
+        TreeSet<MTile> neighbourTiles = new TreeSet<>();
         //clearField();
+        changedTiles.forEach(mTile -> {
+            neighbourTiles.addAll(gameModel.getNeighboursOfSecondOrder(mTile));
+        });
+
+        changedTiles.addAll(neighbourTiles);
+
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
         changedTiles.forEach((tile) -> {
@@ -956,12 +981,23 @@ public class VGame {
             if (tile.isFirstTile) {
                 tempTileView.drawForeground(gcFront);
             }
-            if(!tile.isFree()){
+            if (!tile.isFree()) {
                 canvas.toBack();
             }
 
         });
 
+        if (gameModel.isCreateLine()) {
+            gameModel.activeLinie.getListOfHaltestellenKnotenpunkten().forEach(wp -> new VActiveLinie(wp, gcFront, true, gameModel.activeLinie.getColor()));
+
+            int i = 0;
+
+            for (MLinie l : gameModel.linienList) {
+                new VLinie(gcFront, group, l, i);
+                i++;
+            }
+
+        }
         gameModel.visibleVehiclesArrayList.forEach((vehicle) -> new VVehicle(vehicle, gcFront));
     }
 
@@ -971,7 +1007,7 @@ public class VGame {
         gcFront.clearRect(0, 0, canvasFront.getWidth(), canvasFront.getHeight());
     }
 
-    public void clearTiles(MTile tile){
+    public void clearTiles(MTile tile) {
 
         double schraege;
         MCoordinate westRelativ = tile.punkteNeu.get(3);
@@ -990,7 +1026,7 @@ public class VGame {
 
         MCoordinate centerCoord = new MCoordinate(westAbsolutX, westAbsolutY, schraege).toCanvasCoordWithoutOffset();
 
-        gcFront.clearRect( centerCoord.getX(), centerCoord.getY() - centerCoord.getZ() - Config.tHeightHalft-Config.tHeightHalft/2 , Config.tWidth, Config.tHeight+Config.tHeightHalft/2);
+        gcFront.clearRect(centerCoord.getX(), centerCoord.getY() - centerCoord.getZ() - Config.tHeightHalft - Config.tHeightHalft / 2, Config.tWidth, Config.tHeight + Config.tHeightHalft / 2);
     }
 
     public MenuBar getMenuBar() {
@@ -1119,7 +1155,7 @@ public class VGame {
                     }
                 }
             }
-            scene.setOnKeyReleased(event ->
+            scene.setOnKeyPressed(event ->
             {
                 if (event.getCode() == KeyCode.S) {
                     event.consume();
