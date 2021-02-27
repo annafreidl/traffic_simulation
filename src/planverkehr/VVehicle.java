@@ -73,7 +73,7 @@ public class VVehicle {
                 gc.setFill(new ImagePattern(airplaneIMG));
             } else {
 
-                Image balloonIMG = new Image("hot-air-balloon.png");
+                Image balloonIMG = new Image("sail-boat.png");
                 gc.fillRect(isoX, isoY, 10, 10);
                 gc.setFill(new ImagePattern(balloonIMG));
             }
