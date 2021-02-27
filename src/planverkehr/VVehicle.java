@@ -2,7 +2,9 @@ package planverkehr;
 
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.text.TextAlignment;
 
 public class VVehicle {
@@ -61,6 +63,19 @@ public class VVehicle {
                 gc.fillOval(canvasCoordVehicle.getX() + 10, canvasCoordVehicle.getY(), 4, 4);
 
 
+            }
+
+        } else if (vehicle.getKind().equals("plane")) {
+            if (planverkehr.Config.gameMode.equals("planverkehr")) {
+
+                Image airplaneIMG = new Image("aeroplane.png");
+                gc.fillRect(isoX, isoY, 10, 10);
+                gc.setFill(new ImagePattern(airplaneIMG));
+            } else {
+
+                Image balloonIMG = new Image("hot-air-balloon.png");
+                gc.fillRect(isoX, isoY, 10, 10);
+                gc.setFill(new ImagePattern(balloonIMG));
             }
 
 

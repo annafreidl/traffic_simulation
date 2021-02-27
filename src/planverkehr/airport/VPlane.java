@@ -9,7 +9,7 @@ import javafx.util.Duration;
 import planverkehr.JSONParser;
 import planverkehr.VGame;
 import planverkehr.graph.MKnotenpunkt;
-
+/*
 
 public class VPlane {
     Rectangle rectangle;
@@ -104,3 +104,4 @@ public class VPlane {
 
 
 }
+*/
