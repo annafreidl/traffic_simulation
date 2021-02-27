@@ -103,6 +103,14 @@ public class MAirport {
         return taxiway;
     }
 
+    public int getMaxPlanes() {
+        return maxPlanes;
+    }
+
+    public boolean isFullyBuilt() {
+        return fullyBuilt;
+    }
+
     public boolean isNoBuildingsSet() {
         return noBuildingsSet;
     }

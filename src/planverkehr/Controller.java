@@ -63,7 +63,7 @@ public class Controller {
                             ArrayList<MTile> relevantTiles = new ArrayList<>();
                             relevantTiles.add(feld);
                             if (x == 1 + xSelectedTile && (y == 2 + ySelectedTile || y == 4 + ySelectedTile || y == 7 + ySelectedTile)) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
+                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
                             }
                         }
                     }
@@ -79,7 +79,7 @@ public class Controller {
                             ArrayList<MTile> relevantTiles = new ArrayList<>();
                             relevantTiles.add(feld);
                             if ((x == xSelectedTile || x == 2 + xSelectedTile) && (y == 3 + ySelectedTile || y == 5 + ySelectedTile)) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
+                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
                             }
                         }
                     }
@@ -96,7 +96,7 @@ public class Controller {
                             ArrayList<MTile> relevantTiles = new ArrayList<>();
                             relevantTiles.add(feld);
                             if (feld.getConnectedBuilding() == null || (!feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
+                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
                             }
                         }
                         x++;
@@ -113,7 +113,7 @@ public class Controller {
                             ArrayList<MTile> relevantTiles = new ArrayList<>();
                             relevantTiles.add(feld);
                             if (feld.getConnectedBuilding() == null || (!feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
+                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
                             }
                         }
                         x++;
@@ -131,7 +131,7 @@ public class Controller {
                             ArrayList<MTile> relevantTiles = new ArrayList<>();
                             relevantTiles.add(feld);
                             if ((y == 2 + ySelectedTile || y == +ySelectedTile || y == 7 + ySelectedTile) && (feld.getConnectedBuilding() == null || !feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
+                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
                             }
                         }
                     }
@@ -148,7 +148,7 @@ public class Controller {
                             ArrayList<MTile> relevantTiles = new ArrayList<>();
                             relevantTiles.add(feld);
                             if ((y == 2 + ySelectedTile || y == 4 + ySelectedTile || y == 7 + ySelectedTile) && (feld.getConnectedBuilding() == null || !feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist);
+                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
                             }
                         }
                     }
@@ -498,7 +498,7 @@ public class Controller {
 
         boolean hasSpace = gameModel.hasSpaceForBuilding(buildingToBeBuilt.getWidth(), buildingToBeBuilt.getDepth(), buildingToBeBuilt.getDz());
 
-        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpace, relevantTiles, relevantGraph, false, relevantTargetpointlist);
+        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpace, relevantTiles, relevantGraph, false, relevantTargetpointlist, gameModel);
 
         feld.isSelected = false;
     }

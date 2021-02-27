@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
-import javafx.util.Pair;
 import planverkehr.airport.MAirport;
 import planverkehr.airport.MAirportManager;
 import planverkehr.graph.Graph;
@@ -28,7 +27,6 @@ public class MGame {
     Graph railGraph;
     Graph airportGraph;
     MAirportManager mAirportManager;
-    MAirport mAirport;
     String selectedTileId = "null";
     HashMap<String, Buildings> possibleBuildings;
     ArrayList<Buildings> constructedBuildings;
@@ -652,7 +650,8 @@ public class MGame {
                 MAirport associatedAirport = buildingOnTile.getAssociatedAirport();
                 mAirportManager.removeBuildingFromAirport(buildingOnTile, associatedAirport, buildingName);
                 if (associatedAirport.isNoBuildingsSet()) //wenn keine Airport Gebäude existieren von dem Airport
-                    mAirportManager.removeAirportFromList(associatedAirport); //dann soll Airport aus Liste gelöscht werden
+                    mAirportManager.removeFromAirportList(associatedAirport); //dann soll Airport aus Liste gelöscht werden
+                else if(!associatedAirport.isFullyBuilt()) mAirportManager.removeFromFullyBuiltList(associatedAirport);
             }
 
             for (MTile mTile : getGroupedTiles(selectedTile.getConnectedBuilding().getWidth(),
@@ -1114,16 +1113,17 @@ public class MGame {
                     Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
                     newBuilding.setStartTile(feld);
                     if (mAirportManager.createOrConnectToAirport(newBuilding)) {
+                        newBuilding.setBuildingID(newBuildingId);
                         for (MTile relevantTile : relevantTiles) {
                             relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
                             relevantTile.addConnectedBuilding(newBuilding);
                         }
+                        System.out.println("AIRPORTS       " + mAirportManager.getFullyBuiltAirports().size());
+                        new MTransportConnection(feld, buildingToBeBuiltType, newBuilding, newBuildingId, true, relevantTiles, relevantGraph, true, relevantTargetpointlist, this);
 
-                        createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
-                        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, true, relevantTiles, relevantGraph, false, relevantTargetpointlist);
                     } else mAirportManager.showAirportAlert();
                 } else {
-                    new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist);
+                    new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist, this);
 
                     if (stationStatus.equals(EStationStatus.ONE))  addBuildingToStation(feld, buildingToBeBuilt);
                     else if (stationStatus.equals(EStationStatus.NONE)) createStation(feld, buildingToBeBuilt);
@@ -1134,6 +1134,7 @@ public class MGame {
                     feld.setState(buildingToBeBuiltType);
 
                     Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
+                    newBuilding.setBuildingID(newBuildingId);
 
                     for (MTile relevantTile : relevantTiles) {
                         relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
@@ -1185,5 +1186,9 @@ public class MGame {
             System.out.println("i: "+i);
             System.out.println("speed: "+speed);
         }
+    }
+
+    public MAirportManager getmAirportManager() {
+        return mAirportManager;
     }
 }

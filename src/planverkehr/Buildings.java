@@ -35,6 +35,7 @@ public class Buildings {
     private EnumSet<EDirections> possibleConnectionsSecondTile;
     private EnumSet<EDirections> directionsSecondTile;
     private EBuildType buildType;
+    private String buildingID;
     private MTile startTile;
 
     MAirport associatedAirport;//Airport zu dem das Gebäude gehört
@@ -86,6 +87,7 @@ public class Buildings {
         this.productions = building.getProductions();
         combinesBuildings = building.getCombinesBuildings();
         associatedAirport = null;
+        buildingID = "";
         setBuildType();
         setDirections();
         setPossibleConnection();
@@ -254,6 +256,11 @@ public class Buildings {
         return associatedAirport;
     }
 
+    public void setBuildingID(String buildingID) {
+        this.buildingID = buildingID;
+    }
 
-
+    public String getBuildingID() {
+        return buildingID;
+    }
 }

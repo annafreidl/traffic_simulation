@@ -2,10 +2,9 @@ package planverkehr.transportation;
 
 import javafx.scene.control.Alert;
 import javafx.util.Pair;
-import planverkehr.Buildings;
-import planverkehr.EBuildType;
-import planverkehr.MCoordinate;
-import planverkehr.MTile;
+import planverkehr.*;
+import planverkehr.airport.MAirport;
+import planverkehr.airport.MAirportManager;
 import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
 import planverkehr.graph.MTargetpointList;
@@ -26,11 +25,12 @@ public class MTransportConnection {
     Map<String, MCoordinate> newPoints;
     boolean isTwoTileTransport, isConnection, relevantTilesFree, shouldAlwaysDraw;
     MTargetpointList targetpointList;
+    MGame model;
 
     ArrayList<MTile> relevantTiles;
     Graph relevantGraph;
 
-    public MTransportConnection(MTile feld, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, boolean relevantTilesFree, ArrayList<MTile> relevantTiles, Graph relevantGraph, boolean shouldAlwaysDraw, MTargetpointList relevantTargetpointlist) {
+    public MTransportConnection(MTile feld, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, boolean relevantTilesFree, ArrayList<MTile> relevantTiles, Graph relevantGraph, boolean shouldAlwaysDraw, MTargetpointList relevantTargetpointlist, MGame model) {
         this.feld = feld;
         feldBuildingType = feld.getState();
         this.buildingToBeBuiltType = buildingToBeBuiltType;
@@ -47,6 +47,7 @@ public class MTransportConnection {
         mKnotenpunktHashMap = new HashMap<>();
         mKnotenpunktHashMapSecondNode = new HashMap<>();
         this.relevantTilesFree = relevantTilesFree;
+        this.model = model;
 
 
         checkIsTwoTileTransport();
@@ -210,6 +211,50 @@ public class MTransportConnection {
                 firstNode[0].addConnectedNode(secondNode[0]);
                 secondNode[0].addConnectedNode(firstNode[0]);
             });
+            //der gerade fertig gebaute Flughafen wird mit allen fully built Airports auf der Karte über Fluglinien verknüpft (von runway zu runway)
+            if (buildingToBeBuilt.getEbuildType().equals(EBuildType.airport)) {
+                if (buildingToBeBuilt.getAssociatedAirport().isFullyBuilt()) {
+                    MAirportManager mAirportManager = model.getmAirportManager();
+                    List<MAirport> fullyBuiltAirports = mAirportManager.getFullyBuiltAirports();
+
+                    if (!fullyBuiltAirports.isEmpty()) {
+                        MAirport airport = buildingToBeBuilt.getAssociatedAirport();
+                        Buildings runway = airport.getRunway();
+                        List<Pair<String, String>> connectionListRunway = runway.getPlanes();
+                        double runwayTileX = runway.getStartTile().getVisibleCoordinates().getX();
+                        double runwayTileY = runway.getStartTile().getVisibleCoordinates().getY();
+
+                        String firstNode = connectionListRunway.get(0).getKey();
+                        final MKnotenpunkt[] firstRunwayNode = new MKnotenpunkt[1];
+                        MCoordinate firstCoord = runway.getPoints().get(firstNode);
+                        MCoordinate firstGridCoord = new MCoordinate(runwayTileX + firstCoord.getX(), runwayTileY - firstCoord.getY(), firstCoord.getZ());
+
+                        for (MAirport fullyBuiltAirport : fullyBuiltAirports) {
+                            if (fullyBuiltAirport!= airport){ //need to make sure das er sich nich mit sich selbst verbindet
+                            Buildings runwayToConnect = fullyBuiltAirport.getRunway();
+                            List<Pair<String, String>> connectionListRunway2 = runwayToConnect.getPlanes();
+
+                            String secondNode = connectionListRunway2.get(0).getKey();
+                            MCoordinate secondCoord = runwayToConnect.getPoints().get(secondNode);
+                            MCoordinate secondGridCoord = new MCoordinate(runwayTileX + secondCoord.getX(), runwayTileY - secondCoord.getY(), secondCoord.getZ());
+
+                            runway.getStartTile().getNodeByCoordinatesString(firstGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> {
+                                firstRunwayNode[0] = node;
+                            }, () -> firstRunwayNode[0] = mKnotenpunktHashMap.get(firstGridCoord.toStringCoordinates()));
+
+                            final MKnotenpunkt[] secondRunwayNode = new MKnotenpunkt[1];
+
+                            runway.getStartTile().getNodeByCoordinatesString(secondGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> {
+                                secondRunwayNode[0] = node;
+                            }, () -> secondRunwayNode[0] = mKnotenpunktHashMap.get(secondGridCoord.toStringCoordinates()));
+
+                            firstRunwayNode[0].addConnectedNode(secondRunwayNode[0]);
+                            secondRunwayNode[0].addConnectedNode(firstRunwayNode[0]);
+                        }
+                        }
+                    }
+                }
+            }
         } else {
             System.out.println("connectNewNodes: unknown transportation");
         }
@@ -272,7 +317,6 @@ public class MTransportConnection {
                 }
             }
         });
-
     }
 
     private MKnotenpunkt createKnotenpunkt(MCoordinate relCoords, String name) {

@@ -10,11 +10,12 @@ import java.util.List;
 //verwaltet alle Airports; hier sind alle Airports gespeichert
 public class MAirportManager {
     MGame model;
-    List<MAirport> airports;
+    List<MAirport> airports, fullyBuiltAirports;
 
     public MAirportManager(MGame model) {
         this.model = model;
-        airports = new ArrayList<>();
+        airports = new ArrayList<>(); //hier sind ALLE Airports
+        fullyBuiltAirports = new ArrayList<>(); //hier sind NUR fully built airports
     }
 
     //wenn wir ein Airport-Gebäude setzen, dann soll dieses sich mit einem anderen Airport Building verknüpfen
@@ -38,6 +39,7 @@ public class MAirportManager {
             MAirport airportToConnectTo = neighbourAirports.get(0);
             if(checkForSpaceInAirport(airportToConnectTo, buildingName)){
                 addBuildingToAirport(newBuilding, airportToConnectTo, buildingName);
+                if(airportToConnectTo.isFullyBuilt()) fullyBuiltAirports.add(airportToConnectTo);
                 return true;
             }
         //3. Fall: wenn es mehr als 1 Airport in der NeighboursListe gibt,
@@ -107,8 +109,12 @@ public class MAirportManager {
         return false;
     }
 
-    public void removeAirportFromList(MAirport airport){
+    public void removeFromAirportList(MAirport airport){
         airports.remove(airport);
+    }
+
+    public void removeFromFullyBuiltList(MAirport airport){
+        fullyBuiltAirports.remove(airport);
     }
 
     public void showAirportAlert() {
@@ -118,5 +124,9 @@ public class MAirportManager {
         alert.setContentText("Der Flughafen ist bereits vollständig oder das Gebäude hält den Abstand zwischen zwei FLughäfen nicht ein.");
 
         alert.showAndWait();
+    }
+
+    public List<MAirport> getFullyBuiltAirports() {
+        return fullyBuiltAirports;
     }
 }
