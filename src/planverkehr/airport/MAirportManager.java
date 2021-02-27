@@ -7,7 +7,8 @@ import planverkehr.MGame;
 import java.util.ArrayList;
 import java.util.List;
 
-//verwaltet alle Airports; hier sind alle Airports gespeichert
+/** Diese Klasse verwaltet alle Flughäfen und speichert diese in 2 Listen: eine allgemeine Airport Liste und eine mit nur vollständigen Airports. */
+
 public class MAirportManager {
     MGame model;
     List<MAirport> airports, fullyBuiltAirports;
@@ -18,10 +19,7 @@ public class MAirportManager {
         fullyBuiltAirports = new ArrayList<>(); //hier sind NUR fully built airports
     }
 
-    //wenn wir ein Airport-Gebäude setzen, dann soll dieses sich mit einem anderen Airport Building verknüpfen
-    //oder einen vollständigen Airport erstellen falls es das letzte gebrauchte Gebäude ist
-    //muss in Manager, weil wenn wir am Anfang keinen Airport haben, dann gibt es da keine airport zum verwenden
-    //wenn am anfang kein airport existiert, dann kann man das nicht benutzen
+    /** Diese Methode verknüpft ein gebautes Airport Gebäude mit dem angrenzenden Flughafen oder erstellt einen neuen, sollte es keinen geben. */
     public boolean createOrConnectToAirport(Buildings newBuilding) {
         List<Buildings> neighbourBuildings = model.getNeighbourBuildings(newBuilding);
         List<MAirport> neighbourAirports = getNeighbourAirports(neighbourBuildings);
@@ -29,12 +27,12 @@ public class MAirportManager {
 
         //1. Fall: es gibt noch keinen Airport, also machen wir einen neuen
         if (neighbourAirports.isEmpty()) {
-            MAirport newAirport = new MAirport(model);
+            MAirport newAirport = new MAirport();
             addBuildingToAirport(newBuilding, newAirport, buildingName);
             airports.add(newAirport); //adden das in die ManagerListe die alle Airports hat
             return true;
         }
-        //2.Fall: es gibt einen Nachbar Airport
+        //2. Fall: es gibt einen Nachbar Airport
         else if (neighbourAirports.size() == 1) {
             MAirport airportToConnectTo = neighbourAirports.get(0);
             if(checkForSpaceInAirport(airportToConnectTo, buildingName)){
@@ -43,13 +41,13 @@ public class MAirportManager {
                 return true;
             }
         //3. Fall: wenn es mehr als 1 Airport in der NeighboursListe gibt,
-            // dann soll man das Gebäude nicht setzen können, weil man nicht zwischen 2 Airports builden soll
+        //dann soll man das Gebäude nicht setzen können, weil man nicht zwischen 2 Airports builden soll
         } else return false;
 
         return false;
     }
 
-    //holen uns Airports der Nachbargebäude
+    /** Gibt eine Liste aller an einem Gebäude angrenzenden Airports zurück. Nutzt dazu die Nachbargebäude des Buildings.*/
     public List<MAirport> getNeighbourAirports(List<Buildings> neighbourBuildings) {
         List<MAirport> neighbourAirports = new ArrayList<>();
 
@@ -63,7 +61,8 @@ public class MAirportManager {
     }
 
 
-    //namen sind auf JSON abgestimmt, d.h. falls man diese im JSON anders schreibt, ist es cursed but oh well ya gotta live with it
+    /** Je nach Name des Gebäudes wird dieses an der entsprechenden Stelle im übergebenen Airport eingefügt.
+     Im hinzugefügten Gebäude wird zusätzlich die Referenz auf dessen Airport hinzugefügt. */
     public void addBuildingToAirport(Buildings building, MAirport airport, String buildingName) {
         switch (buildingName) {
             case "tower" -> airport.setTower(building);
@@ -75,7 +74,8 @@ public class MAirportManager {
         building.setAssociatedAirport(airport);
     }
 
-    //Gebäude löschen aus Airport
+    /** Je nach Name des Gebäudes wird dieses an der entsprechenden Stelle im übergebenen Airport gelöscht.
+     Im hinzugefügten Gebäude wird zusätzlich die Referenz auf dessen Airport zurückgesetzt. */
     public void removeBuildingFromAirport(Buildings building, MAirport airport, String buildingName) {
         switch (buildingName) {
             case "tower" -> airport.removeTower();
@@ -87,7 +87,7 @@ public class MAirportManager {
         building.setAssociatedAirport(null);
     }
 
-    //check if Building is already there in the airport
+    /** Prüft über den Namen, ob das übergebene Gebäude noch nicht im Airport referenziert ist und damit Platz hat. */
     public boolean checkForSpaceInAirport(MAirport airport, String buildingName) {
         switch (buildingName) {
             case "tower":
@@ -109,6 +109,7 @@ public class MAirportManager {
         return false;
     }
 
+
     public void removeFromAirportList(MAirport airport){
         airports.remove(airport);
     }
@@ -117,6 +118,7 @@ public class MAirportManager {
         fullyBuiltAirports.remove(airport);
     }
 
+    /** Wird aufgerufen, wenn an das Gebäude mehr als ein Airport grenzt, d.h. wenn der Platz zwischen zwei Flughäfen ungenügend ist. */
     public void showAirportAlert() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Bau-Error");

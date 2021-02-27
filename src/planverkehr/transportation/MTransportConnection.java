@@ -214,7 +214,7 @@ public class MTransportConnection {
             //der gerade fertig gebaute Flughafen wird mit allen fully built Airports auf der Karte über Fluglinien verknüpft (von runway zu runway)
             if (buildingToBeBuilt.getEbuildType().equals(EBuildType.airport)) {
                 if (buildingToBeBuilt.getAssociatedAirport().isFullyBuilt()) {
-                    MAirportManager mAirportManager = model.getmAirportManager();
+                    MAirportManager mAirportManager = model.getAirportManager();
                     List<MAirport> fullyBuiltAirports = mAirportManager.getFullyBuiltAirports();
 
                     if (!fullyBuiltAirports.isEmpty()) {

@@ -18,9 +18,9 @@ public class MAirport {
     boolean fullyBuilt;
     boolean noBuildingsSet;
 
-    /** Diese Klasse erstellt vollständige/funktionale Airports aus den einzelenen Gebäuden des Airports */
+    /** Diese Klasse enthält/verwaltet die einzelenen Gebäuden des Airports und prüft, ob sich diese zu einem funktionalen Airport zusammensetzen. */
 
-    public MAirport(MGame gameModel) {
+    public MAirport() {
 
         ArrayList nodesList = new ArrayList<Knotenpunkt>();
         //createSpecialTargetTypeLists();

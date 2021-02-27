@@ -646,6 +646,9 @@ public class MGame {
         if (selectedTile != null && selectedTile.getState() != EBuildType.free) {
             String groupId = "";
 
+            /* Wenn das zu löschende Gebäude vom Typ Airport ist, wird dessen Referenz aus dem zugehörigen Airport entfernt.
+            Sind danach im Airport keine Gebäude mehr gesetzt bzw. ist dieser nicht mehr vollständig, wird dieser gelöscht
+            bzw. aus der fullyBuilt-Liste entfernt. */
             if (selectedTile.getState().equals(EBuildType.airport)) {
                 Buildings buildingOnTile = selectedTile.getBuildingOnTile();
                 String buildingName = buildingOnTile.getBuildingName();
@@ -796,29 +799,28 @@ public class MGame {
         }
     }
 
-    // holen uns hier alle Tiles die zu einem Building gehören
+    /** Diese Methode gibt eine Liste der Tiles, die ein Gebäude belegt. */
     public List<MTile> getBuildingTiles(Buildings building) {
         List<MTile> buildingTiles = new ArrayList<>();
 
         MTile startTile = building.getStartTile();
         MCoordinate startCoordinates = startTile.getIDCoordinates();
-        buildingTiles.add(startTile); // damit unsere Starttile da drin auch gesafed ist
+        buildingTiles.add(startTile); // damit unsere Starttile da drin auch gesaved ist
         int buildingWidth = building.getWidth();
         int buildingDepth = building.getDepth();
 
         int xCoord = (int) startCoordinates.getX();
         int yCoord = (int) startCoordinates.getY();
 
-        // geht durch alle relevanten Tiles.StartTile ist links unten vom Gebäude
+        // geht durch alle relevanten Tiles. StartTile ist links unten vom Gebäude
+        // prozess ist: nehme das tile links unten und dann das rechts oben und berechne alle Tiles die dazwischen liegen
         for (int x = 0; x < buildingWidth; x++) {
             for (int y = 0; y < buildingDepth; y++) {
                 if (x + y > 0) {
                     int tileX = xCoord + x;
                     int tileY = yCoord + y;
                     String tileID = tileX + "--" + tileY;
-                    MTile newTile = getTileById(tileID); // den PArt nehmen, und statt XY coord gehe ich da durch und
-                    // rechne mir da sämtliche Nachbarn aus
-                    // ein tile is links unten, eins rechts oben und dann alle Tiles die dazwischen liegen
+                    MTile newTile = getTileById(tileID);
                     buildingTiles.add(newTile); // Tile vom Gebäude
                 }
             }
@@ -826,34 +828,29 @@ public class MGame {
         return buildingTiles;
     }
 
-    // gibt Liste mit Buildings die an Gebäude angrenzen
+    /** Diese Methode gibt eine Liste der Buildings, die an das Gebäude angrenzen (ohne Dupilkate oder sich selbst). */
     public List<Buildings> getNeighbourBuildings(Buildings building) {
         List<Buildings> neighbourBuildings = new ArrayList<>();
         List<MTile> buildingTiles = getBuildingTiles(building);
 
-        // getNeighbours Methode, aber die methode nimmt nur ein Tile
-        // d.h., wir rufen diese methode inner forschleife auf und prüfen dann für jedes
-        // tile von buildingsTiles die nachbarn
-
+        // wir iterieren über unsere Gebäude Tiles und prüfen dann für jedes tile von buildingsTiles die Nachbarn
         for (MTile currentTile : buildingTiles) {
             MCoordinate currentCoordinates = currentTile.getIDCoordinates(); // holen uns ID von current tile
             int xCoord = (int) currentCoordinates.getX();
             int yCoord = (int) currentCoordinates.getY();
 
-            int shiftFactor = 1; // beschreibt wie weit wir nach oben, unten, links, rechts von OG feld gehen
-            // beschreibt die Tiefe in der wir die Felder anschauen
+            // beschreibt wie weit wir nach oben, unten, links, rechts von OG feld aus gehen; basically die Tiefe in der wir die Felder anschauen
+            int shiftFactor = 1;
 
-            // gehen jetzt nachbartiles durch, indem wir wir immer shiftfactor draufrechnen
-            // schauen oben, unten, links und rechts tiles an
+            // gehen jetzt nachbartiles durch, indem wir wir immer shiftfactor draufrechnen; schauen oben, unten, links und rechts tiles an
             for (int x = shiftFactor * (-1); x <= shiftFactor; x++) {
                 for (int y = shiftFactor * (-1); y <= shiftFactor; y++) {
-                    if (x + y != 0 && Math.abs(x + y) < 2) { // wollen nur zB 4 Felder
+                    if (x + y != 0 && Math.abs(x + y) < 2) { // abs = Betrag; wollen zB nur 4 Felder, nicht die Eckfelder
                         int newX = xCoord + x;
                         int newY = yCoord + y;
                         String tileID = newX + "--" + newY;
                         MTile newTile = getTileById(tileID);
-                        if (newTile != null) { // wenn es diese ID in der Hashmap nicht gibt (e.g. Randteil), dann
-                            // nehmen wir es nicht
+                        if (newTile != null) { // wenn es diese ID in der Hashmap nicht gibt (e.g. Randteil), dann nehmen wir es nicht
                             Buildings buildingOnTile = newTile.getBuildingOnTile();
                             if (buildingOnTile != null) { // wollen es nur einspeichern, wenn ein gebäude vorhanden ist
                                 neighbourBuildings.add(buildingOnTile);
@@ -865,7 +862,7 @@ public class MGame {
         } // end for
 
         // Linked Hashset ist eine Liste, in der keine Duplikate vorkommen dürfen
-        // wenn ich den kram normal in der arraylist speicher, habe ich mehrmals das gleiche nachbargebäude falls dieses an mehreren tiles angrenzt
+        // wenn ich den kram normal in einer Arrayliste speicher, habe ich mehrmals das gleiche Nachbargebäude falls dieses an mehreren tiles angrenzt
         LinkedHashSet<Buildings> duplicateRemover = new LinkedHashSet<>(neighbourBuildings);
         ArrayList<Buildings> borderingBuildings = new ArrayList<>(duplicateRemover);
         borderingBuildings.remove(building); // haben liste mit den neighbourbuildings und kicken da unser eigenes building raus
@@ -1002,8 +999,8 @@ public class MGame {
         }
     }
 
+    /** Diese Methode ruft die createBuildingNode auf und setzt die Koordinaten auf Südwesten unten links bei der StartTile. */
     private void createBuildingNodeByCenter(EBuildType buildingToBeBuiltType, Buildings newBuilding) {
-
         String startPoint = getSelectedTileId(); // get Startpoint
         MTile field = getTileById(startPoint);
         double startPointX = field.getIDCoordinates().getX(); // get startpoint X and Y
@@ -1011,7 +1008,7 @@ public class MGame {
         double centerX = startPointX + 0.5; // PUNKT AUF SÜDWEST UNTEN LINKS
 
         String key = "centerNode";
-        double level = field.getLevel(); // checking hoehe der tile for coords
+        double level = field.getLevel(); // checking Höhe der tile for coords
         MCoordinate coords;
         coords = new MCoordinate(centerX, startPointY, level);
 
@@ -1035,6 +1032,7 @@ public class MGame {
         }
     }
 
+    /** Diese Methode erstellt einen Knotenpunkt für das übergebene Gebäude mit den übergebenen Koordinaten. */
     private MKnotenpunkt createBuildingNode(MCoordinate coords, String name, EBuildType buildingToBeBuiltType, Buildings newBuilding) {
         Graph buildingGraph = new Graph(); //GET BUILDTYPE DYNAMIC FROM BUILDING WE BUILD
 
@@ -1047,15 +1045,6 @@ public class MGame {
             MTile buildingField = getTileById(selectedTileId);
             String buildingNameID = newBuilding.getBuildingName(); //getting the Name of the copied building we placed
             String groupId = buildingField.getId() + "-" + buildingNameID;
-
-            //speichern koordinate vom aktuellen Feld
-            MCoordinate fieldGridCoordinates = buildingField.getVisibleCoordinates();
-
-            //speichern koordinaten vom NODE nicht vom Feld
-            //feld koordinate is das geklickte feld, node coordinate ist die eigtl koordinate
-
-            // MCoordinate nodeCoordinate = new MCoordinate(fieldGridCoordinates.getX() + coords.getX(), fieldGridCoordinates.getY() - coords.getY(), buildingField.getLevel());
-            //WE GIVE HIM OUR OWN NODE ISNTEAD
 
             MKnotenpunkt knotenpunkt;
 
@@ -1111,7 +1100,9 @@ public class MGame {
                         System.out.println("Achtung - falsche Targetpointlist ");
                     }
                 }
-                if (hasSpaceForBuilding && buildingToBeBuiltType.equals(EBuildType.airport)) { //TODO hasSpaceForBuilding muss Randteile berücksichtigen/abchecken
+                /* Wenn das zu setzende Gebäude vom Typ Airport ist und Platz besteht, dann
+                 wird zusätzlich versucht, dieses einem Airport hinzuzufügen bzw. einen neuen für dieses zu erstellen. */
+                if (hasSpaceForBuilding && buildingToBeBuiltType.equals(EBuildType.airport)) {
                     Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
                     newBuilding.setStartTile(feld);
                     if (mAirportManager.createOrConnectToAirport(newBuilding)) {
@@ -1120,17 +1111,14 @@ public class MGame {
                             relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
                             relevantTile.addConnectedBuilding(newBuilding);
                         }
-                        System.out.println("AIRPORTS       " + mAirportManager.getFullyBuiltAirports().size());
                         new MTransportConnection(feld, buildingToBeBuiltType, newBuilding, newBuildingId, true, relevantTiles, relevantGraph, true, relevantTargetpointlist, this);
 
                     } else mAirportManager.showAirportAlert();
                 } else {
                     new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist, this);
-
                     if (stationStatus.equals(EStationStatus.ONE))  addBuildingToStation(feld, buildingToBeBuilt);
                     else if (stationStatus.equals(EStationStatus.NONE)) createStation(feld, buildingToBeBuilt);
                 }
-
             } else if (hasSpaceForBuilding && feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
 
                     feld.setState(buildingToBeBuiltType);
@@ -1145,7 +1133,6 @@ public class MGame {
                     }
                     newBuilding.setStartTile(feld);
                     createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
-
             }
         }
     }
@@ -1169,7 +1156,7 @@ public class MGame {
         constructedFactories.add(f);
     }
 
-    public MAirportManager getmAirportManager() {
+    public MAirportManager getAirportManager() {
         return mAirportManager;
     }
 }
