@@ -85,7 +85,6 @@ public class MLinie {
             MWegKnotenpunkt first = listOfHaltestellenKnotenpunkten.peek();
             listeAllerLinienKnotenpunkte.clear();
 
-
             for (MWegKnotenpunkt k :
                 listOfHaltestellenKnotenpunkten
             ) {
@@ -108,7 +107,6 @@ public class MLinie {
 
                             revertList(listeAllerLinienKnotenpunkte, k);
                             revertList(listOfHaltestellenKnotenpunkten, k);
-
 
                             circlePath = false;
                         }
@@ -135,7 +133,6 @@ public class MLinie {
             knotenpunktListe.add(tempWegknoten);
         }
 
-        knotenpunktListe.removeLast();
         knotenpunktListe.getFirst().setVorgaenger(knotenpunktListe.getLast().getKnotenpunkt());
 
     }
@@ -160,18 +157,14 @@ public class MLinie {
         SearchObject so = new SearchObject(currentPoint, wayPointList, 0);
 
         if (so.getArrayListZuBesuchenderWegpunkte().size() == 0) {
-            System.out.println("something went wrooong");
+            System.out.println("MLinie[findPath]: something went wrong");
             return false;
         } else {
-
             Path path = new Path(so, true);
-
             if (path.isEmpty()) {
                 return false;
             } else {
-
                 listeAllerLinienKnotenpunkte.addAll(path);
-
                 return true;
             }
         }

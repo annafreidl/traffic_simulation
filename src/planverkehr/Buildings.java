@@ -91,14 +91,21 @@ public class Buildings {
         setBuildType();
         setDirections();
         setPossibleConnection();
+        setZNull();
+    }
+
+    private void setZNull(){
+        this.points.forEach((name, coord) -> {
+            coord.setZ(0);
+        });
     }
 
 
 
     private void setBuildType() {
-        if (getRoads().size() > 0) {
+        if (getRoads().size() > 0 ) {
             buildType = EBuildType.road;
-        } else if (getRails().size() > 0) {
+        } else if (getRails().size() > 0 || getBuildMenu().equals("rail")) {
             buildType = EBuildType.rail;
         } else if (getPlanes().size() > 0) {
             buildType = EBuildType.airport;

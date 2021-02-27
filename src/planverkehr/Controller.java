@@ -377,7 +377,7 @@ public class Controller {
 
                 if (e.getButton() == MouseButton.PRIMARY && e.isStillSincePress()) {
                     //select tiles
-                    boolean isTile = gameModel.selectTileByCoordinates(canvasX, canvasY);
+                    boolean isTile = gameModel.selectTileByCoordinates(canvasX, canvasY, gameView.canvas);
                     if (!gameModel.selectedTileId.equals("null") && ((gameModel.autoSaveMode && gameModel.savedBuilding != null))) {
                         gameModel.build(gameModel.savedBuilding.getBuildType(), gameModel.savedBuilding.getBuildingName());
                     }

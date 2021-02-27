@@ -55,7 +55,6 @@ public class MTransportConnection {
         checkIsConnection();
 
         //1. Prüfen ob Platz für Straße ist
-        //todo: dz und Haltestellen einbeziehen
         if (checkForSpace()) {
 
             //2. State und Building von Kachel setzten
@@ -333,8 +332,7 @@ public class MTransportConnection {
             double half = westTief ? 0.5 : -0.5;
             if (relCoords.getX() % 1 == 0) {
 
-                for (MCoordinate c : feld.getPunkteNeu()
-                ) {
+                for (MCoordinate c : feld.getPunkteNeu()) {
                     if (c.getX() == relCoords.getX() && c.getY() == (relCoords.getY() - 0.5)) {
                         firstCoord = c;
                     } else if (c.getX() == relCoords.getX() && c.getY() == (relCoords.getY() + 0.5)) {
@@ -342,8 +340,7 @@ public class MTransportConnection {
                     }
                 }
             } else if (relCoords.getY() % 1 == 0) {
-                for (MCoordinate c : feld.getPunkteNeu()
-                ) {
+                for (MCoordinate c : feld.getPunkteNeu()) {
                     if (c.getX() == (relCoords.getX() - 0.5) && c.getY() == (relCoords.getY())) {
                         firstCoord = c;
                     } else if (c.getX() == relCoords.getX() + 0.5 && c.getY() == relCoords.getY()) {
@@ -354,12 +351,14 @@ public class MTransportConnection {
             if (firstCoord != null && secondCoord != null && firstCoord.getZ() == secondCoord.getZ()) {
                 relCoords.setZ(firstCoord.getZ());
             } else {
-                relCoords.setZ(half);
+                relCoords.setZ(feld.getWest().getZ() + half);
             }
+        } else {
+            relCoords.setZ(feld.getWest().getZ());
         }
 
 
-        MCoordinate nodeVisibleCoord = new MCoordinate(feldVisibleCoordinates.getX() + relCoords.getX(), feldVisibleCoordinates.getY() - relCoords.getY(), feld.getWest().getZ()+ relCoords.getZ());
+        MCoordinate nodeVisibleCoord = new MCoordinate(feldVisibleCoordinates.getX() + relCoords.getX(), feldVisibleCoordinates.getY() - relCoords.getY(), relCoords.getZ());
 
         MKnotenpunkt knotenpunkt;
 

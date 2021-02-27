@@ -507,12 +507,6 @@ public class VGame {
     private Node createTopBar() {
 
         HBox topPane = new HBox();
-        // Baumenü Beispiel
-
-
-        // Label zur Anzeige der Koordinaten auf denen man sich befindet (funktioniert noch nicht bei Zoom)
-
-
         topPane.getChildren().addAll(menuBar);
         topPane.setAlignment(Pos.CENTER);
 
@@ -523,7 +517,6 @@ public class VGame {
     private void drawGeneratedMap() {
         gameModel.clearLists();
 
-
         //ebne das Spielfeld
         ebneMap();
 
@@ -532,11 +525,8 @@ public class VGame {
         LinkedList<Buildings> openList = new LinkedList();
 
         gameModel.getBuildingsList().forEach((key, b) -> {
-
             if (b.getSpecial().equals("factory")) {
-
                 openList.add(b);
-
             }
         });
 
@@ -712,10 +702,7 @@ public class VGame {
                 tile.createHöhenArray();
             }
             tile.reset();
-
         });
-
-
     }
 
                 /* Idee: von jedem Tile auf dem Spielbrett werden die Eckpunkte ausgelesen
@@ -862,7 +849,6 @@ public class VGame {
         }
     }
 
-
     //Differenz
     public ArrayList<MCoordinate> entferne(ArrayList<MCoordinate> list1, ArrayList<MCoordinate> list2) {
         ArrayList<MCoordinate> übrige = new ArrayList<>();
@@ -968,6 +954,10 @@ public class VGame {
     }
 
     public void drawChangedTiles(TreeSet<MTile> changedTiles) {
+        changedTiles.forEach(tile -> {
+            clearTiles(tile);
+        });
+
 
         TreeSet<MTile> neighbourTiles = new TreeSet<>();
         //clearField();
@@ -976,6 +966,7 @@ public class VGame {
         });
 
         changedTiles.addAll(neighbourTiles);
+
 
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
@@ -1030,7 +1021,7 @@ public class VGame {
 
         MCoordinate centerCoord = new MCoordinate(westAbsolutX, westAbsolutY, schraege).toCanvasCoordWithoutOffset();
 
-        gcFront.clearRect(centerCoord.getX(), centerCoord.getY() - centerCoord.getZ() - Config.tHeightHalft - Config.tHeightHalft / 2, Config.tWidth, Config.tHeight + Config.tHeightHalft / 2);
+        gcFront.clearRect(centerCoord.getX(), centerCoord.getY() - centerCoord.getZ() - Config.tHeightHalft - Config.tHeightHalft / 2, Config.tWidth, Config.tHeight + Config.tHeightHalft);
     }
 
     public MenuBar getMenuBar() {
@@ -1092,10 +1083,6 @@ public class VGame {
         return linienButtonWeiter;
     }
 
-    public Button getPlayButton() {
-        return playButton;
-    }
-
     public void showProductions() {
         if (gameModel.getSelectedTile() != null &&
             (gameModel.getSelectedTile().getState().equals(EBuildType.factory) ||
@@ -1151,6 +1138,10 @@ public class VGame {
         }
     }
 
+    public Button getPlayButton() {
+        return playButton;
+    }
+
     public Button getBuildButton() {
         return buildButton;
     }
@@ -1166,7 +1157,6 @@ public class VGame {
         imgViewPlayIcon.setFitWidth(35);
         imgViewPlayIcon.setFitHeight(35);
         playButton.setGraphic(imgViewPlayIcon);
-
     }
 
     public void startGame() {

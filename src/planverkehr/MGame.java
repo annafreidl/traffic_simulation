@@ -1,10 +1,14 @@
 package planverkehr;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import javafx.animation.Timeline;
+import javafx.geometry.Point2D;
+import javafx.scene.canvas.Canvas;
 import planverkehr.airport.MAirport;
 import planverkehr.airport.MAirportManager;
 import planverkehr.graph.Graph;
@@ -189,16 +193,16 @@ public class MGame {
         try {
 
             double p_W_x = tile.getWest().toCanvasCoord().getX();
-            double p_W_y = tile.getWest().toCanvasCoord().getY()+tile.getWest().toCanvasCoord().getZ();
+            double p_W_y = tile.getWest().toCanvasCoord().getY() + tile.getWest().toCanvasCoord().getZ();
 
             double p_N_x = tile.getNorth().toCanvasCoord().getX();
-            double p_N_y = tile.getNorth().toCanvasCoord().getY()+tile.getNorth().toCanvasCoord().getZ();
+            double p_N_y = tile.getNorth().toCanvasCoord().getY() + tile.getNorth().toCanvasCoord().getZ();
 
             double p_E_x = tile.getEast().toCanvasCoord().getX();
-            double p_E_y = tile.getEast().toCanvasCoord().getY()+tile.getEast().toCanvasCoord().getZ();
+            double p_E_y = tile.getEast().toCanvasCoord().getY() + tile.getEast().toCanvasCoord().getZ();
 
             double p_S_x = tile.getSouth().toCanvasCoord().getX();
-            double p_S_y = tile.getSouth().toCanvasCoord().getY()+tile.getSouth().toCanvasCoord().getZ();
+            double p_S_y = tile.getSouth().toCanvasCoord().getY() + tile.getSouth().toCanvasCoord().getZ();
 
             double low_y = Math.min(p_N_y, Math.min(p_W_y, p_E_y));
             double high_y = Math.max(p_S_y, Math.max(p_W_y, p_E_y));
@@ -267,7 +271,25 @@ public class MGame {
         }
     }
 
-    public boolean selectTileByCoordinates(double x, double y) {
+    public boolean checkTileFit(MTile tile, double x, double y, Canvas canvas){
+        double xMax = Double.MIN_VALUE;
+        double xMin = Double.MAX_VALUE;
+        double yMax = Double.MIN_VALUE;
+        double yMin = Double.MAX_VALUE;
+        MCoordinate westAbsolutVisible = tile.getIDCoordinates();
+        for (MCoordinate mCoordinate : tile.getPunkteNeu()) {
+            MCoordinate canvasCoord = new MCoordinate(westAbsolutVisible.getX() + mCoordinate.getX(), westAbsolutVisible.getY() + mCoordinate.getY(), mCoordinate.getZ()).toCanvasCoordWithoutOffset();
+            Point2D canvasPoint = canvas.localToScene(canvasCoord.getX(), canvasCoord.getY());
+            xMax = Math.max(canvasPoint.getX(), xMax);
+            xMin = Math.min(canvasPoint.getX(), xMin);
+            yMax = Math.max(canvasPoint.getY(), yMax);
+            yMin = Math.min(canvasPoint.getY(), yMin);
+        }
+
+        return xMin < x && xMax > x && yMin < y && yMax > y;
+    }
+
+    public boolean selectTileByCoordinates(double x, double y, Canvas canvas) {
 
         // MTile tileOptional = getTileByPixelCoordinate(x,y);
 
@@ -277,14 +299,29 @@ public class MGame {
         boolean[] selectedTile = new boolean[1];
         selectedTile[0] = false;
         tileOpt.ifPresent(tile -> {
+      /*   if (!checkTileFit(tile, x, y, canvas)){
+             ArrayList<MTile> possiblyClickedTiles = new ArrayList<>();
+             possiblyClickedTiles = getNeighboursOfSecondOrder(tile);
+
+             for (MTile possibleClickedTile : possiblyClickedTiles) {
+                if(checkTileFit(possibleClickedTile, x, y, canvas)) {
+                    tile = possibleClickedTile;
+                    break;
+                }
+             }
+         } */
+
+
+
+
             System.out.println("id: " + tile.getId());
-            System.out.println("free? " + tile.isFree());
             System.out.println("state: " + tile.state);
             System.out.println("BuildingOnTile: " + tile.getBuildingOnTile());
+            if (tile.getKnotenpunkteArray().size() > 0) {
+                System.out.println("BlockID: " + tile.getKnotenpunkteArray().get(0).getBlockId());
+            }
             if (tile.getBuildingOnTile() != null)
                 System.out.println("associated Airport: " + tile.getBuildingOnTile().getAssociatedAirport());
-            System.out.println("KnotenpunkteArray: " + tile.knotenpunkteArray);
-            System.out.println("DZ "+ tile.TileDz());
             System.out.println("is schief?: " + tile.getIncline());
             System.out.println();
 
@@ -506,7 +543,7 @@ public class MGame {
             MWegKnotenpunkt w = l.getListeAllerLinienKnotenpunkte().peekFirst();
             System.out.println(w.getKnotenpunkt().getFeldId());
             moveTiles.add(getTileById(w.getKnotenpunkt().getFeldId()));
-            if(l.getVehicle().isVisible()){
+            if (l.getVehicle().isVisible()) {
                 moveTiles.add(getTileById(l.getVehicle().getCurrentKnotenpunkt().getFeldId()));
             }
             if (l.getType().equals(EBuildType.road)) {
@@ -656,7 +693,7 @@ public class MGame {
                 mAirportManager.removeBuildingFromAirport(buildingOnTile, associatedAirport, buildingName);
                 if (associatedAirport.isNoBuildingsSet()) //wenn keine Airport Gebäude existieren von dem Airport
                     mAirportManager.removeFromAirportList(associatedAirport); //dann soll Airport aus Liste gelöscht werden
-                else if(!associatedAirport.isFullyBuilt()) mAirportManager.removeFromFullyBuiltList(associatedAirport);
+                else if (!associatedAirport.isFullyBuilt()) mAirportManager.removeFromFullyBuiltList(associatedAirport);
             }
 
             for (MTile mTile : getGroupedTiles(selectedTile.getConnectedBuilding().getWidth(),
@@ -698,7 +735,7 @@ public class MGame {
     }
 
     public String getFeldIdByCanvasCoords(double canvasX, double canvasY) {
-              MCoordinate visibleCoordinate = getVisibleCoordsByCanvasCoords(canvasX, canvasY);
+        MCoordinate visibleCoordinate = getVisibleCoordsByCanvasCoords(canvasX, canvasY);
 
         // rufe Tile an der Stelle auf
         return (int) visibleCoordinate.getX() + "-" + (int) visibleCoordinate.getY();
@@ -784,10 +821,10 @@ public class MGame {
                 activeLinie.getListeAllerLinienKnotenpunkte().add(w);
             }
         } else if (activeLinie.getType().equals(EBuildType.airport)) {
-              activeLinie.getVehicle().setCurrentKnotenpunkt(w.getKnotenpunkt());
-              activeLinie.getVehicle().setVisible(true);
-              activeLinie.addWegknotenpunktToBack(w);
-            }
+            activeLinie.getVehicle().setCurrentKnotenpunkt(w.getKnotenpunkt());
+            activeLinie.getVehicle().setVisible(true);
+            activeLinie.addWegknotenpunktToBack(w);
+        }
 
 
         if (canCreateLinie) {
@@ -957,10 +994,11 @@ public class MGame {
         }
     }
 
-    public void productionInTicks(int tickNumber){
+    public void productionInTicks(int tickNumber) {
         for (MFactory factory : constructedFactories) {
             factory.startProductionAndConsumption(tickNumber);
-    }}
+        }
+    }
 
     public void togglePlayPause() {
         gamePaused = !gamePaused;
@@ -1121,10 +1159,10 @@ public class MGame {
                 }
             } else if (hasSpaceForBuilding && feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
 
-                    feld.setState(buildingToBeBuiltType);
+                feld.setState(buildingToBeBuiltType);
 
-                    Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
-                    newBuilding.setBuildingID(newBuildingId);
+                Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
+                newBuilding.setBuildingID(newBuildingId);
 
                     for (MTile relevantTile : relevantTiles) {
                         relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
@@ -1136,7 +1174,6 @@ public class MGame {
             }
         }
     }
-
 
 
     public void clearLists() {
@@ -1156,7 +1193,28 @@ public class MGame {
         constructedFactories.add(f);
     }
 
-    public MAirportManager getAirportManager() {
+
+    public void consumeAndProduce() {
+        for (Buildings factory : constructedBuildings) {
+            for (MProductions productions : factory.getProductions()) {
+                System.out.println(tickNumber);
+                if (tickNumber % productions.getDuration() == 0) {
+                    productions.produceCommodities();
+                    productions.consumeCommodities();
+                }
+            }
+        }
+    }
+
+    public void testVehicleSpeed() {
+        int speed = 3;
+        for (int i = 0; i < speed; i++) {
+            System.out.println("i: " + i);
+            System.out.println("speed: " + speed);
+        }
+    }
+
+    public MAirportManager getmAirportManager() {
         return mAirportManager;
     }
 }

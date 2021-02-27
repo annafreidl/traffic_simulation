@@ -146,19 +146,19 @@ public class MProductions {
                     int value = entry.getValue();
                     if (resourcesAvailableToConsume()) {
                         int availableResource = storage.get(key);
-                        System.out.println("Duration: " + getDuration());
-                        System.out.println("getConsume: " + getConsume());
-                        System.out.println("AvailableResource: " + key + " " + availableResource);
-                        System.out.println("Quantity required : " + value);
+                        // System.out.println("Duration: " + getDuration());
+                        // System.out.println("getConsume: " + getConsume());
+                        // System.out.println("AvailableResource: " + key + " " + availableResource);
+                        // System.out.println("Quantity required : " + value);
                         if (!storageRAW.containsKey(key)) {
                             System.out.println("Resource unknown to this Building");
                             programmBeenden();
                         }
-                        System.out.println("Before consume: " + storage);
+                       // System.out.println("Before consume: " + storage);
                         deleteConsumedResourcesFromStorage(key, value);
-                        System.out.println("After consume: " + storage);
-                        System.out.println("ProduceStorage: " + produceStorage);
-                        System.out.println("\n");
+                        // System.out.println("After consume: " + storage);
+                        // System.out.println("ProduceStorage: " + produceStorage);
+                        // System.out.println("\n");
                     }
                 }
             }
