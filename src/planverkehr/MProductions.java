@@ -28,7 +28,6 @@ public class MProductions {
         this.storageRAW = storageRAW;
         produceStorage = new HashMap<>();
         zeroStorage();
-        initStorage();
     }
 
 
@@ -192,7 +191,6 @@ public class MProductions {
         }
 
     public void consumeAndProduce() {
-        System.out.println("EBuildType: " + factory.getEbuildType());
         produceCommodities();
         consumeCommodities();
         if (!foundation){ cathedralFoundationReady();}

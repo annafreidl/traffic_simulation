@@ -119,7 +119,7 @@ public class Buildings {
     }
 
     public void setCathedralBuildTypeToFoundation(){
-        if (getBuildingName().equals("cathedral") && getEbuildType().equals(EBuildType.cathedral)){
+       if (getBuildingName().equals("cathedral") && getEbuildType().equals(EBuildType.cathedral)){
             buildType = EBuildType.cathedral_foundation;
         }
     }

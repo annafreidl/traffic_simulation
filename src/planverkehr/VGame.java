@@ -1099,22 +1099,21 @@ public class VGame {
     public void showProductions() {
         if (gameModel.getSelectedTile() != null &&
             (gameModel.getSelectedTile().getState().equals(EBuildType.factory) ||
-                gameModel.getSelectedTile().getState().equals(EBuildType.cathedral))) {
+                gameModel.getSelectedTile().getState().equals(EBuildType.cathedral) ||
+                gameModel.getSelectedTile().getState().equals(EBuildType.cathedral_foundation))) {
             MTile mTile = gameModel.getSelectedTile();
             Buildings buildings = new Buildings(mTile.getConnectedBuilding());
             VBox box = new VBox();
             group.getChildren().add(box);
-            box.setLayoutX(600);
-            box.setLayoutY(600);
+            box.setLayoutX(300);
+            box.setLayoutY(0);
             box.setAlignment(Pos.BASELINE_CENTER);
             box.setStyle("-fx-background-color : lightgreen;");
 
-            Label ebuildtype = new Label("EBuildTypeTile: " + mTile.getState());
-            box.getChildren().add(ebuildtype);
-
             if (mTile.getConnectedBuilding() != null &&
                 (mTile.getState().equals(EBuildType.factory) ||
-                    mTile.getState().equals(EBuildType.cathedral))) {
+                    mTile.getState().equals(EBuildType.cathedral) ||
+                    mTile.getState().equals(EBuildType.cathedral_foundation))) {
                 Label factory = new Label("Factory: " + buildings.getBuildingName());
                 box.getChildren().add(factory);
                 for (int i = 0; i < buildings.getProductions().size(); i++) {
@@ -1131,21 +1130,15 @@ public class VGame {
                         Label warehouse = new Label("Warehouse: " + buildings.getProductions().get(i).produceStorage.toString());
                         box.getChildren().add(warehouse);
                     }
-
-                    Label duration = new Label("Duration: " + buildings.getProductions().get(i).duration);
-                    box.getChildren().add(duration);
+                    if (!buildings.getProductions().get(i).consume.isEmpty() && !buildings.getProductions().get(i).produce.isEmpty()) {
+                        Label duration = new Label("Duration: " + buildings.getProductions().get(i).duration);
+                        box.getChildren().add(duration);
+                    }
 
                     if (!buildings.getProductions().get(i).storage.isEmpty()) {
                         Label storage = new Label("Storage: " + buildings.getProductions().get(i).storage.toString());
                         box.getChildren().add(storage);
                     }
-                    Label ebuildtypeB = new Label("EBuildTypeBuilding: " + buildings.getEbuildType());
-                    box.getChildren().add(ebuildtypeB);
-
-                }
-                if (!buildings.getProductions().get(0).storageRAW.isEmpty()) {
-                    Label rawStorage = new Label("Raw-Storage: " + buildings.getProductions().get(0).storageRAW.toString());
-                    box.getChildren().add(rawStorage);
                 }
             }
             scene.setOnKeyPressed(event ->
