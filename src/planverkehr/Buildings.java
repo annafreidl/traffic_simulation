@@ -100,11 +100,13 @@ public class Buildings {
             buildType = EBuildType.road;
         } else if (getRails().size() > 0) {
             buildType = EBuildType.rail;
-        } else if (getPlanes().size() > 0){
+        } else if (getPlanes().size() > 0) {
             buildType = EBuildType.airport;
-        } else if (getProductions().size() > 0){
+        } else if (getBuildingName().equals("cathedral")) {
+            buildType = EBuildType.cathedral;
+        } else if (getProductions().size() > 0) {
             buildType = EBuildType.factory;
-        } else if (buildMenu.equals("nature")){
+        } else if (buildMenu.equals("nature")) {
             buildType = EBuildType.nature;
         } else {
             buildType = EBuildType.unknown;
@@ -114,6 +116,17 @@ public class Buildings {
 
     public EBuildType getBuildType() {
         return buildType;
+    }
+
+    public void setCathedralBuildTypeToFoundation(){
+        if (getBuildingName().equals("cathedral") && getEbuildType().equals(EBuildType.cathedral)){
+            buildType = EBuildType.cathedral_foundation;
+        }
+    }
+    public void setCathedralBuildTypeToNave(){
+        if (getBuildingName().equals("cathedral") && getEbuildType().equals(EBuildType.cathedral_foundation)){
+            buildType = EBuildType.cathedral_nave;
+        }
     }
 
     private void setDirections() {
@@ -236,7 +249,7 @@ public class Buildings {
         return combinesBuildings;
     }
 
-    public void setStartTile(MTile startTile){
+    public void setStartTile(MTile startTile) {
         this.startTile = startTile;
     }
 
@@ -244,7 +257,7 @@ public class Buildings {
         return startTile;
     }
 
-    public EBuildType getEbuildType(){
+    public EBuildType getEbuildType() {
         return buildType;
     }
 
@@ -252,7 +265,7 @@ public class Buildings {
         this.associatedAirport = associatedAirport;
     }
 
-    public MAirport getAssociatedAirport(){
+    public MAirport getAssociatedAirport() {
         return associatedAirport;
     }
 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
+import javafx.animation.Timeline;
 import planverkehr.airport.MAirport;
 import planverkehr.airport.MAirportManager;
 import planverkehr.graph.Graph;
@@ -36,7 +37,7 @@ public class MGame {
     int vehicleId = 0;
     MTargetpointList listeDerBushaltestellen, listeDerBahnhöfe, listeDerFlughafenGebäude;
     int linienID = 0;
-    int tickNumber = 0;
+    int tickNumber = 1;
     int haltestellenID = 0;
     private boolean createLine = false;
     ArrayList<MLinie> linienList;
@@ -49,6 +50,7 @@ public class MGame {
     boolean isBuilding = false;
     boolean autoSaveMode = true;
     Buildings savedBuilding;
+    Timeline timeline = new Timeline();
 
 
     public MGame(GameConfig config) {
@@ -563,7 +565,7 @@ public class MGame {
             }
         }
 
-        tickNumber++;
+        //tickNumber++;
         return moveTiles;
     }
 
@@ -1165,27 +1167,6 @@ public class MGame {
         }
 
         constructedFactories.add(f);
-    }
-
-
-    public void consumeAndProduce(){
-        for(Buildings factory : constructedBuildings){
-            for (MProductions productions : factory.getProductions()){
-                System.out.println(tickNumber);
-                if (tickNumber % productions.getDuration() == 0){
-                    productions.produceCommodities();
-                    productions.consumeCommodities();
-                }
-            }
-        }
-    }
-
-    public void testVehicleSpeed(){
-        int speed = 3;
-        for (int i =0; i<speed; i++){
-            System.out.println("i: "+i);
-            System.out.println("speed: "+speed);
-        }
     }
 
     public MAirportManager getmAirportManager() {

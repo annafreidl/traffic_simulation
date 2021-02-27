@@ -17,9 +17,9 @@ public class Config {
     public static final double XOffset = (double)(worldWidth*(tWidth+1))/2+(int)(Math.sqrt(worldHeight-worldWidth)+5)*tWidth;
         //(double)(worldWidth*(tWidth+1))/2;
     public static final double YOffset = (double)tWidth/4;
-    public static final String jsonFile = "planverkehr.json";
+    public static final String jsonFile = "own-scenario.json";
     public static final String gameMode = parser.getMapFromJSON().getGameMode();
-    public static final Duration tickFrequency = Duration.seconds(1);
+    public static final Duration tickFrequency = Duration.seconds(0.1);
 
 
 }

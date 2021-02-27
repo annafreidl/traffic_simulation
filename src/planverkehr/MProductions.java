@@ -1,13 +1,10 @@
 package planverkehr;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 //known Bugs:
 //bei zwei konsumierbaren resourcen wird nur überprüft, ob die erste vorhanden ist -> konsum obwohl nur nur 1 der 2 resourcen
-//vorhanden ist
+//vorhanden ist und dadurch können auch negative werte erreicht werden
 //falls ein Productions Objekt mehrere unabhängige Produktionen z.B. construction yard hat, gibt es auch einzelne
 //bzw. doppelte und identische lager dafür
 
@@ -20,6 +17,8 @@ public class MProductions {
     HashMap<String, Integer> storageRAW; //original resource and quantity
     HashMap<String, Integer> produceStorage; //storage for produced goods
     MFactory factory;
+    boolean foundation = false;
+    boolean nave = false;
 
 
     public MProductions(int duration, List<HashMap<String, Integer>> produce, List<HashMap<String, Integer>> consume, HashMap<String, Integer> storageRAW) {
@@ -29,7 +28,9 @@ public class MProductions {
         this.storageRAW = storageRAW;
         produceStorage = new HashMap<>();
         zeroStorage();
+        initStorage();
     }
+
 
 
     public int getDuration() {
@@ -172,28 +173,70 @@ public class MProductions {
                 for (Map.Entry<String, Integer> entry : getProduce().get(i).entrySet()) {
                     String key = entry.getKey();
                     int value = entry.getValue();
-                    if (resourcesAvailableToConsume() || getConsume().size() == 0) {
-                        if (!produceStorage.containsKey(key)) {
-                            produceStorage.put(key, 0);
+                        if (resourcesAvailableToConsume() || getConsume().size() == 0) {
+                            if (!produceStorage.containsKey(key)) {
+                                produceStorage.put(key, 0);
+                            }
+                            System.out.println("Duration: " + getDuration());
+                            System.out.println("getProduce: " + getProduce());
+                            System.out.println("Producing Resources: " + key + " " + value);
+                            System.out.println("Current Storage : " + storage);
+                            System.out.println("Before add: " + produceStorage);
+                            addProducedResourcesToProduceStorage(key, value);
+                            System.out.println("After add: " + produceStorage);
+                            System.out.println("\n");
                         }
-                        System.out.println("Duration: " + getDuration());
-                        System.out.println("getProduce: " + getProduce());
-                        System.out.println("Producing Resources: " + key + " " + value);
-                        System.out.println("Current Storage : " + storage);
-                        System.out.println("Before add: " + produceStorage);
-                        addProducedResourcesToProduceStorage(key, value);
-                        System.out.println("After add: " + produceStorage);
-                        System.out.println("\n");
                     }
                 }
             }
         }
-    }
 
     public void consumeAndProduce() {
+        System.out.println("EBuildType: " + factory.getEbuildType());
         produceCommodities();
         consumeCommodities();
+        if (!foundation){ cathedralFoundationReady();}
+        if (!nave){cathedralNaveReady();}
+    }
 
+    public boolean cathedralFoundationReady() {
+        if (factory.getBuildingName().equals("cathedral")) {
+            for (Map.Entry<String, Integer> entry : produceStorage.entrySet()) {
+                if (entry.getKey().equals("cathedral_foundation") && entry.getValue() >= 1) {
+                    List<HashMap<String, Integer>> newConsume = new ArrayList<>(getConsume());
+                    List<HashMap<String, Integer>> newProduce = new ArrayList<>(getProduce());
+                    newConsume.remove(0);
+                    newProduce.remove(0);
+                    foundation = true;
+                    factory.setCathedralBuildTypeToFoundation();
+                    setConsume(newConsume);
+                    setProduce(newProduce);
+                    produceStorage.clear();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean cathedralNaveReady() {
+        if (factory.getBuildingName().equals("cathedral")) {
+            for (Map.Entry<String, Integer> entry : produceStorage.entrySet()) {
+                if (entry.getKey().equals("cathedral_nave") && entry.getValue() >= 1) {
+                    List<HashMap<String, Integer>> newConsume = new ArrayList<>(getConsume());
+                    List<HashMap<String, Integer>> newProduce = new ArrayList<>(getProduce());
+                    newConsume.remove(0);
+                    newProduce.remove(0);
+                    nave = true;
+                    factory.setCathedralBuildTypeToNave();
+                    setConsume(newConsume);
+                    setProduce(newProduce);
+                    produceStorage.clear();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void addProducedResourcesToProduceStorage(String resource, int quantity) {

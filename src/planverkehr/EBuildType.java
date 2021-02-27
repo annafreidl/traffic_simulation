@@ -12,4 +12,6 @@ public enum EBuildType {
     factory,
     unknown,
     cathedral,
+    cathedral_foundation,
+    cathedral_nave
 }

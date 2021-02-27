@@ -1,12 +1,8 @@
 package planverkehr;
 
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
@@ -22,7 +18,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import planverkehr.graph.Graph;
@@ -390,7 +385,7 @@ public class VGame {
         pauseButton.setGraphic(imgViewStopIcon);
         pauseButton.getStyleClass().add("button-icon");
 
-        pauseButton.setOnAction(event -> tl.pause());
+        pauseButton.setOnAction(event -> gameModel.timeline.pause());
 
         Image playIcon = new Image("Images/pause.png");
         ImageView imgViewPlayIcon = new ImageView(playIcon);
@@ -587,7 +582,7 @@ public class VGame {
             for (MTile nachbar : gameModel.getNeighbours(t)) {
                 if (!nachbar.isFree()) {
                     nachbarnhabenhäuser = false;
-                    if (nachbar.getBuildingOnTile().getBuildType() == EBuildType.factory) {
+                    if (nachbar.getBuildingOnTile().getBuildType() == EBuildType.factory || nachbar.getBuildingOnTile().getBuildType() == EBuildType.cathedral) {
                         nachbarnhabenhäuser = false;
                     }
                 }
@@ -606,12 +601,21 @@ public class VGame {
 
                 gameModel.addFactoryToConstructedFactories(f);
 
+
                 if (mitbesetzte != null) {
                     for (MTile mitbesetzt : mitbesetzte) {
-                        mitbesetzt.setState(EBuildType.factory);
+                        if (f.getBuildType().equals(EBuildType.cathedral)) {
+                            mitbesetzt.setState(EBuildType.cathedral);
+                        } else {
+                            mitbesetzt.setState(EBuildType.factory);
+                        }
                         mitbesetzt.setBuildingOnTile(b);
                         mitbesetzt.addConnectedBuilding(b);
                     }
+                }
+
+                if (f.getBuildType().equals(EBuildType.cathedral)) {
+                    t.setState(EBuildType.cathedral);
                 }
             } else {
                 System.out.println("Building wird nochmal gezeichnet: " + b);
@@ -821,7 +825,7 @@ public class VGame {
                     key.erhöhePunkte(erhöheAmEnde.get(key), factor);
                     key.createHöhenArray();
                     key.höhendif();
-                    if(key.getLevel()>=0&&key.getState()==EBuildType.water){
+                    if (key.getLevel() >= 0 && key.getState() == EBuildType.water) {
                         key.setState(EBuildType.free);
                     }
                     key.setHoch(richtung);
@@ -1044,10 +1048,6 @@ public class VGame {
         debugCoord.setText("x: " + visibleCoord.getX() + "   y: " + visibleCoord.getY() + "     xGrid: " + coordX + "  yGrid: " + coordY);
     }
 
-    public void runTick() {
-
-    }
-
     public Button getLinienButton() {
         return linienButton;
     }
@@ -1058,23 +1058,6 @@ public class VGame {
 
     public Button getTickButton() {
         return tickButton;
-    }
-
-    public Timeline getTl() {
-        return tl;
-    }
-
-
-    private static final Duration TICK_FREQUENCY = Duration.seconds(1);
-
-    final EventHandler<ActionEvent> handler = event -> runTick();
-
-    private void initTimeline() {
-        KeyFrame keyframe = new KeyFrame(TICK_FREQUENCY, handler);
-        tl.getKeyFrames().addAll(keyframe);
-        tl.setCycleCount(Timeline.INDEFINITE);
-
-        tl.play();
     }
 
     public void toggleLinienInfoLabel(boolean shouldShow) {
@@ -1114,7 +1097,9 @@ public class VGame {
     }
 
     public void showProductions() {
-        if (gameModel.getSelectedTile() != null && gameModel.getSelectedTile().getState().equals(EBuildType.factory)) {
+        if (gameModel.getSelectedTile() != null &&
+            (gameModel.getSelectedTile().getState().equals(EBuildType.factory) ||
+                gameModel.getSelectedTile().getState().equals(EBuildType.cathedral))) {
             MTile mTile = gameModel.getSelectedTile();
             Buildings buildings = new Buildings(mTile.getConnectedBuilding());
             VBox box = new VBox();
@@ -1124,7 +1109,12 @@ public class VGame {
             box.setAlignment(Pos.BASELINE_CENTER);
             box.setStyle("-fx-background-color : lightgreen;");
 
-            if (mTile.getConnectedBuilding() != null && mTile.getState().equals(EBuildType.factory)) {
+            Label ebuildtype = new Label("EBuildTypeTile: " + mTile.getState());
+            box.getChildren().add(ebuildtype);
+
+            if (mTile.getConnectedBuilding() != null &&
+                (mTile.getState().equals(EBuildType.factory) ||
+                    mTile.getState().equals(EBuildType.cathedral))) {
                 Label factory = new Label("Factory: " + buildings.getBuildingName());
                 box.getChildren().add(factory);
                 for (int i = 0; i < buildings.getProductions().size(); i++) {
@@ -1149,10 +1139,13 @@ public class VGame {
                         Label storage = new Label("Storage: " + buildings.getProductions().get(i).storage.toString());
                         box.getChildren().add(storage);
                     }
-                    if (!buildings.getProductions().get(i).storageRAW.isEmpty()) {
-                        Label rawStorage = new Label("Raw-Storage: " + buildings.getProductions().get(i).storageRAW.toString());
-                        box.getChildren().add(rawStorage);
-                    }
+                    Label ebuildtypeB = new Label("EBuildTypeBuilding: " + buildings.getEbuildType());
+                    box.getChildren().add(ebuildtypeB);
+
+                }
+                if (!buildings.getProductions().get(0).storageRAW.isEmpty()) {
+                    Label rawStorage = new Label("Raw-Storage: " + buildings.getProductions().get(0).storageRAW.toString());
+                    box.getChildren().add(rawStorage);
                 }
             }
             scene.setOnKeyPressed(event ->
@@ -1230,4 +1223,3 @@ public class VGame {
         updateSavedBuilding();
     }
 }
-

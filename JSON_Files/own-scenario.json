@@ -1,5 +1,6 @@
 {
-  "commodities": ["wool", "stone", "wood", "sand", "water", "ore", "cloth", "brick", "plank", "mortar", "bell", "gate"
+  "commodities": ["wool", "stone", "wood", "sand", "water", "ore", "cloth",
+    "brick", "plank", "mortar", "bell", "gate", "cathedral_foundation", "cathedral_nave"
   ],
   "buildings" : {
     "port" : {
@@ -425,7 +426,7 @@
       "productions" : {"produce":{"stone":5},"duration":8},
       "dz": 3
     },
-    "sand pit" : {
+    "sandpit" : {
       "width" : 5,
       "depth" : 5,
       "special" : "factory",
@@ -493,31 +494,16 @@
       "storage" : {"ore" : 500},
       "dz" : 1
     },
-    "cathedral-building-ground" : {
-      "buildmenu" : "special buildings",
-      "width" : 10,
-      "depth" : 10,
-      "special": "cathedral",
+    "cathedral" : {
+      "width" : 6,
+      "depth" : 6,
+      "special": "factory",
+      "productions": [{"produce": {"cathedral_foundation" : 1},"consume": {"brick":  50, "plank":  50, "mortar":  50}, "duration": 10},
+                      {"produce": {"cathedral_nave" : 1},"consume": {"cathedral_foundation" : 1,"bell":  2, "gate":  4, "cloth":  20}, "duration": 10}],
+      "storage" : {"cathedral_foundation" : 1,"brick":  500, "plank":  500, "mortar":  500, "bell":  20, "gate":  40, "cloth":  200},
       "dz" : 1
     },
-    "cathedral-foundation" : {
-      "buildmenu" : "special buildings",
-      "width" : 10,
-      "depth" : 10,
-      "special": "cathedral",
-      "costs": {"brick":  80, "plank":  50, "mortar":  50},
-      "dz" : 1,
-      "combines" : {"cathedral-building-ground": "cathedral-foundation"}
-    },
-    "cathedral-nave"  : {
-      "buildmenu" : "special buildings",
-      "width" : 10,
-      "depth" : 10,
-      "special": "cathedral",
-      "costs": {"brick":  80, "cloth":  30, "mortar":  50},
-      "dz" : 1,
-      "combines" : {"cathedral-foundation": "cathedral-nave"}
-    },
+
     "tree" : {
       "buildmenu" : "nature",
       "width" : 1,

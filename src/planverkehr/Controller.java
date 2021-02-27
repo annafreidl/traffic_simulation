@@ -24,9 +24,6 @@ public class Controller {
     MGame gameModel;
     VGame gameView;
     Buildings newBuilding;
-    int tickNumber = 0;
-    Timeline timeline = new Timeline();
-
 
     public Controller(MGame gameModel, VGame gameView) {
         this.gameView = gameView;
@@ -304,11 +301,16 @@ public class Controller {
                 if (gameModel.gameStarted) {
                     gameModel.togglePlayPause();
                     gameView.togglePlayPause();
-                    gameView.getTl().stop();
+                    if (gameModel.gamePaused){
+                        gameModel.timeline.pause();
+                    }
+                    else {
+                        gameModel.timeline.play();
+                    }
                 } else {
                     gameModel.setStartGame();
                     gameView.startGame();
-                    gameView.getTl().play();
+                    gameModel.timeline.play();
                 }
 
             });
@@ -505,8 +507,8 @@ public class Controller {
 
     private void initTimeline() {
         KeyFrame keyframe = new KeyFrame(Config.tickFrequency, handler);
-        gameView.getTl().getKeyFrames().addAll(keyframe);
-        gameView.getTl().setCycleCount(Timeline.INDEFINITE);
+        gameModel.timeline.getKeyFrames().addAll(keyframe);
+        gameModel.timeline.setCycleCount(Timeline.INDEFINITE);
     }
 
     final EventHandler<ActionEvent> handler = event -> {
@@ -559,7 +561,8 @@ public class Controller {
 
 
     private void runTick(){
-
+        int tickNumber = gameModel.tickNumber;
+        System.out.println("Tick: " + tickNumber);
         //gameModel.moveVehicles();
 
 //        ArrayList<MTile> changedTiles = new ArrayList<>();
@@ -576,9 +579,9 @@ public class Controller {
             gameView.clearTiles(toClear);
         }
         gameView.drawChangedTiles(changedTiles);
-        gameModel.productionInTicks(tickNumber+1);
-        tickNumber++;
-        System.out.println("Tick: " + tickNumber);
+        gameModel.productionInTicks(tickNumber);
+        gameModel.tickNumber++;
+
     }
 
     //TODO -------------change this

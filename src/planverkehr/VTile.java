@@ -9,6 +9,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import planverkehr.transportation.VRail;
 import planverkehr.transportation.VRoad;
+
 import java.util.Collections;
 
 
@@ -20,6 +21,7 @@ public class VTile {
     double imageScale;
     double imageHeight;
     double imageWidth;
+    Config config = new Config();
 
 
     public VTile(MTile tileModel) {
@@ -86,6 +88,24 @@ public class VTile {
                 mittel = Color.rgb(133, 85, 13);
                 dunkel = Color.rgb(107, 69, 11);
                 schatten = Color.rgb(96, 44, 7);
+            } else if (tileModel.getState() == EBuildType.cathedral) {
+                eben = Color.rgb(255, 255, 0);
+                hell = Color.rgb(205, 205, 0);
+                mittel = Color.rgb(205, 173, 0);
+                dunkel = Color.rgb(166, 132, 0);
+                schatten = Color.rgb(139, 117, 10);
+            } else if (tileModel.getState() == EBuildType.cathedral_foundation) {
+                eben = Color.rgb(125, 125, 90);
+                hell = Color.rgb(120, 125, 90);
+                mittel = Color.rgb(120, 143, 90);
+                dunkel = Color.rgb(116, 112, 90);
+                schatten = Color.rgb(119, 117, 90);
+            } else if (tileModel.getState() == EBuildType.cathedral_nave) {
+                eben = Color.rgb(255, 25, 15);
+                hell = Color.rgb(205, 25, 15);
+                mittel = Color.rgb(205, 17, 15);
+                dunkel = Color.rgb(166, 13, 15);
+                schatten = Color.rgb(139, 11, 15);
             }
 
            /* if (Collections.min(tileModel.höhen) < 0) {
@@ -639,11 +659,9 @@ public class VTile {
 
             switch (tileModel.getState()) {
 //todo: Pfad darf keine leerzeichen haben
-                case factory, nature -> {
-
-                    image = new Image("Images/" + b.getBuildingName() + ".png");
-
-                    drawInCenter(image, gc);
+                case factory, nature, cathedral -> {
+                        image = new Image("Images/" + b.getBuildingName() + ".png");
+                        drawInCenter(image, gc);
                 }
 
                 case road -> {
@@ -656,14 +674,12 @@ public class VTile {
 
                 case airport -> {
                     String buildingName = b.getBuildingName().replace(" ", "-");
-
                     image = new Image("Images/" + buildingName + ".png"); //Bilder muessen so benannt sein wie Menu-Items!!
-
                     drawInCenter(image, gc);
                 }
-
-
-
+                case cathedral_foundation,cathedral_nave -> {
+                    image = new Image("Images/" + b.getEbuildType() + ".png");
+                }
 
 
            /* default -> {
@@ -690,11 +706,11 @@ public class VTile {
         }
     }
 
-        public void drawInCenter (Image image, GraphicsContext gc){
+    public void drawInCenter(Image image, GraphicsContext gc) {
 
-            imageScale = Config.tWidthHalft / image.getWidth();
-            imageHeight = image.getHeight() * imageScale;
-            imageWidth = image.getWidth() * imageScale;
+        imageScale = Config.tWidthHalft / image.getWidth();
+        imageHeight = image.getHeight() * imageScale;
+        imageWidth = image.getWidth() * imageScale;
 
         double schraege;
         MCoordinate westRelativ = tileModel.punkteNeu.get(3);
@@ -711,6 +727,6 @@ public class VTile {
         }
         MCoordinate centerCoord = new MCoordinate(0.5 + westAbsolutX, westAbsolutY - 0.5, schraege).toCanvasCoordWithoutOffset();
 
-            gc.drawImage(image, centerCoord.getX() - imageWidth / 2, centerCoord.getY() - centerCoord.getZ() - imageHeight + Config.tHeightHalft / 2, imageWidth, imageHeight);
-        }
+        gc.drawImage(image, centerCoord.getX() - imageWidth / 2, centerCoord.getY() - centerCoord.getZ() - imageHeight + Config.tHeightHalft / 2, imageWidth, imageHeight);
     }
+}

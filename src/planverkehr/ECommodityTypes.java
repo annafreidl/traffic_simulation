@@ -17,5 +17,7 @@ public enum ECommodityTypes {
     plank,
     mortar,
     bell,
-    gate
+    gate,
+    cathedral_foundation,
+    cathedral_nave
 }
