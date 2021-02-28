@@ -33,7 +33,6 @@ public class VGame {
     Scene scene;
     JSONParser parser;
     MenuBar menuBar;
-    Label debugCoord;
     Button tickButton, removeButton, kartengeneratorButton, pauseButton, upButton, downButton, buildButton, saveBuildingButton, playButton, backButton;
     Label linieInfoLabel, savesBuilding;
     Button linienButton, linienButtonWeiter, linienButtonAbbrechen;
@@ -102,11 +101,6 @@ public class VGame {
         bp.setCenter(center);
         bp.setTop(createEmptyTopBar());
         bp.setBottom(createBottomBarBeforeStart());
-
-        debugCoord = new Label("empty");
-        group.getChildren().add(debugCoord);
-        debugCoord.setLayoutX(0);
-        debugCoord.setLayoutY(0);
 
         //drawField();
         drawGeneratedMap();
@@ -992,7 +986,6 @@ public class VGame {
     public void showCoordinates(double coordX, double coordY) {
         MCoordinate canvasCoord = new MCoordinate(coordX, coordY, 0);
         MCoordinate visibleCoord = canvasCoord.toVisibleCoord();
-        debugCoord.setText("x: " + visibleCoord.getX() + "   y: " + visibleCoord.getY() + "     xGrid: " + coordX + "  yGrid: " + coordY);
     }
 
     public Button getLinienButton() {

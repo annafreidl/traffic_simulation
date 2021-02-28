@@ -527,19 +527,19 @@ public class VTile {
         gc.setTextBaseline(VPos.CENTER);
         MCoordinate temp = new MCoordinate(visibleXOriginal + tileModel.getWest().getX(), visibleYOriginal - tileModel.getWest().getY(), tileModel.getWest().getZ());
         MCoordinate tempIso = temp.toCanvasCoord();
-        if (tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1 == 0) {
-            gc.fillText(
-                (int) tileModel.getVisibleCoordinates().getX() + "-" + ((int) tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1),
-                tempIso.getX(),
-                tempIso.getY() - 2, 100
-            );
-        } else {
-            gc.fillText(
-                (int) tileModel.getVisibleCoordinates().getX() + "" + ((int) tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1),
-                tempIso.getX(),
-                tempIso.getY() - 2, 100
-            );
-        }
+//        if (tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1 == 0) {
+//            gc.fillText(
+//                (int) tileModel.getVisibleCoordinates().getX() + "-" + ((int) tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1),
+//                tempIso.getX(),
+//                tempIso.getY() - 2, 100
+//            );
+//        } else {
+//            gc.fillText(
+//                (int) tileModel.getVisibleCoordinates().getX() + "" + ((int) tileModel.getVisibleCoordinates().getY() - Config.worldWidth + 1),
+//                tempIso.getX(),
+//                tempIso.getY() - 2, 100
+//            );
+//        }
 
 
         //pics must have same scale!

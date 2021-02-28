@@ -137,10 +137,9 @@ public class JSONParser {
      * falls es zu jsonfehlern kommt, oder extract nicht in dem jsonobject steht,
      * wird das programm beendet
      * @param mapObject jsonobject aus dem die werte extrahiert werden sollen
-     * @param extract key des double values
      * @return int
      */
-    private double getDOUBLE(JSONObject mapObject, String extract) {
+    private double getDOUBLE(JSONObject mapObject) {
         double value;
         if (mapObject.has("speed")) {
             try {

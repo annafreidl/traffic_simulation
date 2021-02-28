@@ -19,12 +19,7 @@ public class VVehicle {
 
             gc.setFill(Color.BLACK);
             gc.setTextAlign(TextAlignment.CENTER);
-            gc.setTextBaseline(VPos.CENTER);
-            gc.fillText(
-                "" + vehicle.getId(),
-                isoX - 2,
-                isoY - 10
-            );
+
 
             if (vehicle.getKind().equals("engine") || vehicle.getKind().equals("wagon")) {
                 gc.setFill(Color.NAVAJOWHITE);
