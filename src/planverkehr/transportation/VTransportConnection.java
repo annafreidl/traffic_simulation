@@ -20,17 +20,13 @@ public class VTransportConnection {
     MCoordinate westAbsCoord;
     boolean isSchraeg;
     boolean gehtHoch;
-    boolean isHoch;
 
-    public VTransportConnection(Buildings roadOrRail, GraphicsContext gc, MCoordinate westVisible, Color color, ArrayList<MCoordinate> punkteNeu, boolean isSchraeg, int level, boolean isHoch) {
+
+    public VTransportConnection(Buildings roadOrRail, GraphicsContext gc, MCoordinate westVisible, Color color, ArrayList<MCoordinate> punkteNeu, boolean isSchraeg, int level) {
         MCoordinate westRelativ = punkteNeu.get(3); //0:0:Z
-        //if (isHoch) {
+
         gehtHoch = westRelativ.getZ() != level;
-        //}
-//        else {
-//            gehtHoch = westRelativ.getZ() == level;
-//        }
-//        this.isHoch = isHoch;
+
 
         MCoordinate westAbsolut = new MCoordinate(westVisible.getX() + westRelativ.getX(), westVisible.getY() + westRelativ.getY(), westRelativ.getZ());
         this.westAbsCoord = westAbsolut;
@@ -93,11 +89,7 @@ public class VTransportConnection {
         if (isRoad) {
             gc.setLineDashes(7.5);
         }
-        connectionsList.forEach((pair) -> {
-
-            gc.strokeLine((absCoordMap.get(pair.getKey()).getX()), (absCoordMap.get(pair.getKey()).getY()), (absCoordMap.get(pair.getValue()).getX()), (absCoordMap.get(pair.getValue()).getY()));
-
-        });
+        connectionsList.forEach((pair) -> gc.strokeLine((absCoordMap.get(pair.getKey()).getX()), (absCoordMap.get(pair.getKey()).getY()), (absCoordMap.get(pair.getValue()).getX()), (absCoordMap.get(pair.getValue()).getY())));
         gc.setLineDashes(0);
 
 

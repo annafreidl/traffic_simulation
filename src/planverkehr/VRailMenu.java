@@ -15,14 +15,13 @@ public class VRailMenu extends Canvas {
     public VRailMenu(Map<String, MCoordinate> railDirections, List<Pair<String, String>> l) {
         this.setWidth(20);
         this.setHeight(20);
-        // gc.rotate(45);
-        rotate(315, 10, 10);
+        rotate();
         draw2DShapes(gc, railDirections, l);
 
     }
 
-    private void rotate(double angle, double px, double py) {
-        Rotate r = new Rotate(angle, px, py);
+    private void rotate() {
+        Rotate r = new Rotate(315, 10, 10);
 
         gc.setTransform(r.getMxx(), r.getMyx(), r.getMxy(), r.getMyy(), r.getTx(), r.getTy());
     }
@@ -32,10 +31,7 @@ public class VRailMenu extends Canvas {
         gc.setStroke(Color.GRAY);
 
 
-        l.forEach((pair) -> {
-            gc.strokeLine((roadDirections.get(pair.getKey()).getY() *10), (roadDirections.get(pair.getKey()).getX()*10), (roadDirections.get(pair.getValue()).getY()*10), (roadDirections.get(pair.getValue()).getX()*10));
-
-        });
+        l.forEach((pair) -> gc.strokeLine((roadDirections.get(pair.getKey()).getY() *10), (roadDirections.get(pair.getKey()).getX()*10), (roadDirections.get(pair.getValue()).getY()*10), (roadDirections.get(pair.getValue()).getX()*10)));
 
 
     }

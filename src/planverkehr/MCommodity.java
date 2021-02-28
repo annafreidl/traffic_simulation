@@ -1,6 +1,5 @@
 package planverkehr;
 
-import planverkehr.airport.TargetpointList;
 import planverkehr.graph.MKnotenpunkt;
 import planverkehr.graph.MTargetpointList;
 import planverkehr.graph.Path;
@@ -27,7 +26,6 @@ public class MCommodity {
         Path p = new Path(so, false);
 
         if (p.isEmpty()) {
-            System.out.println("no connection found");
             return false;
         } else {
             p.remove(0);

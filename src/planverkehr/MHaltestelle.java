@@ -4,7 +4,6 @@ import planverkehr.graph.MKnotenpunkt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Optional;
 
 public class MHaltestelle {
     int id;
@@ -44,16 +43,6 @@ public class MHaltestelle {
         factory = building;
     }
 
-    public void putToStorage(MCommodity commodity, int amount) {
-        int newStorage = commodityStorage.remove(commodity) + amount;
-        commodityStorage.put(commodity, newStorage);
-    }
-
-    public Optional<HashMap<MCommodity, Integer>> getFromStorage(HashMap<String, Integer> capacities, ArrayList<String> listeDerHaltestellen) {
-        HashMap<MCommodity, Integer> map = new HashMap<>();
-        return Optional.ofNullable(map);
-    }
-
 
     public void addBuilding(MTile feld, Buildings buildingToBeBuilt) {
         buildingsList.add(buildingToBeBuilt);
@@ -84,7 +73,7 @@ public class MHaltestelle {
         return id;
     }
 
-    public void removeFromStroage(MCommodity mCommodity, Integer quantity) {
+    public void removeFromStorage(MCommodity mCommodity, Integer quantity) {
         stringStorage.put(mCommodity.getName(), stringStorage.get(mCommodity.getName()) - quantity);
         commodityStorage.put(mCommodity, commodityStorage.get(mCommodity) - quantity);
     }

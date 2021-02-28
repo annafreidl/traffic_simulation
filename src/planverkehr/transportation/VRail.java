@@ -11,12 +11,11 @@ import planverkehr.Config;
 import planverkehr.MCoordinate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class VRail extends VTransportConnection {
 
     public VRail(Buildings road, GraphicsContext gc, ArrayList<MCoordinate> punkteNeu, MCoordinate westVisibleCoord, boolean isSchraeg, int level, boolean hoch) {
-        super(road, gc, westVisibleCoord, Color.FIREBRICK, punkteNeu, isSchraeg, level, hoch);
+        super(road, gc, westVisibleCoord, Color.FIREBRICK, punkteNeu, isSchraeg, level);
         drawRoadOrRail();
 
 
@@ -55,17 +54,17 @@ public class VRail extends VTransportConnection {
         MCoordinate canvasCoord = westAbsCoord.toCanvasCoord();
         gc.setFill(Color.DARKBLUE);
 
-        gc.fillRect(canvasCoord.getX() + Config.tHeightHalft / 2, canvasCoord.getY()- Config.tHeightHalft / 4, Config.tHeightHalft / 2, Config.tHeightHalft / 2);
+        gc.fillRect(canvasCoord.getX() + (double) Config.tHeightHalft / 2, canvasCoord.getY()- (double) Config.tHeightHalft / 4,  (double) Config.tHeightHalft / 2, (double) Config.tHeightHalft / 2);
 
 
 
         gc.setFill(Color.WHITESMOKE);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.setFont(new Font(Config.tWidth / 10));
+        gc.setFont(new Font( (double) Config.tWidth / 10));
         gc.fillText(
             "U" ,
-            canvasCoord.getX()+ (double)Config.tHeightHalft / 2 + Config.tHeightHalft / 4,
+            canvasCoord.getX()+ (double)Config.tHeightHalft / 2 + (double) Config.tHeightHalft / 4,
             canvasCoord.getY() - 1
         );
     }

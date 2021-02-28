@@ -9,7 +9,7 @@ import planverkehr.MVehicles;
 import java.util.ArrayList;
 
 public class linienConfigModel {
-    private ObservableList<String> options;
+    private final ObservableList<String> options;
     private EVehicleTypes vehicleType;
     MVehicles selectedVehicle;
     ArrayList<MVehicles> vehicles;
@@ -43,9 +43,7 @@ public class linienConfigModel {
         return options;
     }
 
-    public MVehicles getSelectedVehicle() {
-        return selectedVehicle;
-    }
+
 
    public String getCargoString(){
        final String[] cargo = {""};

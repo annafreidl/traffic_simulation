@@ -1,6 +1,5 @@
 package planverkehr;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +40,7 @@ public class MGame {
     int vehicleId = 0;
     MTargetpointList listeDerBushaltestellen, listeDerBahnhöfe, listeDerFlughafenGebäude;
     int linienID = 0;
-    int tickNumber = 1;
+    double tickNumber = 1;
     int haltestellenID = 0;
     private boolean createLine = false;
     ArrayList<MLinie> linienList;
@@ -55,6 +54,7 @@ public class MGame {
     boolean autoSaveMode = true;
     Buildings savedBuilding;
     Timeline timeline = new Timeline();
+    MFactory cathedral;
 
 
     public MGame(GameConfig config) {
@@ -150,7 +150,7 @@ public class MGame {
 
     public void createTileMap() {
         tileHashMap = new HashMap<>();
-        tileArray = new ArrayList<MTile>();
+        tileArray = new ArrayList<>();
         for (int x = 0; x < Config.worldWidth; x++) {
             for (int y = 0; y < Config.worldHeight; y++) {
                 MCoordinate visibleCoordinates = new MCoordinate(x, y, 0);
@@ -169,9 +169,6 @@ public class MGame {
         return tileArray;
     }
 
-    public HashMap<String, MTile> getTileHashMap() {
-        return tileHashMap;
-    }
 
     public Optional<MTile> findOptionalTileById(String searchId) {
         MTile tile = tileHashMap.get(searchId);
@@ -188,7 +185,6 @@ public class MGame {
 
     private boolean isInTile(double px_x, double px_y, MTile tile) {
         double w_factor = Config.tWidth / 2.0;
-        double h_factor = Config.tHeight / 2.0;
 
         try {
 
@@ -222,10 +218,7 @@ public class MGame {
                         double steigung = (p_E_y - p_S_y) / (p_E_x - p_S_x);
                         double y_bei_rel_x = p_S_y + rel_x * steigung;
                         boolean hit = y_bei_rel_x > px_y;
-                        if (hit) {
-                            System.out.println(rel_y);
-                            System.out.println("Click (right lower) tile: (" + String.valueOf(tile.getId()) + " )");
-                        }
+                       
                         return hit;
 
                     } else {
@@ -234,7 +227,7 @@ public class MGame {
                         double y_bei_rel_x = p_N_y + rel_x * steigung;
                         boolean hit = y_bei_rel_x < px_y;
                         if (hit) {
-                            System.out.println("Click (right upper) tile: (" + String.valueOf(tile.getId()) + " )");
+    
                         }
                         return hit;
                     }
@@ -245,22 +238,13 @@ public class MGame {
                         // lower half of diamond
                         double steigung = (p_S_y - p_W_y) / (p_S_x - p_W_x);
                         double y_bei_rel_x = p_W_y + rel_x * steigung;
-                        boolean hit = y_bei_rel_x > px_y;
-                        if (hit) {
-                            // System.out.println("Click (left lower) tile: (" + String.valueOf(tile_x) + ",
-                            // " + String.valueOf(tile_y) + ")");
-                        }
-                        return hit;
+                        return y_bei_rel_x > px_y;
                     } else {
                         // upper half of diamond
                         double steigung = (p_N_y - p_W_y) / (p_N_x - p_W_x);
                         double y_bei_rel_x = p_W_y + rel_x * steigung;
-                        boolean hit = y_bei_rel_x < px_y;
-                        if (hit) {
-                            // System.out.println("Click (left upper) tile: (" + String.valueOf(tile_x) + ",
-                            // " + String.valueOf(tile_y) + ")");
-                        }
-                        return hit;
+                        return  y_bei_rel_x < px_y;
+
                     }
                 }
             }
@@ -271,7 +255,7 @@ public class MGame {
         }
     }
 
-    public boolean checkTileFit(MTile tile, double x, double y, Canvas canvas){
+    public boolean checkTileFit(MTile tile, double x, double y, Canvas canvas) {
         double xMax = Double.MIN_VALUE;
         double xMin = Double.MAX_VALUE;
         double yMax = Double.MIN_VALUE;
@@ -289,7 +273,7 @@ public class MGame {
         return xMin < x && xMax > x && yMin < y && yMax > y;
     }
 
-    public boolean selectTileByCoordinates(double x, double y, Canvas canvas) {
+    public boolean selectTileByCoordinates(double x, double y) {
 
         // MTile tileOptional = getTileByPixelCoordinate(x,y);
 
@@ -310,8 +294,6 @@ public class MGame {
                 }
              }
          } */
-
-
 
 
             System.out.println("id: " + tile.getId());
@@ -359,23 +341,19 @@ public class MGame {
     }
 
     public MTile getTileByPixelCoordinate(double x, double y) {
-        double w_factor = Config.tWidth / 2.0;
-        double h_factor = Config.tHeight / 2.0;
+
 
         // Nicht benutzt, aber tiles müssen sich in dem intervall ]x_lower, x_higher[
         // befinden, um in frage zu kommen
-        int x_point_lower = (int) Math.floor(x / w_factor);
-        int x_point_higher = (int) Math.ceil(y / w_factor);
+
 
         // Iterate vorne nach hinten
         int depth = Config.worldHeight;
         int width = Config.worldWidth;
 
-        Optional<MTile> tileOpt = null;
-        String searchId = null;
 
-        int tile_x = -1;
-        int tile_y = -1;
+        int tile_x;
+        int tile_y;
         for (int k = depth + width - 2; k >= 0; k--) {
             for (int j = 0; j <= k; j++) {
                 int i = k - j;
@@ -388,10 +366,9 @@ public class MGame {
                     } else
                         idpiep = tile_x + "--" + tile_y;
                     MTile piep = getTileById(idpiep);
-                    System.out.println(idpiep);
+  
                     if (isInTile(x, y, piep)) {
-                        System.out.println(
-                            "Click at tile: (" + String.valueOf(tile_x) + ", " + String.valueOf(tile_y) + ")");
+     
                         return piep;
                     }
                 }
@@ -454,7 +431,7 @@ public class MGame {
         return tilesToBeGrouped;
     }
 
-    public ArrayList<MTile> getTilesToBeGroupedFactorie(Buildings b, MTile selectedTile) {
+    public ArrayList<MTile> getTilesToBeGroupedFactory(Buildings b, MTile selectedTile) {
         MCoordinate selectedCoordinates = selectedTile.getIDCoordinates();
         int xCoord = (int) selectedCoordinates.getX();
         int yCoord = (int) selectedCoordinates.getY();
@@ -540,67 +517,72 @@ public class MGame {
             // Das nächste Flugzeug wird ausgewählt
             MLinie l = it.next();
 
-            MWegKnotenpunkt w = l.getListeAllerLinienKnotenpunkte().peekFirst();
-            System.out.println(w.getKnotenpunkt().getFeldId());
-            moveTiles.add(getTileById(w.getKnotenpunkt().getFeldId()));
-            if (l.getVehicle().isVisible()) {
-                moveTiles.add(getTileById(l.getVehicle().getCurrentKnotenpunkt().getFeldId()));
-            }
-            if (l.getType().equals(EBuildType.road)) {
-                MCoordinate next = w.getKnotenpunkt().getVisibleCoordinate();
-                MCoordinate current;
-                if (l.getVehicle().isVisible) {
-                    current = l.getVehicle().getCurrentPosition();
-                } else {
-                    current = next;
-                }
-                boolean isLeft = (next.getX() > current.getX() && next.getY() == current.getY())
-                    || (next.getY() > current.getY() && next.getX() == current.getX());
-                if (roadGraph.containsKey(next.toStringCoordinates())) {
-                    if (next.equals(current) || w.getKnotenpunkt().isFreeFor(tickNumber + 1, isLeft)) {
-                        setNextKnotenpunkt(l, w, isLeft);
-                        l.getVehicle().setDrivesLeft(isLeft);
-                        l.getVehicle().setVisible(true);
-                    } else {
-                        l.getVehicle().setWaiting(true);
-                        if (l.getVehicle().getCurrentKnotenpunkt() != null) {
-                            l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 1, isLeft);
-                            l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 2, isLeft);
+                MWegKnotenpunkt w = l.getListeAllerLinienKnotenpunkte().peekFirst();
+
+                if(tickNumber > l.getVehicle().getCalculatedSpeed() + l.getVehicle().getLastMoved()) {
+                    l.getVehicle().setLastMoved(tickNumber);
+
+                    moveTiles.add(getTileById(w.getKnotenpunkt().getFeldId()));
+                    if (l.getVehicle().isVisible()) {
+                        moveTiles.add(getTileById(l.getVehicle().getCurrentKnotenpunkt().getFeldId()));
+                    }
+                    if (l.getType().equals(EBuildType.road)) {
+                        MCoordinate next = w.getKnotenpunkt().getVisibleCoordinate();
+                        MCoordinate current;
+                        if (l.getVehicle().isVisible) {
+                            current = l.getVehicle().getCurrentPosition();
+                        } else {
+                            current = next;
+                        }
+                        boolean isLeft = (next.getX() > current.getX() && next.getY() == current.getY())
+                            || (next.getY() > current.getY() && next.getX() == current.getX());
+                        if (roadGraph.containsKey(next.toStringCoordinates())) {
+                            if (next.equals(current) || w.getKnotenpunkt().isFreeFor(tickNumber + 1, isLeft)) {
+                                setNextKnotenpunkt(l, w, isLeft);
+                                l.getVehicle().setDrivesLeft(isLeft);
+                                l.getVehicle().setVisible(true);
+                            } else {
+                                l.getVehicle().setWaiting(true);
+                                if (l.getVehicle().getCurrentKnotenpunkt() != null) {
+                                    l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 1, isLeft);
+                                    l.getVehicle().getCurrentKnotenpunkt().addEntryToBlockedForTickList(tickNumber + 2, isLeft);
+                                }
+                            }
+
+                        } else {
+                            visibleVehiclesArrayList.remove(l.getVehicle());
+                            it.remove();
+
+                
+                        }
+
+                    } else if (l.getType().equals(EBuildType.rail)) {
+                        // Zug darf sich bewegen, wenn er in einem Block steht, der Block frei ist oder
+                        // vorher schon im besetzten Block war
+                        int currentBlockId = 0;
+                        if (l.getVehicle() != null) {
+                            currentBlockId = l.getVehicle().getCurrentKnotenpunkt().getBlockId();
+                        }
+                        int nextBlockId = w.getKnotenpunkt().getBlockId();
+                        if (railGraph.containsKey(w.getKnotenpunkt().getVisibleCoordinate().toStringCoordinates())) {
+                            if (nextBlockId != 0 && currentBlockId == nextBlockId
+                                || !railBlockMap.get(w.getKnotenpunkt().getBlockId()).isBlocked()) {
+                                if (currentBlockId != nextBlockId) {
+                                    railBlockMap.get(currentBlockId).setBlocked(false);
+                                    railBlockMap.get(nextBlockId).setBlocked(true);
+                                }
+                                setNextKnotenpunkt(l, w, true);
+                            } else {
+                                l.getVehicle().setWaiting(true);
+                            }
+                        } else {
+                            visibleVehiclesArrayList.remove(l.getVehicle());
+                            it.remove();
                         }
                     }
-
-                } else {
-                    visibleVehiclesArrayList.remove(l.getVehicle());
-                    it.remove();
-
-                    System.out.println("linie removed");
-                }
-
-            } else if (l.getType().equals(EBuildType.rail)) {
-                // Zug darf sich bewegen, wenn er in einem Block steht, der Block frei ist oder
-                // vorher schon im besetzten Block war
-                int currentBlockId = 0;
-                if (l.getVehicle() != null) {
-                    currentBlockId = l.getVehicle().getCurrentKnotenpunkt().getBlockId();
-                }
-                int nextBlockId = w.getKnotenpunkt().getBlockId();
-                if (railGraph.containsKey(w.getKnotenpunkt().getVisibleCoordinate().toStringCoordinates())) {
-                    if (nextBlockId != 0 && currentBlockId == nextBlockId
-                        || !railBlockMap.get(w.getKnotenpunkt().getBlockId()).isBlocked()) {
-                        if (currentBlockId != nextBlockId) {
-                            railBlockMap.get(currentBlockId).setBlocked(false);
-                            railBlockMap.get(nextBlockId).setBlocked(true);
-                        }
-                        setNextKnotenpunkt(l, w, true);
-                    } else {
-                        l.getVehicle().setWaiting(true);
-                    }
-                } else {
-                    visibleVehiclesArrayList.remove(l.getVehicle());
-                    it.remove();
                 }
             }
-        }
+
 
         //tickNumber++;
         return moveTiles;
@@ -630,12 +612,10 @@ public class MGame {
                     if (l.getListOfHaltestellen().containsKey(
                         mCommodity.haltestellenStops.peek().getKnotenpunkt().getHaltestelle().getId())) {
                         if (v.takeGoodsFromFactory(mCommodity, quantity)) {
-                            haltestelle.removeFromStroage(mCommodity, quantity);
+                            haltestelle.removeFromStorage(mCommodity, quantity);
                             System.out.println(quantity + " " + mCommodity + " von Haltestelle " + haltestelle.getId()
                                 + " an Fahrzeug " + v.getId() + " abgegeben.");
-                            System.out.println(mCommodity);
-                            System.out.println(haltestelle);
-                            System.out.println(v);
+                           
                         }
                     }
                 } else {
@@ -661,9 +641,7 @@ public class MGame {
 
                         System.out.println(integer + " " + mCommodity + " von Fahrzeug " + v.getId()
                             + " an Haltestelle " + haltestelle.getId() + " abgegeben.");
-                        System.out.println(mCommodity);
-                        System.out.println(haltestelle);
-                        System.out.println(v);
+                
 
                     }
                 } else {
@@ -711,12 +689,10 @@ public class MGame {
 
                     for (MKnotenpunkt k : mTile.getKnotenpunkteArray()) {
                         if (k.getListOfGroupId().size() > 1) {
-                            System.out.println("mehrere GroupIDs");
+           
                             if (groupId.length() > 0) {
                                 k.getListOfGroupId().remove(groupId);
-                            } else {
-                                System.out.println("GroupID nicht gesetzt");
-                            }
+                            } 
                         } else {
                             if (groupId.length() < 1) {
                                 groupId = k.getListOfGroupId().get(0);
@@ -836,7 +812,9 @@ public class MGame {
         }
     }
 
-    /** Diese Methode gibt eine Liste der Tiles, die ein Gebäude belegt. */
+    /**
+     * Diese Methode gibt eine Liste der Tiles, die ein Gebäude belegt.
+     */
     public List<MTile> getBuildingTiles(Buildings building) {
         List<MTile> buildingTiles = new ArrayList<>();
 
@@ -865,7 +843,9 @@ public class MGame {
         return buildingTiles;
     }
 
-    /** Diese Methode gibt eine Liste der Buildings, die an das Gebäude angrenzen (ohne Dupilkate oder sich selbst). */
+    /**
+     * Diese Methode gibt eine Liste der Buildings, die an das Gebäude angrenzen (ohne Dupilkate oder sich selbst).
+     */
     public List<Buildings> getNeighbourBuildings(Buildings building) {
         List<Buildings> neighbourBuildings = new ArrayList<>();
         List<MTile> buildingTiles = getBuildingTiles(building);
@@ -991,12 +971,18 @@ public class MGame {
         gameStarted = true;
         for (MFactory factory : constructedFactories) {
             factory.setListOfFactoriesNodes(constructedFactories);
+            factory.startProductionAndConsumption();
+
+            if (factory.getBuildType().equals(EBuildType.cathedral)) {
+                cathedral = factory;
+            }
+
         }
     }
 
-    public void productionInTicks(int tickNumber) {
+    public void productionInTicks(double tickNumber) {
         for (MFactory factory : constructedFactories) {
-            factory.startProductionAndConsumption(tickNumber);
+            factory.produceAndConsume(tickNumber);
         }
     }
 
@@ -1037,8 +1023,10 @@ public class MGame {
         }
     }
 
-    /** Diese Methode ruft die createBuildingNode auf und setzt die Koordinaten auf Südwesten unten links bei der StartTile. */
-    private void createBuildingNodeByCenter(EBuildType buildingToBeBuiltType, Buildings newBuilding) {
+    /**
+     * Diese Methode ruft die createBuildingNode auf und setzt die Koordinaten auf Südwesten unten links bei der StartTile.
+     */
+    private void createBuildingNodeByCenter(Buildings newBuilding) {
         String startPoint = getSelectedTileId(); // get Startpoint
         MTile field = getTileById(startPoint);
         double startPointX = field.getIDCoordinates().getX(); // get startpoint X and Y
@@ -1061,16 +1049,16 @@ public class MGame {
                 MCoordinate finalCoords;
                 finalCoords = new MCoordinate(finalPointX, finalPointY, level);
 
-                MKnotenpunkt buildingPoint = createBuildingNode(finalCoords, name, buildingToBeBuiltType, newBuilding);
+
             });
 
             // IF NOT THOSE 3, SET POINT TO SOUTHWEST
-        } else {
-            MKnotenpunkt buildingPoint = createBuildingNode(coords, key, buildingToBeBuiltType, newBuilding);
         }
     }
 
-    /** Diese Methode erstellt einen Knotenpunkt für das übergebene Gebäude mit den übergebenen Koordinaten. */
+    /**
+     * Diese Methode erstellt einen Knotenpunkt für das übergebene Gebäude mit den übergebenen Koordinaten.
+     */
     private MKnotenpunkt createBuildingNode(MCoordinate coords, String name, EBuildType buildingToBeBuiltType, Buildings newBuilding) {
         Graph buildingGraph = new Graph(); //GET BUILDTYPE DYNAMIC FROM BUILDING WE BUILD
 
@@ -1092,7 +1080,7 @@ public class MGame {
                 knotenpunkt = buildingGraph.get(coords.toStringCoordinates());
                 knotenpunkt.addGroupId(groupId);
             } else {
-                knotenpunkt = new MKnotenpunkt(nodeId, groupId, coords, buildingToBeBuiltType, name, buildingField.getId(), coords.getRoadDirection(), coords.isEdge());
+                knotenpunkt = new MKnotenpunkt(nodeId, groupId, coords, buildingToBeBuiltType, name, buildingField.getId(), coords.isEdge());
                 buildingGraph.put(coords.toStringCoordinates(), knotenpunkt);
             }
             return knotenpunkt;
@@ -1144,7 +1132,6 @@ public class MGame {
                     Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
                     newBuilding.setStartTile(feld);
                     if (mAirportManager.createOrConnectToAirport(newBuilding)) {
-                        newBuilding.setBuildingID(newBuildingId);
                         for (MTile relevantTile : relevantTiles) {
                             relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
                             relevantTile.addConnectedBuilding(newBuilding);
@@ -1154,7 +1141,7 @@ public class MGame {
                     } else mAirportManager.showAirportAlert();
                 } else {
                     new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, false, relevantTargetpointlist, this);
-                    if (stationStatus.equals(EStationStatus.ONE))  addBuildingToStation(feld, buildingToBeBuilt);
+                    if (stationStatus.equals(EStationStatus.ONE)) addBuildingToStation(feld, buildingToBeBuilt);
                     else if (stationStatus.equals(EStationStatus.NONE)) createStation(feld, buildingToBeBuilt);
                 }
             } else if (hasSpaceForBuilding && feld.getState().equals(EBuildType.free) && (buildingToBeBuiltType.equals(EBuildType.factory) || buildingToBeBuiltType.equals(EBuildType.nature) || buildingToBeBuiltType.equals(EBuildType.building))) {
@@ -1162,15 +1149,15 @@ public class MGame {
                 feld.setState(buildingToBeBuiltType);
 
                 Buildings newBuilding = new Buildings(buildingToBeBuilt); //new Building thats copied
-                newBuilding.setBuildingID(newBuildingId);
 
-                    for (MTile relevantTile : relevantTiles) {
-                        relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
-                        relevantTile.addConnectedBuilding(newBuilding);
-                        relevantTile.setState(buildingToBeBuiltType);
-                    }
-                    newBuilding.setStartTile(feld);
-                    createBuildingNodeByCenter(buildingToBeBuiltType, buildingToBeBuilt);
+
+                for (MTile relevantTile : relevantTiles) {
+                    relevantTile.setBuildingOnTile(newBuilding); //damit Buildings auf ALLEN tiles drauf sind
+                    relevantTile.addConnectedBuilding(newBuilding);
+                    relevantTile.setState(buildingToBeBuiltType);
+                }
+                newBuilding.setStartTile(feld);
+                createBuildingNodeByCenter(buildingToBeBuilt);
             }
         }
     }
@@ -1178,6 +1165,7 @@ public class MGame {
 
     public void clearLists() {
         constructedBuildings.clear();
+        constructedFactories.clear();
 
     }
 
@@ -1191,6 +1179,35 @@ public class MGame {
         }
 
         constructedFactories.add(f);
+    }
+
+
+    public void consumeAndProduce() {
+        for (Buildings factory : constructedFactories) {
+            for (MProductions productions : factory.getProductions()) {
+        
+                if (tickNumber % productions.getDuration() == 0) {
+                    productions.produceCommodities();
+                    productions.consumeCommodities();
+                }
+            }
+        }
+    }
+
+    public void testVehicleSpeed() {
+        int speed = 3;
+        for (int i = 0; i < speed; i++) {
+            System.out.println("i: " + i);
+            System.out.println("speed: " + speed);
+        }
+    }
+
+    public MFactory getCathedral() {
+        return cathedral;
+    }
+
+    public void increaseTick(double increase){
+        tickNumber += increase;
     }
 
     public MAirportManager getmAirportManager() {

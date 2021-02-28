@@ -423,7 +423,7 @@
       "width": 5,
       "depth": 5,
       "special" : "factory",
-      "productions" : {"produce":{"stone":5},"duration":8},
+      "productions" : {"produce":{"stone":5},"duration":16},
       "dz": 3
     },
     "sandpit" : {
@@ -444,21 +444,21 @@
       "width": 2,
       "depth": 2,
       "special": "factory",
-      "productions": {"produce":  {"water":  5}, "duration":  3},
+      "productions": {"produce":  {"water":  5}, "duration":  10},
       "dz" : 1
     },
     "mine" : {
       "width": 3,
       "depth": 3,
       "special": "factory",
-      "productions": {"produce":  {"ore":  3}, "duration":  20},
+      "productions": {"produce":  {"ore":  3}, "duration":  30},
       "dz" : 1
     },
     "weaving mill" : {
       "width": 5,
       "depth": 5,
       "special": "factory",
-      "productions": {"produce":  {"cloth":  5}, "consume":{"wool":  10, "water":  5}, "duration":  10},
+      "productions": {"produce":  {"cloth":  5}, "consume":{"wool":  10, "water":  5}, "duration":  20},
       "storage" : {"wool" : 1000, "water" : 500},
       "dz" : 1
     },
@@ -466,7 +466,7 @@
       "width": 5,
       "depth": 5,
       "special": "factory",
-      "productions": {"produce":  {"brick":  5}, "consume":{"stone":  10},"duration":  10},
+      "productions": {"produce":  {"brick":  5}, "consume":{"stone":  10},"duration":  20},
       "storage" : {"stone" : 1000},
       "dz" : 1
     },
@@ -474,7 +474,7 @@
       "width": 5,
       "depth": 5,
       "special": "factory",
-      "productions": {"produce":  {"plank":  5}, "consume":{"wood":  10},"duration":  10},
+      "productions": {"produce":  {"plank":  5}, "consume":{"wood":  10},"duration":  20},
       "storage" : {"wood" : 1000},
       "dz" : 1
     },
@@ -482,7 +482,7 @@
       "width": 2,
       "depth": 2,
       "special": "factory",
-      "productions": {"produce":  {"mortar":  5}, "consume":{"sand":  10 ,"water":  10}, "duration": 10},
+      "productions": {"produce":  {"mortar":  5}, "consume":{"sand":  10 ,"water":  10}, "duration": 20},
       "storage" : {"sand" : 1000, "water" : 1000},
       "dz" : 1
     },
@@ -490,7 +490,7 @@
       "width": 7,
       "depth": 7,
       "special": "factory",
-      "productions": {"produce":  {"bell":  1, "gate":  1}, "consume":{"ore":  5}, "duration": 30},
+      "productions": {"produce":  {"bell":  1, "gate":  1}, "consume":{"ore":  5}, "duration": 50},
       "storage" : {"ore" : 500},
       "dz" : 1
     },
@@ -569,7 +569,7 @@
     "general cargo wagon" : {
       "kind" : "wagon",
       "graphic" : "general cargo wagon",
-      "cargo" : [{"planks" : 20}, {"bricks" : 25},{"cloth" : 20}],
+      "cargo" : [{"plank" : 20}, {"brick" : 25},{"cloth" : 20}],
       "speed" : 2.0
     },
     "heavy lift wagon" : {

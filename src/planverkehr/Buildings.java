@@ -2,45 +2,37 @@ package planverkehr;
 
 import javafx.util.Pair;
 import planverkehr.airport.MAirport;
-import planverkehr.graph.MKnotenpunkt;
-import planverkehr.transportation.EDirections;
 
 import java.util.*;
 
 public class Buildings {
 
-    private String buildingName;
-    private String buildMenu;
-    private String special;
-    private int width;
-    private int depth;
-    private int maxPlanes;
-    private int dz;
+    private final String buildingName;
+    private final String buildMenu;
+    private final String special;
+    private final int width;
+    private final int depth;
+    private final int maxPlanes;
+    private final int dz;
     int stationID;
     //manche Datentypen sind wahrscheinlich nicht optimal, falls jemand eine bessere idee hat, bitte melden
-    private java.util.Map<String, MCoordinate> points;
-    private java.util.Map<String, String> combinesStrings;
-    private java.util.Map<String, Buildings> combinesBuildings;
-    private List<Pair<String, String>> roads;
-    private List<Pair<String, String>> rails;
-    private List<Pair<String, String>> planes;
-    private List<MProductions> productions;
+    private final java.util.Map<String, MCoordinate> points;
+    private final java.util.Map<String, String> combinesStrings;
+    private final java.util.Map<String, Buildings> combinesBuildings;
+    private final List<Pair<String, String>> roads;
+    private final List<Pair<String, String>> rails;
+    private final List<Pair<String, String>> planes;
+    private final List<MProductions> productions;
 
-    MKnotenpunkt knotenpunkt;
+    ECathedralState cathedralState;
 
-    private EnumSet<EDirections> possibleConnections;
-    private EnumSet<EDirections> directions;
 
     //Verbindungen des Zweiten Gebäudeteils
-    private EnumSet<EDirections> possibleConnectionsSecondTile;
-    private EnumSet<EDirections> directionsSecondTile;
+
     private EBuildType buildType;
-    private String buildingID;
     private MTile startTile;
 
     MAirport associatedAirport;//Airport zu dem das Gebäude gehört
-    //todo: buildType hinzufügen
-
 
     public Buildings(String buildingName, String buildMenu, int width, int depth, java.util.Map<String, MCoordinate> points,
                      List<Pair<String, String>> roads, List<Pair<String, String>> rails,
@@ -63,15 +55,14 @@ public class Buildings {
         combinesBuildings = new HashMap<>();
 
         setBuildType();
-        setDirections();
-        setPossibleConnection();
     }
 
 
     //Konstruktor, der das Building was wir ihm geben kopiert
     //nimmt Werte vom alten Objekt
-    public Buildings (Buildings building) {
-
+    public Buildings(Buildings building) {
+        this.stationID = building.stationID;
+        this.startTile = building.startTile;
         this.buildingName = building.getBuildingName();
         this.buildMenu = building.getBuildMenu();
         this.width = building.getWidth();
@@ -87,23 +78,24 @@ public class Buildings {
         this.productions = building.getProductions();
         combinesBuildings = building.getCombinesBuildings();
         associatedAirport = null;
-        buildingID = "";
         setBuildType();
-        setDirections();
-        setPossibleConnection();
         setZNull();
     }
 
-    private void setZNull(){
-        this.points.forEach((name, coord) -> {
-            coord.setZ(0);
-        });
+    private void setZNull() {
+        this.points.forEach((name, coord) -> coord.setZ(0));
     }
 
+    public void setCathedralState(ECathedralState cathedralState) {
+        this.cathedralState = cathedralState;
+    }
 
+    public ECathedralState getCathedralState() {
+        return cathedralState;
+    }
 
     private void setBuildType() {
-        if (getRoads().size() > 0 ) {
+        if (getRoads().size() > 0) {
             buildType = EBuildType.road;
         } else if (getRails().size() > 0 || getBuildMenu().equals("rail")) {
             buildType = EBuildType.rail;
@@ -125,67 +117,16 @@ public class Buildings {
         return buildType;
     }
 
-    public void setCathedralBuildTypeToFoundation(){
-       if (getBuildingName().equals("cathedral") && getEbuildType().equals(EBuildType.cathedral)){
+    public void setCathedralBuildTypeToFoundation() {
+        if (getBuildingName().equals("cathedral") && getEbuildType().equals(EBuildType.cathedral)) {
             buildType = EBuildType.cathedral_foundation;
         }
     }
-    public void setCathedralBuildTypeToNave(){
-        if (getBuildingName().equals("cathedral") && getEbuildType().equals(EBuildType.cathedral_foundation)){
+
+    public void setCathedralBuildTypeToNave() {
+        if (getBuildingName().equals("cathedral") && getEbuildType().equals(EBuildType.cathedral_foundation)) {
             buildType = EBuildType.cathedral_nave;
         }
-    }
-
-    private void setDirections() {
-        this.directions = EnumSet.noneOf(EDirections.class);
-        this.directionsSecondTile = EnumSet.noneOf(EDirections.class);
-        if (this.getPoints().size() > 0) {
-            this.getPoints().forEach((key, coord) -> {
-                if (coord.isEdge()) {
-                    if (coord.isSecondTile()) {
-                        directionsSecondTile.add(coord.getRoadDirection());
-                    }
-                    this.directions.add(coord.getRoadDirection());
-                }
-            });
-        }
-    }
-
-    //Optimiert für Rails und Roads, Airport und Stations müssen noch geprüft werden
-    private void setPossibleConnection() {
-        this.possibleConnections = EnumSet.noneOf(EDirections.class);
-        this.possibleConnectionsSecondTile = EnumSet.noneOf(EDirections.class);
-        if (this.getDirections().size() > 0) {
-            addConnection(false);
-        }
-        if (this.getDirectionsSecondTile().size() > 0) {
-            addConnection(true);
-        }
-    }
-
-    private void addConnection(boolean isSecondTile) {
-        EnumSet<EDirections> relevantConnectionSet = isSecondTile ? getPossibleConnectionsSecondTile() : getPossibleConnections();
-        EnumSet<EDirections> relevantDirectionSet = isSecondTile ? getDirectionsSecondTile() : getDirections();
-
-        relevantDirectionSet.forEach((coord) -> {
-            switch (coord) {
-                case NW -> relevantConnectionSet.add(EDirections.SE);
-                case NE -> relevantConnectionSet.add(EDirections.SW);
-                case SE -> relevantConnectionSet.add(EDirections.NW);
-                case SW -> relevantConnectionSet.add(EDirections.NE);
-            }
-        });
-    }
-
-
-
-
-    public EnumSet<EDirections> getPossibleConnections() {
-        return possibleConnections;
-    }
-
-    public EnumSet<EDirections> getPossibleConnectionsSecondTile() {
-        return possibleConnectionsSecondTile;
     }
 
     public String getBuildingName() {
@@ -240,14 +181,6 @@ public class Buildings {
         return productions;
     }
 
-    public EnumSet<EDirections> getDirections() {
-        return directions;
-    }
-
-    public EnumSet<EDirections> getDirectionsSecondTile() {
-        return directionsSecondTile;
-    }
-
     public void addCombinedBuilding(String b1, Buildings b2) {
         combinesBuildings.put(b1, b2);
     }
@@ -276,11 +209,4 @@ public class Buildings {
         return associatedAirport;
     }
 
-    public void setBuildingID(String buildingID) {
-        this.buildingID = buildingID;
-    }
-
-    public String getBuildingID() {
-        return buildingID;
-    }
 }

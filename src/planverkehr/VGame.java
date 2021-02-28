@@ -1,8 +1,5 @@
 package planverkehr;
 
-import javafx.animation.Timeline;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
@@ -20,9 +17,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
-import planverkehr.graph.Graph;
 import planverkehr.graph.MKnotenpunkt;
-import planverkehr.transportation.EDirections;
 import planverkehr.verkehrslinien.MLinie;
 import planverkehr.verkehrslinien.VActiveLinie;
 import planverkehr.verkehrslinien.VLinie;
@@ -39,13 +34,13 @@ public class VGame {
     JSONParser parser;
     MenuBar menuBar;
     Label debugCoord;
-    Button tickButton, defaultRoad, removeButton, defaultRail, kartengeneratorButton, pauseButton, upButton, downButton, buildButton, saveBuildingButton, playButton, backButton;
+    Button tickButton, removeButton, kartengeneratorButton, pauseButton, upButton, downButton, buildButton, saveBuildingButton, playButton, backButton;
     Label linieInfoLabel, savesBuilding;
     Button linienButton, linienButtonWeiter, linienButtonAbbrechen;
     BorderPane bp;
     public double mouseX, mouseY;
-    Timeline tl = new Timeline();
     Color color;
+    Duration tickFrequency = Duration.seconds(1);
 
 
     public VGame(MGame gameModel, Stage stage) {
@@ -64,8 +59,8 @@ public class VGame {
         canvas = new Canvas(requiredCanvasWidth, requiredCanvasHeight);
         canvasFront = new Canvas(requiredCanvasWidth, requiredCanvasHeight);
 
-        double translateX = requiredCanvasWidth / 2;
-        double translateY = requiredCanvasHeight / 2;
+        double translateX = (double) requiredCanvasWidth / 2;
+        double translateY = (double) requiredCanvasHeight / 2;
 
         canvas.setTranslateX(canvas.getTranslateX() - translateX);
         canvas.setTranslateY(canvas.getTranslateY() - translateY);
@@ -84,15 +79,9 @@ public class VGame {
 
 
         switch (gameMode) {
-            case "planverkehr":
-                color = Color.rgb(153, 106, 8);
-                break;
-            case "own-scenario":
-                color = Color.rgb(24, 106, 255);
-                break;
-            default:
-                color = Color.rgb(255, 255, 255);
-                break;
+            case "planverkehr" -> color = Color.rgb(153, 106, 8);
+            case "own-scenario" -> color = Color.rgb(24, 106, 255);
+            default -> color = Color.rgb(255, 255, 255);
         }
 
 
@@ -189,12 +178,6 @@ public class VGame {
 
             canvasFront.setTranslateX(newTranslateX);
             canvasFront.setTranslateY(newTranslateY);
-//
-//            canvas.setTranslateX(canvas.getTranslateX() + deltaX);
-//            canvas.setTranslateY(canvas.getTranslateY() + deltaY);
-//
-//            canvasFront.setTranslateX(canvas.getTranslateX() + deltaX);
-//            canvasFront.setTranslateY(canvas.getTranslateY() + deltaY);
 
             mouseX = mouseNewX;
             mouseY = mouseNewY;
@@ -218,8 +201,6 @@ public class VGame {
         Image removeIcon = new Image("Images/delete.png");
         addImage(removeButton, removeIcon);
 
-        defaultRail = new Button();
-        defaultRoad = new Button();
 
         upButton = new Button();
         Image upIcon = new Image("Images/up.png");
@@ -293,7 +274,7 @@ public class VGame {
         // savesBuilding.textProperty().bind(gameModel.getSavedBuilding());
 
 
-        leftPane.getChildren().addAll(backButton, upButton, downButton, defaultRoad, defaultRail, removeButton, saveBuildingButton, savesBuilding);
+        leftPane.getChildren().addAll(backButton, upButton, downButton, removeButton, saveBuildingButton, savesBuilding);
         leftPane.setAlignment(Pos.CENTER);
         return leftPane;
     }
@@ -415,11 +396,8 @@ public class VGame {
         output.textProperty().bind(slider.valueProperty().asString());
 
         //todo: muss im model geändert werden
-        slider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-                Duration tickFrequency = Duration.seconds((double) t1);
-            }
+        slider.valueProperty().addListener((observableValue, number, t1) -> {
+            tickFrequency = Duration.seconds((double) t1);
         });
 
         bottomPane.getChildren().addAll(grid, playButton, tickButton, pauseButton);
@@ -522,7 +500,7 @@ public class VGame {
 
         //setze die Factories auf das Spielfeld
 
-        LinkedList<Buildings> openList = new LinkedList();
+        LinkedList<Buildings> openList = new LinkedList<>();
 
         gameModel.getBuildingsList().forEach((key, b) -> {
             if (b.getSpecial().equals("factory")) {
@@ -534,6 +512,7 @@ public class VGame {
 
             Buildings b = openList.pollFirst();
 
+
             int xId = generateRandomInt(Config.worldWidth - b.getWidth()) + 1;
             int yId = generateRandomInt(Config.worldHeight - b.getDepth()) + 1;
             String randomId = xId + "--" + yId;
@@ -543,7 +522,7 @@ public class VGame {
 
             MTile t = gameModel.getTileById(randomId);
 
-            ArrayList<MTile> mitbesetzte = gameModel.getTilesToBeGroupedFactorie(b, t);
+            ArrayList<MTile> mitbesetzte = gameModel.getTilesToBeGroupedFactory(b, t);
 
             boolean allemitbesetztenfrei = true;
             if (mitbesetzte != null) {
@@ -569,6 +548,7 @@ public class VGame {
             }
 
             boolean nachbarnhabenhäuser = true;
+            MFactory f = new MFactory(b);
             for (MTile nachbar : gameModel.getNeighbours(t)) {
                 if (!nachbar.isFree()) {
                     nachbarnhabenhäuser = false;
@@ -579,13 +559,14 @@ public class VGame {
             }
 
             if (t.isFree() && nachbarnhabenhäuser && allemitbesetztenfrei) {
-                t.setState(EBuildType.factory);
-                t.setBuildingOnTile(b);
-                t.addConnectedBuilding(b);
+                t.setState(b.getBuildType());
+
+                t.setBuildingOnTile(f);
+                t.addConnectedBuilding(f);
                 MCoordinate buildingCoord = new MCoordinate(xId + 0.5, yId, 0);
-                MKnotenpunkt buildingNode = new MKnotenpunkt(buildingCoord.toString(), b.getBuildingName(), buildingCoord, b.getBuildType(), b.getBuildingName(), randomId, EDirections.EMPTY, true);
+                MKnotenpunkt buildingNode = new MKnotenpunkt(buildingCoord.toString(), f.getBuildingName(), buildingCoord, f.getBuildType(), f.getBuildingName(), randomId, true);
                 t.addKnotenpunkt(buildingNode);
-                MFactory f = new MFactory(b);
+
                 f.setKnotenpunkt(buildingNode);
                 f.setHaltestelle(gameModel.createFactoryStation(t, f));
 
@@ -599,10 +580,12 @@ public class VGame {
                         } else {
                             mitbesetzt.setState(EBuildType.factory);
                         }
-                        mitbesetzt.setBuildingOnTile(b);
-                        mitbesetzt.addConnectedBuilding(b);
+                        mitbesetzt.setBuildingOnTile(f);
+                        mitbesetzt.addConnectedBuilding(f);
                     }
                 }
+
+                f.setStartTile(t);
 
                 if (f.getBuildType().equals(EBuildType.cathedral)) {
                     t.setState(EBuildType.cathedral);
@@ -640,7 +623,7 @@ public class VGame {
                     if (wirdhöhenrandom < 1) {
                         boolean nachbarlevelniedrigeralseins = true;
                         for (MTile m : gameModel.getNeighbours(tile)) {
-                            if (tile.getLevel() > 0) {
+                            if (m.getLevel() > 0) {
                                 nachbarlevelniedrigeralseins = false;
                             }
                         }
@@ -660,7 +643,6 @@ public class VGame {
                 int naturenumber = Math.round(Config.worldWidth * Config.worldHeight / 50);
                 for (int i = 0; i < naturenumber; i++) {
 
-                    Graph relevantGraph = gameModel.gameGraph;
 
                     int xId = generateRandomInt(Config.worldWidth - b.getWidth());
                     int yId = generateRandomInt(Config.worldHeight - b.getDepth());
@@ -820,9 +802,6 @@ public class VGame {
             }
 
         }
-
-        // wenn Feld nicht eben/erhöhbar, gebe aus:
-        else System.out.println("Feld ist zu schief");
     }
 
     private void addTilesToErhöhenAmEndeArray(int factor, HashMap<MTile, ArrayList<MCoordinate>> erhöheAmEnde, ArrayList<MTile> bereitserhöht, LinkedList<MTile> openList, MTile currentMittelPunkt, MTile currentNachbar) {
@@ -861,20 +840,6 @@ public class VGame {
             }
         }
         return übrige;
-    }
-
-    //Schnittmenge zweier ArrayLists
-    public ArrayList<MCoordinate> intersection(ArrayList<MCoordinate> list1, ArrayList<MCoordinate> list2) {
-        ArrayList<MCoordinate> list = new ArrayList<>();
-
-        for (MCoordinate t : list1) {
-            for (MCoordinate p : list2) {
-                if (t.istGleich(p)) {
-                    list.add(t);
-                }
-            }
-        }
-        return list;
     }
 
 
@@ -938,6 +903,10 @@ public class VGame {
 
         });
 
+        drawCreateLinie();
+    }
+
+    private void drawCreateLinie() {
         if (gameModel.isCreateLine()) {
             gameModel.activeLinie.getListOfHaltestellenKnotenpunkten().forEach(wp -> new VActiveLinie(wp, gcFront, true, gameModel.activeLinie.getColor()));
 
@@ -954,46 +923,33 @@ public class VGame {
     }
 
     public void drawChangedTiles(TreeSet<MTile> changedTiles) {
-        changedTiles.forEach(tile -> {
-            clearTiles(tile);
-        });
+        if(changedTiles.size() > 0) {
+            changedTiles.forEach(this::clearTiles);
 
 
-        TreeSet<MTile> neighbourTiles = new TreeSet<>();
-        //clearField();
-        changedTiles.forEach(mTile -> {
-            neighbourTiles.addAll(gameModel.getNeighboursOfSecondOrder(mTile));
-        });
+            TreeSet<MTile> neighbourTiles = new TreeSet<>();
+            //clearField();
+            changedTiles.forEach(mTile -> neighbourTiles.addAll(gameModel.getNeighboursOfSecondOrder(mTile)));
 
-        changedTiles.addAll(neighbourTiles);
+            changedTiles.addAll(neighbourTiles);
 
 
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setTextBaseline(VPos.CENTER);
-        changedTiles.forEach((tile) -> {
-            VTile tempTileView = new VTile(tile);
-            tempTileView.drawBackground(gc);
-            if (tile.isFirstTile) {
-                tempTileView.drawForeground(gcFront);
-            }
-            if (!tile.isFree()) {
-                canvas.toBack();
-            }
+            gc.setTextAlign(TextAlignment.CENTER);
+            gc.setTextBaseline(VPos.CENTER);
+            changedTiles.forEach((tile) -> {
+                VTile tempTileView = new VTile(tile);
+                tempTileView.drawBackground(gc);
+                if (tile.isFirstTile) {
+                    tempTileView.drawForeground(gcFront);
+                }
+                if (!tile.isFree()) {
+                    canvas.toBack();
+                }
 
-        });
+            });
 
-        if (gameModel.isCreateLine()) {
-            gameModel.activeLinie.getListOfHaltestellenKnotenpunkten().forEach(wp -> new VActiveLinie(wp, gcFront, true, gameModel.activeLinie.getColor()));
-
-            int i = 0;
-
-            for (MLinie l : gameModel.linienList) {
-                new VLinie(gcFront, group, l, i);
-                i++;
-            }
-
+            drawCreateLinie();
         }
-        gameModel.visibleVehiclesArrayList.forEach((vehicle) -> new VVehicle(vehicle, gcFront));
     }
 
     public void clearField() {
@@ -1063,17 +1019,13 @@ public class VGame {
         }
     }
 
-    public Button getDefaultRoadButton() {
-        return defaultRoad;
-    }
+
 
     public Button getRemoveButton() {
         return removeButton;
     }
 
-    public Button getDefaultRailButton() {
-        return defaultRail;
-    }
+
 
     public Button getLinienButtonAbbrechen() {
         return linienButtonAbbrechen;
@@ -1204,5 +1156,9 @@ public class VGame {
         imgViewPlayIcon.setFitHeight(35);
         saveBuildingButton.setGraphic(imgViewPlayIcon);
         updateSavedBuilding();
+    }
+
+    public Duration getTickFrequency() {
+        return tickFrequency;
     }
 }

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class VRoad extends VTransportConnection {
     public VRoad(Buildings road, GraphicsContext gc, ArrayList<MCoordinate> punkteNeu, MCoordinate westVisibleCoord, boolean isSchraeg, int level, boolean hoch) {
-        super(road, gc, westVisibleCoord, Color.WHITESMOKE, punkteNeu, isSchraeg, level, hoch);
+        super(road, gc, westVisibleCoord, Color.WHITESMOKE, punkteNeu, isSchraeg, level);
 
 
        if(road.getSpecial().equals(String.valueOf(ESpecial.BUSSTOP).toLowerCase())){
@@ -27,20 +27,20 @@ public class VRoad extends VTransportConnection {
         gc.setFill(Color.rgb(253, 229, 0));
         gc.setStroke(Color.rgb(2, 158, 25));
 
-        gc.setLineWidth(Config.tWidth/50);
+        gc.setLineWidth((double) Config.tWidth/50);
 
-        gc.fillOval(canvasCoord.getX() + Config.tHeightHalft / 2, canvasCoord.getY() - Config.tHeightHalft / 4, Config.tHeightHalft / 2, Config.tHeightHalft / 2);
-        gc.strokeOval(canvasCoord.getX() + Config.tHeightHalft / 2, canvasCoord.getY() - Config.tHeightHalft /4, Config.tHeightHalft / 2 , Config.tHeightHalft / 2);
+        gc.fillOval(canvasCoord.getX() + (double) Config.tHeightHalft / 2, canvasCoord.getY() - (double) Config.tHeightHalft / 4,  (double)Config.tHeightHalft / 2,  (double)Config.tHeightHalft / 2);
+        gc.strokeOval(canvasCoord.getX() + (double) Config.tHeightHalft / 2, canvasCoord.getY() - (double) Config.tHeightHalft /4,  (double)Config.tHeightHalft / 2 ,  (double)Config.tHeightHalft / 2);
 
 
         gc.setFill(Color.GREEN);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.setFont(new Font(Config.tWidth / 10));
+        gc.setFont(new Font((double)Config.tWidth / 10));
         gc.fillText(
             "H" ,
-            canvasCoord.getX() + (double)Config.tHeightHalft / 2 + Config.tHeightHalft / 4,
-            canvasCoord.getY() - 1 + Config.tWidth/100
+            canvasCoord.getX() + (double)Config.tHeightHalft / 2 + (double) Config.tHeightHalft / 4,
+            canvasCoord.getY() - 1 + (double) Config.tWidth/100
         );
 
     }

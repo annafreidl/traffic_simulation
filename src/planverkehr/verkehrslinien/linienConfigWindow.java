@@ -10,13 +10,14 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class linienConfigWindow {
-    private Button saveButton = new Button();
-    private Button backButton = new Button();
+    private final Button saveButton = new Button();
+    private final Button backButton = new Button();
     private TextField linienNameInputField;
-    private Label seedInputInformation, speedLabel, speedNumberLabel, cargoLabel, cargoInfoLabel;
+    private Label speedNumberLabel;
+    private Label cargoInfoLabel;
     private CheckBox circleCB;
-    private ComboBox fahrzeugInput = new ComboBox<>();
-    private linienConfigModel model;
+    private final ComboBox fahrzeugInput = new ComboBox<>();
+    private final linienConfigModel model;
     private Stage window;
 
     public linienConfigWindow(linienConfigModel model) {
@@ -52,19 +53,19 @@ public class linienConfigWindow {
         layout.add(fahrzeugInput, 1, 2);
 
 
-        seedInputInformation = new Label("Fahrzeuginformationen:");
+        Label seedInputInformation = new Label("Fahrzeuginformationen:");
         seedInputInformation.getStyleClass().add("label-seedLabel");
         layout.add(seedInputInformation, 0, 3, 2, 1);
         // layout.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
 
-        speedLabel = new Label("Speed:");
+        Label speedLabel = new Label("Speed:");
         layout.add(speedLabel, 0, 4);
 
         speedNumberLabel = new Label(model.selectedVehicle.getSpeed() + "");
         layout.add(speedNumberLabel, 1, 4);
 
-        cargoLabel = new Label("Cargo:");
+        Label cargoLabel = new Label("Cargo:");
         layout.add(cargoLabel, 0, 5);
 
         cargoInfoLabel = new Label(model.getCargoString());
@@ -73,19 +74,6 @@ public class linienConfigWindow {
         circleCB = new CheckBox("circle");
         circleCB.setSelected(false);
         layout.add(circleCB, 1, 6);
-
-
-//        Label numMovesLabel = new Label("Moves:");
-//        layout.add(numMovesLabel, 0, 4);
-//
-//        numMovesInput = new ComboBox<>(model.getMoveOptions());
-//        numMovesInput.setValue("26 - easy");
-//        numMovesInput.getStyleClass().add("textfield-formInput");
-//        layout.add(numMovesInput, 1,4);
-//
-//        autoFillCB = new CheckBox("auto mark Safe");
-//        layout.add(autoFillCB, 1, 5);
-
 
         saveButton.setText("SAVE");
         saveButton.getStyleClass().add("button-start-game");

@@ -26,9 +26,9 @@ public class VVehicle {
                 isoY - 10
             );
 
-            if (vehicle.getKind().equals("engine")) {
+            if (vehicle.getKind().equals("engine") || vehicle.getKind().equals("wagon")) {
                 gc.setFill(Color.NAVAJOWHITE);
-                gc.fillRect(isoX, isoY, 5, 5);
+                gc.fillRect(isoX, isoY, 10, 10);
             } else if (vehicle.getKind().equals("road vehicle")) {
                 MCoordinate canvasCoordVehicle = new MCoordinate(isoX, isoY, 0);
 

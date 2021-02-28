@@ -25,9 +25,9 @@ public class MLinie {
 
     public MLinie(int linienID) {
         this.ID = linienID;
-        listOfHaltestellenKnotenpunkten = new ArrayDeque<MWegKnotenpunkt>();
+        listOfHaltestellenKnotenpunkten = new ArrayDeque<>();
         listOfHaltestellen = new HashMap<>();
-        listeAllerLinienKnotenpunkte = new ArrayDeque<MWegKnotenpunkt>();
+        listeAllerLinienKnotenpunkte = new ArrayDeque<>();
         float r = rand.nextFloat();
         float g = rand.nextFloat();
         float b = rand.nextFloat();
@@ -105,8 +105,8 @@ public class MLinie {
 
                             listeAllerLinienKnotenpunkte.add(new MWegKnotenpunkt(listeAllerLinienKnotenpunkte.size(), k.getKnotenpunkt(), listeAllerLinienKnotenpunkte.getLast().getKnotenpunkt()));
 
-                            revertList(listeAllerLinienKnotenpunkte, k);
-                            revertList(listOfHaltestellenKnotenpunkten, k);
+                            revertList(listeAllerLinienKnotenpunkte);
+                            revertList(listOfHaltestellenKnotenpunkten);
 
                             circlePath = false;
                         }
@@ -123,7 +123,7 @@ public class MLinie {
 
     }
 
-    private void revertList(Deque<MWegKnotenpunkt> knotenpunktListe, MWegKnotenpunkt lastWegKnotenpunkt) {
+    private void revertList(Deque<MWegKnotenpunkt> knotenpunktListe) {
         ArrayList<MWegKnotenpunkt> tempAlle = new ArrayList<>(knotenpunktListe);
 
         int size = tempAlle.size();

@@ -1,6 +1,5 @@
 package planverkehr.graph;
 
-import planverkehr.Buildings;
 import planverkehr.EBuildType;
 import planverkehr.MCoordinate;
 import planverkehr.MHaltestelle;
@@ -16,22 +15,18 @@ public class MKnotenpunkt {
     int blockId;
     String knotenpunktId; //type(bspw road)+ zahl
     boolean edge; //Wenn einer der x oder y-Werte eine ganze Zahl ist
-    //todo: prüfen ob die nächsten beiden noch benötigt werden
-    EDirections direction; //Himmelsrichtung im Feld in der  Knotenpunkt liegt
-    Set possibleConnections; //EnumSet
     HashMap<String, MKnotenpunkt> connectedKnotenpunkte;
     ArrayList<MKnotenpunkt> connectedKnotenpunkteArray;
     ArrayList<String> groupIds; //Alle zu einem Gebäude zugehörigen Koordinaten haben dieselbe GroupId: feldID-buildingToBeBuiltID;
     EBuildType surfaceType;
     ESpecial targetType;
-    final TreeSet<Integer> blockedForTickListLeft;
-    final TreeSet<Integer> blockedForTickListRight;
+    final TreeSet<Double> blockedForTickListLeft;
+    final TreeSet<Double> blockedForTickListRight;
     MHaltestelle haltestelle = null;
     boolean isBlocked = false;
-    boolean isTempTarget = false;  //todo: prüfen ob überhaupt noch nötig
 
 
-    public MKnotenpunkt(String nodeId, String groupId, MCoordinate visibleCoords, EBuildType type, String name, String feldId, EDirections direction, boolean isEdge) {
+    public MKnotenpunkt(String nodeId, String groupId, MCoordinate visibleCoords, EBuildType type, String name, String feldId, boolean isEdge) {
         this.knotenpunktId = nodeId;
         groupIds = new ArrayList<>();
         groupIds.add(groupId);
@@ -43,11 +38,9 @@ public class MKnotenpunkt {
         this.name = name;
         this.feldId = feldId;
         this.edge = isEdge;
-        this.direction = direction;
+
         connectedKnotenpunkte = new HashMap<>();
         connectedKnotenpunkteArray = new ArrayList<>();
-        //  groupedKnotenpunkte = new HashMap<>();
-        possibleConnections = EnumSet.noneOf(EDirections.class);
         targetType = ESpecial.NOTHING;
         blockedForTickListLeft = new TreeSet<>();
         blockedForTickListRight = new TreeSet<>();
@@ -74,13 +67,7 @@ public class MKnotenpunkt {
         return name;
     }
 
-    public boolean isEdge() {
-        return edge;
-    }
 
-    public EDirections getDirection() {
-        return direction;
-    }
 
     public String getTileId() {
         return knotenpunktId;
@@ -93,7 +80,6 @@ public class MKnotenpunkt {
             ", feldId='" + feldId + '\'' +
             ", name='" + name + '\'' +
             ", targetType: " + targetType + '\'' +
-            ", direction=" + direction +
             ", connectedKnotenpunkteArray=" + connectedKnotenpunkteArray.size() +
             '}';
     }
@@ -122,19 +108,18 @@ public class MKnotenpunkt {
         return targetType;
     }
 
-    public void addEntryToBlockedForTickList(int tick, boolean isLeft) {
+    public void addEntryToBlockedForTickList(double tick, boolean isLeft) {
       if(isLeft) {
           blockedForTickListLeft.add(tick);
-      } else{
-      }  blockedForTickListRight.add(tick);
+      } else {
+          blockedForTickListRight.add(tick);
+      }
     }
 
-
-    //todo: muss für Verlehrsmittel geschrieben werden
-    public boolean isFreeFor(int timeBetretenUm, boolean isLeft) {
-        TreeSet<Integer> relevantBlockedForTickList = isLeft ? blockedForTickListLeft : blockedForTickListRight;
-        Integer lowerTime = relevantBlockedForTickList.higher(timeBetretenUm - 1);
-        Integer upperTime = relevantBlockedForTickList.higher(timeBetretenUm + 1);
+    public boolean isFreeFor(double timeBetretenUm, boolean isLeft) {
+        TreeSet<Double> relevantBlockedForTickList = isLeft ? blockedForTickListLeft : blockedForTickListRight;
+        Double lowerTime = relevantBlockedForTickList.higher(timeBetretenUm - 1);
+        Double upperTime = relevantBlockedForTickList.higher(timeBetretenUm + 1);
 
         if (isBlocked) {
             return false;
@@ -152,7 +137,7 @@ public class MKnotenpunkt {
         return surfaceType;
     }
 
-    public void removeAllBlockedForTicksSmallerThen(int tickNumber) {
+    public void removeAllBlockedForTicksSmallerThen(double tickNumber) {
         blockedForTickListLeft.removeIf(integer -> integer < tickNumber);
         blockedForTickListRight.removeIf(integer -> integer < tickNumber);
     }

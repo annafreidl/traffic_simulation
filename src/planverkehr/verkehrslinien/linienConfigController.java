@@ -1,6 +1,5 @@
 package planverkehr.verkehrslinien;
 
-import planverkehr.MVehicles;
 
 public class linienConfigController {
     linienConfigWindow view;

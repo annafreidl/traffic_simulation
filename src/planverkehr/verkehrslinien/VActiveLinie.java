@@ -7,9 +7,6 @@ import planverkehr.MCoordinate;
 import planverkehr.graph.MWegKnotenpunkt;
 
 public class VActiveLinie {
-    boolean isActive;
-
-
     public VActiveLinie(MWegKnotenpunkt wp, GraphicsContext gcFront, boolean isActive, Color color) {
         MCoordinate canvasCoord = wp.getKnotenpunkt().getVisibleCoordinate().toCanvasCoord();
         gcFront.setFill(color);

@@ -22,7 +22,6 @@ public class MTransportConnection {
     String groupId;
     HashMap<String, MKnotenpunkt> mKnotenpunktHashMap; //rename to newKnotenpunktMap
     HashMap<String, MKnotenpunkt> mKnotenpunktHashMapSecondNode; //rename to newKnotenpunktMap
-    Map<String, MCoordinate> newPoints;
     boolean isTwoTileTransport, isConnection, relevantTilesFree, shouldAlwaysDraw;
     MTargetpointList targetpointList;
     MGame model;
@@ -101,16 +100,12 @@ public class MTransportConnection {
                 targetpointList.add(knoten);
             });
 
-            case "signal" -> {
-                mKnotenpunktHashMap.forEach((id, knoten) -> {
-                    if (knoten.getName().equals("c")) {
-                        knoten.setTargetType(ESpecial.SIGNAL);
-                        findBlock(knoten);
-                    }
-                });
-
-
-            }
+            case "signal" -> mKnotenpunktHashMap.forEach((id, knoten) -> {
+                if (knoten.getName().equals("c")) {
+                    knoten.setTargetType(ESpecial.SIGNAL);
+                    findBlock(knoten);
+                }
+            });
         }
     }
 
@@ -196,15 +191,11 @@ public class MTransportConnection {
                 MCoordinate secondGridCoord = new MCoordinate(feldX + secondCoord.getX(), feldY - secondCoord.getY(), secondCoord.getZ());
 
 
-                feld.getNodeByCoordinatesString(firstGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> {
-                    firstNode[0] = node;
-                }, () -> firstNode[0] = mKnotenpunktHashMap.get(firstGridCoord.toStringCoordinates()));
+                feld.getNodeByCoordinatesString(firstGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> firstNode[0] = node, () -> firstNode[0] = mKnotenpunktHashMap.get(firstGridCoord.toStringCoordinates()));
 
                 final MKnotenpunkt[] secondNode = new MKnotenpunkt[1];
 
-                feld.getNodeByCoordinatesString(secondGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> {
-                    secondNode[0] = node;
-                }, () -> secondNode[0] = mKnotenpunktHashMap.get(secondGridCoord.toStringCoordinates()));
+                feld.getNodeByCoordinatesString(secondGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> secondNode[0] = node, () -> secondNode[0] = mKnotenpunktHashMap.get(secondGridCoord.toStringCoordinates()));
 
 
                 firstNode[0].addConnectedNode(secondNode[0]);
@@ -237,15 +228,11 @@ public class MTransportConnection {
                             MCoordinate secondCoord = runwayToConnect.getPoints().get(secondNode);
                             MCoordinate secondGridCoord = new MCoordinate(runwayTileX + secondCoord.getX(), runwayTileY - secondCoord.getY(), secondCoord.getZ());
 
-                            runway.getStartTile().getNodeByCoordinatesString(firstGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> {
-                                firstRunwayNode[0] = node;
-                            }, () -> firstRunwayNode[0] = mKnotenpunktHashMap.get(firstGridCoord.toStringCoordinates()));
+                            runway.getStartTile().getNodeByCoordinatesString(firstGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> firstRunwayNode[0] = node, () -> firstRunwayNode[0] = mKnotenpunktHashMap.get(firstGridCoord.toStringCoordinates()));
 
                             final MKnotenpunkt[] secondRunwayNode = new MKnotenpunkt[1];
 
-                            runway.getStartTile().getNodeByCoordinatesString(secondGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> {
-                                secondRunwayNode[0] = node;
-                            }, () -> secondRunwayNode[0] = mKnotenpunktHashMap.get(secondGridCoord.toStringCoordinates()));
+                            runway.getStartTile().getNodeByCoordinatesString(secondGridCoord.toStringCoordinates()).ifPresentOrElse((node) -> secondRunwayNode[0] = node, () -> secondRunwayNode[0] = mKnotenpunktHashMap.get(secondGridCoord.toStringCoordinates()));
 
                             firstRunwayNode[0].addConnectedNode(secondRunwayNode[0]);
                             secondRunwayNode[0].addConnectedNode(firstRunwayNode[0]);
@@ -360,18 +347,22 @@ public class MTransportConnection {
 
         MCoordinate nodeVisibleCoord = new MCoordinate(feldVisibleCoordinates.getX() + relCoords.getX(), feldVisibleCoordinates.getY() - relCoords.getY(), relCoords.getZ());
 
+        return getKnotenpunktFromGraph(relCoords, name, nodeId, nodeVisibleCoord, relevantGraph, groupId, buildingToBeBuiltType, feld);
+
+    }
+
+    public static MKnotenpunkt getKnotenpunktFromGraph(MCoordinate relCoords, String name, String nodeId, MCoordinate nodeVisibleCoord, Graph relevantGraph, String groupId, EBuildType buildingToBeBuiltType, MTile feld) {
         MKnotenpunkt knotenpunkt;
 
         if (relevantGraph.containsKey(nodeVisibleCoord.toStringCoordinates())) {
             knotenpunkt = relevantGraph.get(nodeVisibleCoord.toStringCoordinates());
             knotenpunkt.addGroupId(groupId);
         } else {
-            knotenpunkt = new MKnotenpunkt(nodeId, groupId, nodeVisibleCoord, buildingToBeBuiltType, name, feld.getId(), relCoords.getRoadDirection(), relCoords.isEdge());
+            knotenpunkt = new MKnotenpunkt(nodeId, groupId, nodeVisibleCoord, buildingToBeBuiltType, name, feld.getId(), relCoords.isEdge());
             relevantGraph.put(nodeVisibleCoord.toStringCoordinates(), knotenpunkt);
         }
 
         return knotenpunkt;
-
     }
 
     private void checkIsConnection() {

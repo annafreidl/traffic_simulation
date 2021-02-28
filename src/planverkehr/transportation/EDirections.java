@@ -6,5 +6,4 @@ public enum EDirections {
     SW,
     NW,
     EMPTY,
-    CENTER
 }

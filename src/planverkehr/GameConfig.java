@@ -35,5 +35,4 @@ public class GameConfig {
         return vehiclesList;
     }
 
-    public List<String> getCommodities(){ return commoditiesList;}
 }

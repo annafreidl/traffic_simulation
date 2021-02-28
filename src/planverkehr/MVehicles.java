@@ -9,13 +9,13 @@ import java.util.Set;
 
 public class MVehicles {
 
-    private String name;
-    private String kind;
-    private String graphic;
-    private HashMap<String, Integer> cargo;
+    private final String name;
+    private final String kind;
+    private final String graphic;
+    private final HashMap<String, Integer> cargo;
     private HashMap<String, Integer> cargoCurrentString;
-    private HashMap<MCommodity, Integer> cargoCurrentCommodity;
-    private double speed;
+    private final HashMap<MCommodity, Integer> cargoCurrentCommodity;
+    private final double speed, calculatedSpeed;
     int id;
     MCoordinate currentPosition;
     MKnotenpunkt currentKnotenpunkt;
@@ -26,6 +26,7 @@ public class MVehicles {
     boolean isVisible = false;
     EVehicleTypes kindEnum;
     boolean drivesLeft;
+    double lastMoved = 0;
 
     public MVehicles(String name, String kind, String graphic, HashMap<String, Integer> cargo, double speed) {
         this.name = name;
@@ -33,6 +34,7 @@ public class MVehicles {
         this.graphic = graphic;
         this.cargo = cargo;
         this.speed = speed;
+        this.calculatedSpeed = 1 / (speed * 3);
         wayPointList = new ArrayList<>();
         pathStack = new Path();
 
@@ -60,7 +62,7 @@ public class MVehicles {
         return graphic;
     }
 
-    public HashMap getCargo() {
+    public HashMap<String, Integer> getCargo() {
         return cargo;
     }
 
@@ -70,10 +72,6 @@ public class MVehicles {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public void setCurrentPosition(MCoordinate currentPosition) {
-        this.currentPosition = currentPosition;
     }
 
     public MCoordinate getCurrentPosition() {
@@ -98,13 +96,6 @@ public class MVehicles {
             '}';
     }
 
-    private void zeroStorage() {
-        Set<String> keys = cargo.keySet();
-        cargoCurrentString = new HashMap<>();
-        for (String key : keys) {
-            cargoCurrentString.put(key, 0);
-        }
-    }
 
     private boolean spaceForResources(String resource, int quantity) {
         if (cargo.containsKey(resource)) {
@@ -114,17 +105,21 @@ public class MVehicles {
             } else {
                 currentQuantity = 0;
             }
-            int originalSpace = cargo.get(resource);
-            int availableSpace = originalSpace - currentQuantity;
-            if (quantity <= availableSpace) {
-                System.out.println("Enough space");
-                return true;
-            } else {
-                System.out.println("Not enough space");
-                return false;
-            }
+            return getStorageSpace(resource, quantity, currentQuantity, cargo);
         } else {
             System.out.println("Vehicle can not store this resource!");
+            return false;
+        }
+    }
+
+    static boolean getStorageSpace(String resource, int quantity, int currentQuantity, HashMap<String, Integer> cargo) {
+        int originalSpace = cargo.get(resource);
+        int availableSpace = originalSpace - currentQuantity;
+        if (quantity <= availableSpace) {
+            System.out.println("Enough space");
+            return true;
+        } else {
+            System.out.println("Not enough space");
             return false;
         }
     }
@@ -162,25 +157,6 @@ public class MVehicles {
         return currentKnotenpunkt;
     }
 
-    public ESpecial getNextWayPoint() {
-        ESpecial nextWaypoint;
-        //    if(currentKnotenpunkt.getTargetType().equals(ESpecial.FACTORY)){
-        nextWaypoint = switch (this.getKind()) {
-            case "road vehicle" -> ESpecial.BUSSTOP;
-            case "engine" -> ESpecial.RAILSTATION;
-            case "plane" -> ESpecial.AIRPORT;
-            default -> ESpecial.BUSSTOP;
-        };
-        //     } else {
-        nextWaypoint = ESpecial.FACTORY;
-        //     }
-        return nextWaypoint;
-
-    }
-
-    public void addElementToWaypointList(int i, ESpecial targetType) {
-        wayPointList.add(i, targetType);
-    }
 
     public void setWaiting(boolean waiting) {
         isWaiting = waiting;
@@ -206,10 +182,6 @@ public class MVehicles {
         return drivesLeft;
     }
 
-    public HashMap<String, Integer> getCargoCurrentString() {
-        return cargoCurrentString;
-    }
-
     public HashMap<MCommodity, Integer> getCargoCurrentCommodity() {
         return cargoCurrentCommodity;
     }
@@ -220,5 +192,17 @@ public class MVehicles {
 
     public void setVisible(boolean visible) {
         isVisible = visible;
+    }
+
+    public double getLastMoved() {
+        return lastMoved;
+    }
+
+    public double getCalculatedSpeed() {
+        return calculatedSpeed;
+    }
+
+    public void setLastMoved(double lastMoved) {
+        this.lastMoved = lastMoved;
     }
 }

@@ -1,11 +1,6 @@
 package planverkehr.graph;
 
-import planverkehr.airport.Knotenpunkt;
-import planverkehr.airport.WegKnotenpunkt;
-
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Stack;
 
 public class Path extends Stack<MWegKnotenpunkt> {
@@ -27,24 +22,11 @@ public class Path extends Stack<MWegKnotenpunkt> {
 
     }
 
-    public Path(
-        SearchObject so) {
-        isSearching = true;
-        changedWayPoint = false;
-
-
-        this.so = so;
-
-        searchPath();
-
-    }
-
     private void searchPath() {
         MKnotenpunkt planePosition = so.getCurrentNodeKnotenpunkt();
-        int i = 0;
+
 
         while (isSearching) {
-            i++;
             if (so.getArrayListZuBesuchenderWegpunkte().size() == 0) {
                 isSearching = false;
                 so.addWaynodeToZuBesuchendeWegpunkte(so.getCurrentWayNode());
@@ -74,13 +56,9 @@ public class Path extends Stack<MWegKnotenpunkt> {
 
                         so.setCurrentWayNode(so.getFirstElementBesuchterWegpunkte());
 
-                        if (so.getCurrentNodeKind().equals("concrete")) {
-                            letPlaneWait();
 
-                        } else {
-                            System.out.println("++++++++++++DEADLOCK in search for path+++++++++++++");
-                            isSearching = false;
-                        }
+                        System.out.println("++++++++++++DEADLOCK in search for path+++++++++++++");
+                        isSearching = false;
 
 
                     } else {
@@ -117,18 +95,6 @@ public class Path extends Stack<MWegKnotenpunkt> {
         changedWayPoint = true;
     }
 
-    private void letPlaneWait() {
-        so.clearBesuchteWegpunkte();
-
-
-        MWegKnotenpunkt wp = new MWegKnotenpunkt(so.getCurrentNodeBetretenUm() + 1, so.getCurrentNodeKnotenpunkt(), so.getCurrentNodeKnotenpunkt());
-        MWegKnotenpunkt wp2 = new MWegKnotenpunkt(so.getCurrentNodeBetretenUm() + 2, so.getCurrentNodeKnotenpunkt(), wp.knotenpunkt);
-
-        so.addWaynodeToBesuchteWegpunkte(wp);
-        so.addWaynodeToBesuchteWegpunkte(wp2);
-        wp.knotenpunkt.isTempTarget = true;
-        isSearching = false;
-    }
 
     private void addAvailableNeighbourNodes() {
         // 1. Für jeden Nachbarknoten von currentWayNode:
@@ -138,13 +104,11 @@ public class Path extends Stack<MWegKnotenpunkt> {
         }
         for (MKnotenpunkt k : nachbarn) {
             //erstelle aus dem Knotenpunkt einen Wegpunkt, wenn er zu dem Tick betretbar ist und existiert
-            if (k != null
-                //  && (reverse || k.isFreeFor(so.getCurrentNodeBetretenUm() + 1, true))
-            ) {
+            if (k != null ) {
                 MWegKnotenpunkt tempWegpunkt = new MWegKnotenpunkt(so.getCurrentNodeBetretenUm() + 1, k, so.getCurrentNodeKnotenpunkt());
 
                 //  1. Prüfen ob der Knoten zu diesem Zeitpunkt (tick +1) noch nicht betrachtet wurde
-                if (!so.isZuBesuchendeWegeContaining(tempWegpunkt) && (reverse || !reverse && !so.containsKontenpunkt(tempWegpunkt.getKnotenpunkt()))) {
+                if (!so.isZuBesuchendeWegeContaining(tempWegpunkt) && (reverse || !so.containsKontenpunkt(tempWegpunkt.getKnotenpunkt()))) {
 
                     // --> JA:
                     // ist es unser Ziel?

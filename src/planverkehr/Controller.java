@@ -9,9 +9,6 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
-import planverkehr.graph.Graph;
-import planverkehr.graph.MTargetpointList;
-import planverkehr.transportation.MTransportConnection;
 import planverkehr.verkehrslinien.linienConfigController;
 import planverkehr.verkehrslinien.linienConfigModel;
 import planverkehr.verkehrslinien.linienConfigObject;
@@ -28,7 +25,7 @@ public class Controller {
     public Controller(MGame gameModel, VGame gameView) {
         this.gameView = gameView;
         this.gameModel = gameModel;
-        LinkedList<MTile> selectedbefore = new LinkedList();
+        LinkedList<MTile> selectedBefore = new LinkedList<>();
 
         initTimeline();
         gameView.getMenuBar().getMenus().forEach(m -> m.getItems().forEach(i -> i.setOnAction((event -> handleMenuClick(m, i)))));
@@ -36,262 +33,6 @@ public class Controller {
         gameView.getLinienButton().addEventHandler(MouseEvent.MOUSE_CLICKED, onLinienButtonClick);
         gameView.getLinienButtonWeiter().addEventHandler(MouseEvent.MOUSE_CLICKED, onLinienButtonWeiterClick);
         gameView.getLinienButtonAbbrechen().addEventHandler(MouseEvent.MOUSE_CLICKED, onAbbrechenClick);
-        gameView.getDefaultRoadButton().addEventHandler(MouseEvent.MOUSE_CLICKED, e ->{
-                e.consume();
-                Graph relevantGraph = gameModel.roadGraph;
-                EBuildType buildingToBeBuiltType = EBuildType.road;
-                boolean hasSpaceForBuilding = true;
-
-                String newBuildingId = "busstop-nw-se";
-
-                if (!gameModel.getSelectedTileId().equals("null") && gameModel.hasSpaceForBuilding(3, 6, 1)) {
-                    MTile selectedTile = gameModel.getTileById(gameModel.getSelectedTileId());
-                    int xSelectedTile = (int) selectedTile.getVisibleCoordinates().getX();
-                    int ySelectedTile = (int) selectedTile.getIDCoordinates().getY() - 2;
-
-                    //BusStop
-                    Buildings buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    MTargetpointList relevantTargetpointlist = gameModel.listeDerBushaltestellen;
-
-                    for (int x = xSelectedTile; x < 3 + xSelectedTile; x++) {
-                        for (int y = 2 + ySelectedTile; y < 8 + ySelectedTile; y++) {
-                            String tileId = x + "--" + y;
-                            MTile feld = gameModel.getTileById(tileId);
-                            ArrayList<MTile> relevantTiles = new ArrayList<>();
-                            relevantTiles.add(feld);
-                            if (x == 1 + xSelectedTile && (y == 2 + ySelectedTile || y == 4 + ySelectedTile || y == 7 + ySelectedTile)) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
-                            }
-                        }
-                    }
-
-                    newBuildingId = "busstop-ne-sw";
-
-                    //BusStop
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    for (int x = xSelectedTile; x < 3 + xSelectedTile; x++) {
-                        for (int y = 2 + ySelectedTile; y < 8 + ySelectedTile; y++) {
-                            String tileId = x + "--" + y;
-                            MTile feld = gameModel.getTileById(tileId);
-                            ArrayList<MTile> relevantTiles = new ArrayList<>();
-                            relevantTiles.add(feld);
-                            if ((x == xSelectedTile || x == 2 + xSelectedTile) && (y == 3 + ySelectedTile || y == 5 + ySelectedTile)) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
-                            }
-                        }
-                    }
-
-
-                    //Road-ne
-                    newBuildingId = "road-ne";
-
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    for (int x = xSelectedTile; x < 3 + xSelectedTile; x++) {
-                        for (int y = 2 + ySelectedTile; y < 7 + ySelectedTile; y++) {
-                            String tileId = x + "--" + y;
-                            MTile feld = gameModel.getTileById(tileId);
-                            ArrayList<MTile> relevantTiles = new ArrayList<>();
-                            relevantTiles.add(feld);
-                            if (feld.getConnectedBuilding() == null || (!feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
-                            }
-                        }
-                        x++;
-                    }
-
-                    //Road-sw
-                    newBuildingId = "road-sw";
-
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    for (int x = xSelectedTile; x < 3 + xSelectedTile; x++) {
-                        for (int y = 3 + ySelectedTile; y < 8 + ySelectedTile; y++) {
-                            String tileId = x + "--" + y;
-                            MTile feld = gameModel.getTileById(tileId);
-                            ArrayList<MTile> relevantTiles = new ArrayList<>();
-                            relevantTiles.add(feld);
-                            if (feld.getConnectedBuilding() == null || (!feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
-                            }
-                        }
-                        x++;
-                    }
-
-                    //Road-nw
-                    newBuildingId = "road-nw";
-
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-
-                    for (int x = 1 + xSelectedTile; x < 3 + xSelectedTile; x++) {
-                        for (int y = 2 + ySelectedTile; y < 8 + ySelectedTile; y++) {
-                            String tileId = x + "--" + y;
-                            MTile feld = gameModel.getTileById(tileId);
-                            ArrayList<MTile> relevantTiles = new ArrayList<>();
-                            relevantTiles.add(feld);
-                            if ((y == 2 + ySelectedTile || y == +ySelectedTile || y == 7 + ySelectedTile) && (feld.getConnectedBuilding() == null || !feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
-                            }
-                        }
-                    }
-
-                    //Road-se
-                    newBuildingId = "road-se";
-
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-
-                    for (int x = xSelectedTile; x < 2 + xSelectedTile; x++) {
-                        for (int y = 2 + ySelectedTile; y < 8 + ySelectedTile; y++) {
-                            String tileId = x + "--" + y;
-                            MTile feld = gameModel.getTileById(tileId);
-                            ArrayList<MTile> relevantTiles = new ArrayList<>();
-                            relevantTiles.add(feld);
-                            if ((y == 2 + ySelectedTile || y == 4 + ySelectedTile || y == 7 + ySelectedTile) && (feld.getConnectedBuilding() == null || !feld.getConnectedBuilding().getSpecial().equals("busstop"))) {
-                                new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpaceForBuilding, relevantTiles, relevantGraph, true, relevantTargetpointlist, gameModel);
-                            }
-                        }
-                    }
-
-
-                    gameView.drawField();
-                } else System.out.println("no space");
-
-            });
-        gameView.getDefaultRailButton().addEventHandler(MouseEvent.MOUSE_CLICKED, e ->{
-                e.consume();
-                Graph relevantGraph = gameModel.railGraph;
-                EBuildType buildingToBeBuiltType = EBuildType.rail;
-            MTargetpointList relevantTargetpointlist = gameModel.listeDerBahnhöfe;
-
-                if (!gameModel.getSelectedTileId().equals("null") && gameModel.hasSpaceForBuilding(7, 9, 0)) {
-                    MTile selectedTile = gameModel.getTileById(gameModel.getSelectedTileId());
-                    int xSelectedTile = (int) selectedTile.getVisibleCoordinates().getX() - 1;
-                    int ySelectedTile = (int) selectedTile.getIDCoordinates().getY();
-
-
-                    //Geraden
-
-                    String newBuildingId = "rail-ne-sw";
-                    Buildings buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    for (int x = 1; x < 8; x++) {
-                        for (int y = 0; y < 10; y++) {
-                            if (((x == 1 || x == 7) && (y == 0 || y == 1 || y == 4))) {
-                                drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-                            }
-                        }
-                    }
-                    newBuildingId = "rail-nw-se";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    for (int x = 1; x < 8; x++) {
-                        for (int y = 0; y < 10; y++) {
-                            if (((x == 4) && (y == 1 || y == 7 || y == 9))) {
-                                drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-                            }
-                        }
-                    }
-
-                    //Switches
-                    newBuildingId = "railswitch-ne-s";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    int x = 1;
-                    int y = 2;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    newBuildingId = "railswitch-sw-e";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 1;
-                    y = 5;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    x = 1;
-                    y = 7;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-
-                    newBuildingId = "railswitch-sw-n";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 7;
-                    y = 5;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    x = 7;
-                    y = 7;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    newBuildingId = "railswitch-ne-w";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 7;
-                    y = 2;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    //Kurven
-                    newBuildingId = "railcurve-se-n";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 2;
-                    y = 1;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    newBuildingId = "railcurve-nw-e";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 5;
-                    y = 1;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    newBuildingId = "railcurve-nw-s";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 5;
-                    y = 7;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    x = 5;
-                    y = 9;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    newBuildingId = "railcurve-se-w";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 2;
-                    y = 7;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    x = 2;
-                    y = 9;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-//Eckverbindungen
-                    newBuildingId = "rail-nw-sw";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 2;
-                    y = 2;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    newBuildingId = "rail-se-sw";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 6;
-                    y = 2;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    newBuildingId = "rail-ne-se";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 6;
-                    y = 6;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    x = 6;
-                    y = 8;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    newBuildingId = "rail-ne-nw";
-                    buildingToBeBuilt = gameModel.getBuildingById(newBuildingId);
-                    x = 2;
-                    y = 6;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    x = 2;
-                    y = 8;
-                    drawDefaultNode(x + xSelectedTile, y + ySelectedTile, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, relevantGraph, relevantTargetpointlist);
-
-                    gameView.drawField();
-                }
-
-            });
         gameView.getTickButton().addEventHandler(MouseEvent.MOUSE_CLICKED, e ->{
                 e.consume();
                 runTick();
@@ -303,8 +44,7 @@ public class Controller {
                     gameView.togglePlayPause();
                     if (gameModel.gamePaused){
                         gameModel.timeline.pause();
-                    }
-                    else {
+                    } else {
                         gameModel.timeline.play();
                     }
                 } else {
@@ -377,7 +117,7 @@ public class Controller {
 
                 if (e.getButton() == MouseButton.PRIMARY && e.isStillSincePress()) {
                     //select tiles
-                    boolean isTile = gameModel.selectTileByCoordinates(canvasX, canvasY, gameView.canvas);
+                    boolean isTile = gameModel.selectTileByCoordinates(canvasX, canvasY);
                     if (!gameModel.selectedTileId.equals("null") && ((gameModel.autoSaveMode && gameModel.savedBuilding != null))) {
                         gameModel.build(gameModel.savedBuilding.getBuildType(), gameModel.savedBuilding.getBuildingName());
                     }
@@ -386,17 +126,17 @@ public class Controller {
                         //Hinzugefügt für Performance-Verbesserung
                         // -- zeichnet nur selectedTile und vorheriges selectedTile neu
                         TreeSet<MTile> changedTiles = new TreeSet<>();
-                        if(!selectedbefore.contains(gameModel.getTileById(gameModel.selectedTileId))){
-                        selectedbefore.add(gameModel.getTileById(gameModel.selectedTileId));}
+                        if(!selectedBefore.contains(gameModel.getTileById(gameModel.selectedTileId))){
+                        selectedBefore.add(gameModel.getTileById(gameModel.selectedTileId));}
 
-                        System.out.println(selectedbefore.toString());
+                     
 
-                        if(selectedbefore.size()>1){
-                            if(selectedbefore.getFirst()==null){
-                                selectedbefore.removeFirst();
+                        if(selectedBefore.size()>1){
+                            if(selectedBefore.getFirst()==null){
+                                selectedBefore.removeFirst();
                             }
                             else{
-                                MTile vorherausgewählt = selectedbefore.pollFirst();
+                                MTile vorherausgewählt = selectedBefore.pollFirst();
                                 changedTiles.add(vorherausgewählt);
                             }
 
@@ -443,23 +183,6 @@ public class Controller {
 
     }
 
-    private ArrayList<?> removeDuplicate(ArrayList<?> list) {
-        Set<?> set = transformListIntoSet(list);
-        return transformSetIntoList(set);
-    }
-
-    public static Set<?> transformListIntoSet(ArrayList<?> list) {
-        Set<Object> set = new LinkedHashSet<>();
-        set.addAll(list);
-        return set;
-    }
-
-    public static ArrayList<?> transformSetIntoList(Set<?> set) {
-        ArrayList<Object> list = new ArrayList<>();
-        list.addAll(set);
-        return list;
-    }
-
     private void handleMenuClick(Menu m, MenuItem i) {
         String selectedTileId = gameModel.getSelectedTileId();
 
@@ -472,48 +195,25 @@ public class Controller {
             //Wenn ein Feld ausgewählt ist, dann füge den ausgewählten Gebäudetyp zum Feld hinzu
             if (!selectedTileId.equals("null") && (!gameModel.autoSaveMode || gameModel.getSelectedTile().getState().equals(EBuildType.free))) {
                 gameModel.build(EBuildType.valueOf(m.getId()), i.getId());
-                System.out.println(m.getId());
-                System.out.println(i.getId());
-                System.out.println(i.getText());
+            
 
                 TreeSet<MTile> changedTiles = new TreeSet<>(gameModel.getGroupedTiles(gameModel.getSelectedTile().getConnectedBuilding().getWidth(),
                     gameModel.getSelectedTile().getConnectedBuilding().getDepth(),
                     gameModel.getSelectedTile().isFirstTile));
 
                 gameView.drawChangedTiles(changedTiles);
-                //gameView.drawField();
-                // gameModel.railGraph.print();
+
             }
         }
 
-
-    private void drawDefaultNode(int x, int y, EBuildType buildingToBeBuiltType, Buildings buildingToBeBuilt, String newBuildingId, Graph relevantGraph, MTargetpointList relevantTargetpointlist) {
-        String tileId = x + "--" + y;
-        MTile feld = gameModel.getTileById(tileId);
-        if (feld == null) {
-            tileId = x + "-" + y;
-            feld = gameModel.getTileById(tileId);
-        }
-        gameModel.selectedTileId = tileId;
-        feld.isSelected = true;
-        ArrayList<MTile> relevantTiles = gameModel.getTilesToBeGrouped(buildingToBeBuilt.getWidth(), buildingToBeBuilt.getDepth(), buildingToBeBuilt.getDz());
-
-        boolean hasSpace = gameModel.hasSpaceForBuilding(buildingToBeBuilt.getWidth(), buildingToBeBuilt.getDepth(), buildingToBeBuilt.getDz());
-
-        new MTransportConnection(feld, buildingToBeBuiltType, buildingToBeBuilt, newBuildingId, hasSpace, relevantTiles, relevantGraph, false, relevantTargetpointlist, gameModel);
-
-        feld.isSelected = false;
-    }
-
     private void initTimeline() {
-        KeyFrame keyframe = new KeyFrame(Config.tickFrequency, handler);
+
+        KeyFrame keyframe = new KeyFrame(gameView.tickFrequency.divide(10), handler);
         gameModel.timeline.getKeyFrames().addAll(keyframe);
         gameModel.timeline.setCycleCount(Timeline.INDEFINITE);
     }
 
-    final EventHandler<ActionEvent> handler = event -> {
-        runTick();
-    };
+    final EventHandler<ActionEvent> handler = event -> runTick();
 
 
     EventHandler<MouseEvent> onLinienButtonClick = actionEvent -> {
@@ -522,8 +222,6 @@ public class Controller {
         gameModel.setCreateLine(true);
         gameView.toggleLinienInfoLabel(true);
 
-        // gameModel.createVehicle();
-        //gameView.drawField();
     };
 
     EventHandler<MouseEvent> onLinienButtonWeiterClick = mouseEvent -> {
@@ -536,12 +234,12 @@ public class Controller {
 
             linienConfigObject lcO = lcc.showConfigWindow();
             if (lcO.shouldSave()) {
-                System.out.println("Save Action");
+               
                 gameModel.saveLinie(lcO);
                 if (gameModel.connectLinienPunkte()) {
                     gameModel.addLinie();
                 } else {
-                    System.out.println("not connectable");
+                   
                 }
                 gameView.toggleLinienInfoLabel(false);
                 gameModel.setCreateLine(false);
@@ -561,26 +259,32 @@ public class Controller {
 
 
     private void runTick(){
-        int tickNumber = gameModel.tickNumber;
-        System.out.println("Tick: " + tickNumber);
-        //gameModel.moveVehicles();
-
-//        ArrayList<MTile> changedTiles = new ArrayList<>();
-//        gameModel.getTileArray().forEach((tile) -> {
-//            if(tile.getState()==EBuildType.road){
-//                changedTiles.add(tile);
-//                //changedTiles.addAll(gameModel.getNeighbours(tile));
-//                gameView.clearTiles(tile);
-//
-//            }
-//        });
-        TreeSet<MTile> changedTiles = new TreeSet<>(gameModel.moveVehicles());
-        for(MTile toClear : changedTiles){
-            gameView.clearTiles(toClear);
+        double tickNumber = gameModel.tickNumber;
+        ECathedralState cathedralState = null;
+        if(Config.gameMode.equals("own-scenario")){
+            cathedralState =  gameModel.getCathedral().getCathedralState();
+ 
         }
-        gameView.drawChangedTiles(changedTiles);
+
+
+
+
         gameModel.productionInTicks(tickNumber);
-        gameModel.tickNumber++;
+        TreeSet<MTile> changedTiles = new TreeSet<>(gameModel.moveVehicles());
+
+        if(Config.gameMode.equals("own-scenario")){
+
+            if(cathedralState != gameModel.getCathedral().getCathedralState()){
+                changedTiles.addAll( gameModel.getBuildingTiles(gameModel.getCathedral()));
+            }
+
+        }
+
+        if(changedTiles.size() > 0) {
+            gameView.drawChangedTiles(changedTiles);
+        }
+
+        gameModel.increaseTick(gameView.getTickFrequency().toSeconds() / 10);
 
     }
 

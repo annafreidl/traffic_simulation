@@ -16,6 +16,10 @@ public class MCoordinate {
     }
 
     public MCoordinate toCanvasCoord() {
+        return getCanvasCoord();
+    }
+
+    private MCoordinate getCanvasCoord() {
         double xVisible = (this.x - this.y) * Config.tWidth / 2;
         double yVisible = (this.x + this.y) * Config.tWidth / 4;
 
@@ -43,15 +47,7 @@ public class MCoordinate {
     }
 
     public MCoordinate toCanvasCoordWithoutOffset() {
-        double xVisible = (this.x - this.y) * Config.tWidth / 2;
-        double yVisible = (this.x + this.y) * Config.tWidth / 4;
-
-        xVisible += Config.XOffset;
-        yVisible += Config.YOffset;
-
-        yVisible = yVisible - (z * Config.increase);
-
-        return new MCoordinate(xVisible, yVisible, z);
+        return getCanvasCoord();
     }
 
     public MCoordinate toVisibleCoord(){
@@ -88,15 +84,9 @@ public class MCoordinate {
         return x + "-" + y;
     }
 
-    public String toIntStringCoordinates(){
-        return (int)x + "-" + (int)y;
-    }
 
     public boolean istGleich(MCoordinate b){
-        boolean p;
-            if(x == b.x && y == b.y) {p = true; }
-            else p = false;
-            return p;
+        return x == b.x && y == b.y;
     }
 
     @Override

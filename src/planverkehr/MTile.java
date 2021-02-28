@@ -1,7 +1,6 @@
 package planverkehr;
 
 import planverkehr.graph.MKnotenpunkt;
-import planverkehr.transportation.EDirections;
 
 import java.util.*;
 
@@ -13,15 +12,14 @@ public class MTile implements Comparable<MTile> {
     double xNew, yNew, xIsoWest, yIsoWest;
     int level;
     boolean isStation = false;
-    EnumSet<EDirections> possibleConnections = EnumSet.noneOf(EDirections.class);
     MCoordinate visibleCoordinates, isoWest, isoSouth, isoNorth, isoEast, isoCenter, north, south, east, west;
     EBuildType state;
     int haltestellenID = -1;
     Buildings connectedBuilding, buildingOnTile;
     ArrayList<MKnotenpunkt> knotenpunkteArray;
     ArrayList<Integer> höhen = new ArrayList<>(4);
-    ArrayList<MCoordinate> punkte = new ArrayList();
-    ArrayList<MCoordinate> punkteNeu = new ArrayList();
+    ArrayList<MCoordinate> punkte = new ArrayList<>();
+    ArrayList<MCoordinate> punkteNeu = new ArrayList<>();
 
     public MTile(MCoordinate visibleCoordinate, MCoordinate canvasCoordinates, String id)  {
         this.id = id;
@@ -82,21 +80,15 @@ public class MTile implements Comparable<MTile> {
 
     // Tile schräg? falls ja: true, falls nein: false
     public boolean getIncline() {
-        boolean incline;
-        if((Collections.max(this.höhen) - Collections.min(this.höhen))==0 ){
-            incline = false;
-        }
-        else incline = true;
-
-        return incline;
+        return (Collections.max(this.höhen) - Collections.min(this.höhen)) != 0;
     }
 
-    public ArrayList<Integer> createHöhenArray() {
+    public void createHöhenArray() {
         for (MCoordinate c: punkteNeu
              ) {
             höhen.set(punkteNeu.indexOf(c) , (int) c.getZ());
         }
-        return höhen;
+
     }
 
     public ArrayList<MCoordinate> intersection(MTile mTile) {
@@ -114,18 +106,11 @@ public class MTile implements Comparable<MTile> {
 
     public ArrayList<Integer> höhendif(){
         int min = Collections.min(höhen);
-        ArrayList<Integer> höhendiff = new ArrayList();
+        ArrayList<Integer> höhendiff = new ArrayList<>();
         for(int höhe : höhen){
             höhendiff.add(höhe-min);
         }
         return höhendiff;
-    }
-
-    public Integer TileDz() {
-
-        int dz = Collections.max(höhendif())-Collections.min
-            (höhendif());
-        return dz;
     }
 
     private void createCornerPoints() {
@@ -221,25 +206,10 @@ public class MTile implements Comparable<MTile> {
 
     public void addKnotenpunkt(MKnotenpunkt mKnotenpunkt) {
         knotenpunkteArray.add(mKnotenpunkt);
-        if (mKnotenpunkt.isEdge()) {
-            possibleConnections.add(getOppositeDirection(mKnotenpunkt.getDirection()));
-        }
     }
 
     public ArrayList<MKnotenpunkt> getKnotenpunkteArray() {
         return knotenpunkteArray;
-    }
-
-    private EDirections getOppositeDirection(EDirections directions) {
-        EDirections oppositeDirection;
-        switch (directions) {
-            case NW -> oppositeDirection = EDirections.SE;
-            case NE -> oppositeDirection = EDirections.SW;
-            case SE -> oppositeDirection = EDirections.NW;
-            default -> oppositeDirection = EDirections.NE;
-        }
-        return oppositeDirection;
-
     }
 
     public Optional<MKnotenpunkt> getNodeByCoordinatesString(String coordsString) {
@@ -252,55 +222,6 @@ public class MTile implements Comparable<MTile> {
             }
         }
         return Optional.ofNullable(knotenpunkt);
-    }
-
-    public EBuildType getConnectedBuildingType() {
-        return connectedBuilding.getBuildType();
-    }
-
-
-    public Optional<MKnotenpunkt> getNodeByName(String name) {
-        MKnotenpunkt knotenpunkt = null;
-        boolean searching = true;
-        for (int i = 0; i < knotenpunkteArray.size() && searching; i++) {
-            if (knotenpunkteArray.get(i).getName().equals(name)) {
-                knotenpunkt = knotenpunkteArray.get(i);
-                searching = false;
-            }
-        }
-        return Optional.ofNullable(knotenpunkt);
-    }
-
-    public String getGroupId() {
-        CharSequence nameArray = this.connectedBuilding.getBuildingName();
-        String possibleID = "";
-        int idOccurrences = 0;
-        for (int i = 0; i < getKnotenpunkteArray().size() && idOccurrences < 2; i++) {
-            possibleID = getKnotenpunkteArray().get(i).getListOfGroupId().get(0);
-            idOccurrences = 0;
-            System.out.println("Enthählt possibleID: [" + possibleID + "] nameArray: [" + nameArray + "] ?");
-
-            if (possibleID.contains(nameArray)) {
-                System.out.println("Ja");
-
-                for (MKnotenpunkt k : getKnotenpunkteArray()) {
-                    for (String id : k.getListOfGroupId()) {
-                        System.out.println("entspricht id: [" + id + "] der possibleID: [" + possibleID + "] ?");
-                        if (id.equals(possibleID)) {
-                            System.out.println("Ja");
-                            idOccurrences++;
-                        } else {
-                            System.out.println("nein");
-                        }
-                    }
-                }
-            } else {
-                System.out.println("nein");
-            }
-
-        }
-
-        return idOccurrences > 1 ? possibleID : "";
     }
 
     public MCoordinate getNorth() {
@@ -352,56 +273,14 @@ public class MTile implements Comparable<MTile> {
         int zet = 0;
 
         for(int indexi = 0; indexi < this.getPunkteNeu().size(); indexi++){
-            MCoordinate currentpoint = this.getPunkte().get(indexi);
-            if(currentpoint.istGleich(m)){
-                int index = this.getPunkte().indexOf(currentpoint);
+            MCoordinate currentPoint = this.getPunkte().get(indexi);
+            if(currentPoint.istGleich(m)){
+                int index = this.getPunkte().indexOf(currentPoint);
                 MCoordinate currentPointRel = this.getPunkteNeu().get(index);
                 zet = (int)currentPointRel.getZ();
             }
         }
         return zet;
-    }
-
-
-    public void erhöheSchnittpunkte(MTile feld, int factor){
-
-        for (MCoordinate samePoint : this.intersection(feld)) {
-
-            for (int indexi = 0; indexi < feld.getPunkteNeu().size(); indexi++) {
-
-                MCoordinate currentpoint = feld.getPunkte().get(indexi);
-                if (currentpoint.istGleich(samePoint)) {
-
-                    int index = feld.getPunkte().indexOf(currentpoint);
-                    MCoordinate currentPointRel = feld.getPunkteNeu().get(index);
-                    currentPointRel.setZ(currentPointRel.getZ() + factor);
-
-                }
-            }
-        }
-    }
-
-    public void erhöheSchnittpunktemitZwei(MTile feld, int factor){
-
-        for (MCoordinate samePoint : this.intersection(feld)) {
-
-            for (int indexi = 0; indexi < feld.getPunkteNeu().size(); indexi++) {
-
-                MCoordinate currentpoint = feld.getPunkte().get(indexi);
-                if (currentpoint.istGleich(samePoint)) {
-
-                    int index = feld.getPunkte().indexOf(currentpoint);
-                    MCoordinate currentPointRel = feld.getPunkteNeu().get(index);
-                    currentPointRel.setZ(currentPointRel.getZ() + factor);
-
-                }
-            }
-        }
-    }
-
-
-    public void setLevel(int level) {
-        this.level = level;
     }
 
     public int getLevel() {
@@ -449,7 +328,6 @@ public class MTile implements Comparable<MTile> {
 
         isFirstTile = true;
         knotenpunkteArray = new ArrayList<>();
-        possibleConnections = EnumSet.noneOf(EDirections.class);
         state = EBuildType.free;
         connectedBuilding = null;
         buildingOnTile = null;

@@ -1,7 +1,5 @@
 package planverkehr.graph;
 
-import planverkehr.EBuildType;
-import planverkehr.transportation.ESpecial;
 
 import java.util.ArrayList;
 import java.util.Stack;
@@ -11,7 +9,6 @@ public class SearchObject {
     final Stack<MWegKnotenpunkt> arrayListBesuchterWegpunkte;
     MWegKnotenpunkt currentWayNode;
     final MTargetpointList wayPointList;
-    //   final MTargetpointList waitList;
 
 
     public SearchObject(MKnotenpunkt start, MTargetpointList wayPointList, int tickNumber) {
@@ -20,7 +17,6 @@ public class SearchObject {
         currentWayNode = new MWegKnotenpunkt(tickNumber, start, start);
         this.wayPointList = wayPointList;
         arrayListZuBesuchenderWegpunkte.add(currentWayNode);
-        // this.waitList = waitList;
     }
 
 
@@ -28,9 +24,6 @@ public class SearchObject {
         return currentWayNode;
     }
 
-    public ArrayList<MKnotenpunkt> getWayPointList() {
-        return wayPointList;
-    }
 
     public ArrayList<MWegKnotenpunkt> getArrayListZuBesuchenderWegpunkte() {
         return arrayListZuBesuchenderWegpunkte;
@@ -65,10 +58,6 @@ public class SearchObject {
         arrayListBesuchterWegpunkte.clear();
     }
 
-    public EBuildType getCurrentNodeKind() {
-        return currentWayNode.knotenpunkt.surfaceType;
-    }
-
     public void clearZuBesuchendeWegpunkte() {
         arrayListZuBesuchenderWegpunkte.clear();
     }
@@ -97,9 +86,6 @@ public class SearchObject {
         return wayPointList.contains(k);
     }
 
-    public boolean isTempTarget() {
-        return currentWayNode.knotenpunkt.isTempTarget;
-    }
 
     public void addWaynodeToZuBesuchendeWegpunkte(MWegKnotenpunkt tempWegpunkt) {
         arrayListZuBesuchenderWegpunkte.add(tempWegpunkt);
@@ -109,9 +95,6 @@ public class SearchObject {
         return currentWayNode.getVorgaenger();
     }
 
-//    public int getWaitTime(){
-//        return currentWayNode.knotenpunkt.waitTime;
-//    }
 
     public MWegKnotenpunkt getWegKnotenpunktAtIndex(int i) {
         return arrayListBesuchterWegpunkte.get(i);
