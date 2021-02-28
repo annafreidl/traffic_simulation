@@ -12,23 +12,21 @@ import java.util.*;
 
 public class JSONParser {
 
-    final String filename;
-    final InputStream is;
-    final JSONObject json;
-
-
-    List<String> commodities;
-
+    private final String filename;
+    private final InputStream is;
+    private final JSONObject json;
+    private List<String> commodities;
 
     public JSONParser() throws JSONException {
         filename = (Config.jsonFile);
         is = this.getClass().getClassLoader().getResourceAsStream(filename);
         json = new JSONObject(new JSONTokener(is));
-
-
     }
 
-
+    /**
+     * ließt die commodities aus der json datei aus
+     * @return liste über alle commodities
+     */
     public List<String> getCommoditiesFromJSON() {
         if (json.has("commodities")) {
             commodities = new ArrayList<>();
@@ -53,8 +51,11 @@ public class JSONParser {
         System.exit(-1);
     }
 
+    /**
+     * ließt die map aus der json datei aus
+     * @return map objekt
+     */
     public MMap getMapFromJSON() {
-
         String mapGen;
         String gameMode;
         int width;
@@ -80,6 +81,14 @@ public class JSONParser {
         return map;
     }
 
+    /**
+     * ließt int werte aus, falls sie vorhanden sind
+     * falls es zu jsonfehlern kommt, oder extract nicht in dem jsonobject steht,
+     * wird das programm beendet
+     * @param mapObject jsonobject aus dem die werte extrahiert werden sollen
+     * @param extract key des int values
+     * @return int
+     */
     private int getINT(JSONObject mapObject, String extract) {
         int value;
         if (mapObject.has(extract)) {
@@ -98,6 +107,12 @@ public class JSONParser {
         return value;
     }
 
+    /**
+     * ließt string string paare aus und fügt sie einer liste hinzu
+     * @param singleBuilding jsonobject aus dem die werte extrahiert werden sollen
+     * @param kind key
+     * @return liste von paaren
+     */
     private List<Pair<String, String>> getPairs(JSONObject singleBuilding, String kind) {
         JSONArray pairArray;
         List<Pair<String, String>> pairList;
@@ -116,7 +131,14 @@ public class JSONParser {
         return pairList;
     }
 
-
+    /**
+     * ließt double werte aus, falls sie vorhanden sind
+     * falls es zu jsonfehlern kommt, oder extract nicht in dem jsonobject steht,
+     * wird das programm beendet
+     * @param mapObject jsonobject aus dem die werte extrahiert werden sollen
+     * @param extract key des double values
+     * @return int
+     */
     private double getDOUBLE(JSONObject mapObject, String extract) {
         double value;
         if (mapObject.has(extract)) {
@@ -135,6 +157,14 @@ public class JSONParser {
         return value;
     }
 
+    /**
+     * ließt string werte aus, falls sie vorhanden sind
+     * falls es zu jsonfehlern kommt, oder extract nicht in dem jsonobject steht,
+     * wird das programm beendet
+     * @param singleVehicle jsonobject aus dem die werte extrahiert werden sollen
+     * @param string key des string values
+     * @return int
+     */
     private String getSTRING(JSONObject singleVehicle, String string) {
         String stringValue;
         if (singleVehicle.has(string)) {
@@ -151,6 +181,12 @@ public class JSONParser {
         return stringValue;
     }
 
+    /**
+     * ließt int werte aus einem jsonobject und fügt sie einer map hinzu
+     * @param cargo map, der die werte hinzugefügt werden sollen
+     * @param cargoObject jsonobject aus dem die werte extrahiert werden sollen
+     * @param kind key des int values
+     */
     private void JSONObjectToMap(HashMap<String, Integer> cargo, JSONObject cargoObject, String kind) {
         if (cargoObject.has(kind)) {
             try {
@@ -162,7 +198,10 @@ public class JSONParser {
         }
     }
 
-
+    /**
+     * ließt die vehicles aus der json datei ein
+     * @return liste der vehicles
+     */
     public ArrayList<MVehicles> getVehiclesFromJSON() {
 
         ArrayList<MVehicles> MVehiclesList = new ArrayList<>();
@@ -236,9 +275,11 @@ public class JSONParser {
         return MVehiclesList;
     }
 
-
+    /**
+     * ließt die gebäude aus der json datei aus
+     * @return map der gebäude
+     */
     public HashMap<String, Buildings> getBuildingsFromJSON() {
-
         String buildMenu;
         int width;
         int depth;
@@ -250,27 +291,16 @@ public class JSONParser {
         String special;
         int maxPlanes;
         java.util.Map<String, String> combines;
-        List<Object> productions;
-
-        List<MProductions> MProductionsList = null;
-        int duration = 0;
-        List<HashMap<String, Integer>> produceAll = null;
-        List<HashMap<String, Integer>> consumeAll = null;
+        List<MProductions> MProductionsList;
+        int duration;
+        List<HashMap<String, Integer>> produceAll;
+        List<HashMap<String, Integer>> consumeAll;
         HashMap<String, Integer> storage;
-
-
         HashMap<String, Buildings> buildingsList = new HashMap<>();
-
+        JSONObject singleBuilding;
+        JSONObject pointsObject;
+        JSONObject combinesObject;
         JSONObject buildingsObject = json.getJSONObject("buildings");
-
-        JSONObject singleBuilding = null;
-
-        JSONObject pointsObject = null;
-
-        JSONArray roadsArray = null;
-
-        JSONObject combinesObject = null;
-
         Iterator<String> keys = buildingsObject.keys();
 
         while (keys.hasNext()) {
@@ -281,7 +311,7 @@ public class JSONParser {
 
             width = singleBuilding.optInt("width", 0);
             depth = singleBuilding.optInt("depth", 0);
-            dz = singleBuilding.optInt("dz", 1337);
+            dz = singleBuilding.optInt("dz", 0);
             maxPlanes = singleBuilding.optInt("maxplanes", 0);
             special = singleBuilding.optString("special", "noSpecial");
             buildMenu = singleBuilding.optString("buildmenu", "noBuildMenu");
@@ -315,7 +345,7 @@ public class JSONParser {
 
 
             if (singleBuilding.has("points")) {
-                JSONArray singlePoint = null;
+                JSONArray singlePoint;
                 pointsObject = singleBuilding.getJSONObject("points");
                 Iterator<String> pointKeys = pointsObject.keys();
                 points = new HashMap<>();
@@ -430,15 +460,11 @@ public class JSONParser {
                         duration = getINT(productionsJSONObject, "duration");
                         MProductionsList.add(new MProductions(duration, produceAll, consumeAll, storage));
                         //System.out.println(keyValue + " Duration: " + duration + " Consume: " + consumeAll + " Produce: " + produceAll);
-                    } else {
-                        consumeAll = new ArrayList<>();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             } else {
-                consumeAll = new ArrayList<>();
-                produceAll = new ArrayList<>();
                 MProductionsList = new ArrayList<>();
             }
             buildingsList.put(keyValue, new Buildings(keyValue, buildMenu, width, depth, points, roads, rails, planes, dz, special, maxPlanes, combines, MProductionsList));

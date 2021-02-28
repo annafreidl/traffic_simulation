@@ -1193,27 +1193,6 @@ public class MGame {
         constructedFactories.add(f);
     }
 
-
-    public void consumeAndProduce() {
-        for (Buildings factory : constructedBuildings) {
-            for (MProductions productions : factory.getProductions()) {
-                System.out.println(tickNumber);
-                if (tickNumber % productions.getDuration() == 0) {
-                    productions.produceCommodities();
-                    productions.consumeCommodities();
-                }
-            }
-        }
-    }
-
-    public void testVehicleSpeed() {
-        int speed = 3;
-        for (int i = 0; i < speed; i++) {
-            System.out.println("i: " + i);
-            System.out.println("speed: " + speed);
-        }
-    }
-
     public MAirportManager getmAirportManager() {
         return mAirportManager;
     }

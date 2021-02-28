@@ -5,20 +5,20 @@ import java.util.*;
 //known Bugs:
 //bei zwei konsumierbaren resourcen wird nur überprüft, ob die erste vorhanden ist -> konsum obwohl nur nur 1 der 2 resourcen
 //vorhanden ist und dadurch können auch negative werte erreicht werden
-//falls ein Productions Objekt mehrere unabhängige Produktionen z.B. construction yard hat, gibt es auch einzelne
-//bzw. doppelte und identische lager dafür
+//bei leerem lager tritt dieser fehler nicht auf
 
 public class MProductions {
-    int duration;
-    List<HashMap<String, Integer>> produce;
-    List<HashMap<String, Integer>> consume;
+    private int duration;
+    private List<HashMap<String, Integer>> produce;
+    private List<HashMap<String, Integer>> consume;
 
-    HashMap<String, Integer> storage; //current resource and quantity
-    HashMap<String, Integer> storageRAW; //original resource and quantity
-    HashMap<String, Integer> produceStorage; //storage for produced goods
-    MFactory factory;
-    boolean foundation = false;
-    boolean nave = false;
+    private HashMap<String, Integer> storage; //current resource and quantity
+    private HashMap<String, Integer> storageRAW; //original resource and quantity
+    private HashMap<String, Integer> produceStorage; //storage for produced goods
+
+    private MFactory factory;
+    private boolean foundation = false;
+    private boolean nave = false;
 
 
     public MProductions(int duration, List<HashMap<String, Integer>> produce, List<HashMap<String, Integer>> consume, HashMap<String, Integer> storageRAW) {
@@ -29,7 +29,6 @@ public class MProductions {
         produceStorage = new HashMap<>();
         zeroStorage();
     }
-
 
 
     public int getDuration() {
@@ -72,6 +71,18 @@ public class MProductions {
         this.storageRAW = storageRAW;
     }
 
+    public boolean isFoundation() {
+        return foundation;
+    }
+
+    public boolean isNave() {
+        return nave;
+    }
+
+    /**
+     * erstellt aus dem rawstorage einen storage, der den aktuellen gueterstand anzeigt
+     * und initialisiert diesen
+     */
     private void zeroStorage() {
         Set<String> keys = storageRAW.keySet();
         storage = new HashMap<>();
@@ -85,7 +96,9 @@ public class MProductions {
         System.exit(-1);
     }
 
-    //nur zum testen, füllt das lager mit resourcen für jeweils 25 produktionsschritte
+    /**
+     * nur zum testen, füllt das lager mit resourcen für jeweils 25 produktionsschritte
+     */
     private void initStorage() {
         for (int i = 0; i < getConsume().size(); i++) {
             for (Map.Entry<String, Integer> entry : getConsume().get(i).entrySet()) {
@@ -94,18 +107,13 @@ public class MProductions {
         }
     }
 
-    public boolean resourcesAvailable(String resource, int quantity) {
-        int availableResource = storage.get(resource);
-        if (quantity <= availableResource) {
-            System.out.println("true");
-            return true;
-        } else {
-            System.out.println("false");
-            return false;
-        }
-    }
-
-
+    /**
+     * prüft ob bereits produzierte resource mit angegbener quantity verfuegbar ist
+     *
+     * @param resource
+     * @param quantity
+     * @return
+     */
     public boolean producedResourcesAvailable(String resource, int quantity) {
         int availableResource = produceStorage.get(resource);
         if (quantity <= availableResource) {
@@ -117,6 +125,12 @@ public class MProductions {
         }
     }
 
+    /**
+     * prüft ob resourcen vorhanden und bereit zum konsumieren sind
+     * known bug: siehe oben
+     *
+     * @return
+     */
     public boolean resourcesAvailableToConsume() {
         if (getConsume().size() > 0) {
             for (int i = 0; i < getConsume().size(); i++) {
@@ -137,8 +151,10 @@ public class MProductions {
         return false;
     }
 
-
-    public void consumeCommodities() {
+    /**
+     * verbrauch der in consume angegeben gueter
+     */
+    private void consumeCommodities() {
         if (getConsume().size() > 0) {
             for (int i = 0; i < getConsume().size(); i++) {
                 for (Map.Entry<String, Integer> entry : getConsume().get(i).entrySet()) {
@@ -154,7 +170,7 @@ public class MProductions {
                             System.out.println("Resource unknown to this Building");
                             programmBeenden();
                         }
-                       // System.out.println("Before consume: " + storage);
+                        // System.out.println("Before consume: " + storage);
                         deleteConsumedResourcesFromStorage(key, value);
                         // System.out.println("After consume: " + storage);
                         // System.out.println("ProduceStorage: " + produceStorage);
@@ -165,39 +181,54 @@ public class MProductions {
         }
     }
 
-
-    public void produceCommodities() {
+    /**
+     * produktion der in produce angegeben gueter
+     */
+    private void produceCommodities() {
         if (getProduce().size() > 0) {
             for (int i = 0; i < getProduce().size(); i++) {
                 for (Map.Entry<String, Integer> entry : getProduce().get(i).entrySet()) {
                     String key = entry.getKey();
                     int value = entry.getValue();
-                        if (resourcesAvailableToConsume() || getConsume().size() == 0) {
-                            if (!produceStorage.containsKey(key)) {
-                                produceStorage.put(key, 0);
-                            }
-                            System.out.println("Duration: " + getDuration());
-                            System.out.println("getProduce: " + getProduce());
-                            System.out.println("Producing Resources: " + key + " " + value);
-                            System.out.println("Current Storage : " + storage);
-                            System.out.println("Before add: " + produceStorage);
-                            addProducedResourcesToProduceStorage(key, value);
-                            System.out.println("After add: " + produceStorage);
-                            System.out.println("\n");
+                    if (resourcesAvailableToConsume() || getConsume().size() == 0) {
+                        if (!produceStorage.containsKey(key)) {
+                            produceStorage.put(key, 0);
                         }
+                        System.out.println("Duration: " + getDuration());
+                        //System.out.println("getProduce: " + getProduce());
+                        System.out.println("Producing Resources: " + key + " " + value);
+                        //System.out.println("Current Storage : " + storage);
+                        //System.out.println("Before add: " + produceStorage);
+                        addProducedResourcesToProduceStorage(key, value);
+                        //System.out.println("After add: " + produceStorage);
+                        System.out.print("\n");
                     }
                 }
             }
         }
+    }
 
+    /**
+     * gemeinsamer produce und consume sowie pruefung fuer own-scenario
+     */
     public void consumeAndProduce() {
         produceCommodities();
         consumeCommodities();
-        if (!foundation){ cathedralFoundationReady();}
-        if (!nave){cathedralNaveReady();}
+        if (!foundation) {
+            cathedralFoundationReady();
+        }
+        if (!nave) {
+            cathedralNaveReady();
+        }
     }
 
-    public boolean cathedralFoundationReady() {
+    /**
+     * prueft ob die cathedral_foundation bereit zum ausbau ist und stoppt dann die weitere produktion von foundations,
+     * da dieser schritt einmalig sein soll
+     *
+     * @return
+     */
+    private boolean cathedralFoundationReady() {
         if (factory.getBuildingName().equals("cathedral")) {
             for (Map.Entry<String, Integer> entry : produceStorage.entrySet()) {
                 if (entry.getKey().equals("cathedral_foundation") && entry.getValue() >= 1) {
@@ -217,7 +248,13 @@ public class MProductions {
         return false;
     }
 
-    public boolean cathedralNaveReady() {
+    /**
+     * prueft ob die cathedral_nave bereit zum ausbau ist und stoppt dann die gesamte produktion der kathedrale,
+     * da dieser schritt einmalig sein soll
+     *
+     * @return
+     */
+    private boolean cathedralNaveReady() {
         if (factory.getBuildingName().equals("cathedral")) {
             for (Map.Entry<String, Integer> entry : produceStorage.entrySet()) {
                 if (entry.getKey().equals("cathedral_nave") && entry.getValue() >= 1) {

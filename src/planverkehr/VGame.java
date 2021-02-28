@@ -1105,25 +1105,25 @@ public class VGame {
                 box.getChildren().add(factory);
                 for (int i = 0; i < buildings.getProductions().size(); i++) {
 
-                    if (!buildings.getProductions().get(i).produce.isEmpty()) {
-                        Label produce = new Label("Produce: " + buildings.getProductions().get(i).produce.toString());
+                    if (!buildings.getProductions().get(i).getProduce().isEmpty()) {
+                        Label produce = new Label("Produce: " + buildings.getProductions().get(i).getProduce().toString());
                         box.getChildren().add(produce);
                     }
-                    if (!buildings.getProductions().get(i).consume.isEmpty()) {
-                        Label consume = new Label("Consume: " + buildings.getProductions().get(i).consume.toString());
+                    if (!buildings.getProductions().get(i).getConsume().isEmpty()) {
+                        Label consume = new Label("Consume: " + buildings.getProductions().get(i).getConsume().toString());
                         box.getChildren().add(consume);
                     }
-                    if (!buildings.getProductions().get(i).produceStorage.isEmpty()) {
-                        Label warehouse = new Label("Warehouse: " + buildings.getProductions().get(i).produceStorage.toString());
+                    if (!buildings.getProductions().get(i).getProduceStorage().isEmpty()) {
+                        Label warehouse = new Label("Warehouse: " + buildings.getProductions().get(i).getProduceStorage().toString());
                         box.getChildren().add(warehouse);
                     }
-                    if (!buildings.getProductions().get(i).consume.isEmpty() && !buildings.getProductions().get(i).produce.isEmpty()) {
-                        Label duration = new Label("Duration: " + buildings.getProductions().get(i).duration);
+                    if (!buildings.getProductions().get(i).getConsume().isEmpty() && !buildings.getProductions().get(i).getProduce().isEmpty()) {
+                        Label duration = new Label("Duration: " + buildings.getProductions().get(i).getDuration());
                         box.getChildren().add(duration);
                     }
 
-                    if (!buildings.getProductions().get(i).storage.isEmpty()) {
-                        Label storage = new Label("Storage: " + buildings.getProductions().get(i).storage.toString());
+                    if (!buildings.getProductions().get(i).getStorage().isEmpty()) {
+                        Label storage = new Label("Storage: " + buildings.getProductions().get(i).getStorage().toString());
                         box.getChildren().add(storage);
                     }
                 }

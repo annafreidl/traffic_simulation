@@ -3,7 +3,7 @@
     "brick", "plank", "mortar", "bell", "gate", "cathedral_foundation", "cathedral_nave"
   ],
   "buildings" : {
-    "port" : {
+    "tower" : {
       "buildmenu" : "airport",
       "width" : 1,
       "depth" : 1,
@@ -11,7 +11,7 @@
       "maxplanes" : "3",
       "dz" : 0
     },
-    "cargo port" : {
+    "big tower" : {
       "buildmenu" : "airport",
       "width" : 2,
       "depth" : 2,
@@ -19,7 +19,7 @@
       "maxplanes" : "6",
       "dz" : 0
     },
-    "shipyard" : {
+    "runway" : {
       "buildmenu" : "airport",
       "width" : 5,
       "depth" : 1,
@@ -29,7 +29,7 @@
       "planes":[["ne","c"], ["nw","c"], ["se","c"], ["sw","c"], ["r0","r1"], ["r1","r3"], ["r3","r4"]],
       "dz" : 0
     },
-    "wharf" : {
+    "terminal" : {
       "buildmenu" : "airport",
       "width" : 2,
       "depth" : 4,
@@ -48,7 +48,7 @@
       ],
       "dz" : 1
     },
-    "dry port" : {
+    "taxiway" : {
       "buildmenu" : "airport",
       "width" : 1,
       "depth" : 1,
