@@ -4,10 +4,9 @@
 
 The project is a traffic simulation game. It is loosely based on the computer games
 the computer games "Transport Tycoon™" from 1994 and "Simutrans" from 1997.
-available variant of "Transport Tycoon™" with an open-source license can be found under the
-[OpenTTD](https://www.openttd.org/downloads/openttd-releases/latest); [Simutrans](https://www.simutrans.com/en/download/), on the other hand, is open source by itself.
-In this game, you manage the transportation network (bus, rail and air) in a
-Region with several industrial plants.
+A version of "Transport Tycoon™" with an open-source license can be found under the
+[OpenTTD](https://www.openttd.org/downloads/openttd-releases/latest); [Simutrans](https://www.simutrans.com/en/download/).
+In this game, you manage the transport network (bus, rail and air) in a region with several industrial plants.
 
 The simulation runs continuously, the game map is box-based.
 
